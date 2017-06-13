@@ -1,0 +1,8 @@
+{
+    "sqlAdministratorLogin": {
+      "value": "GEN-UNIQUE"
+    },
+    "sqlAdministratorLoginPassword": {		
+      "value": ""		
+    }
+}
