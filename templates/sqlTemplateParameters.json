@@ -2,7 +2,7 @@
     "sqlAdministratorLogin": {
       "value": "GEN-UNIQUE"
     },
-    "sqlAdministratorLoginPassword": {		
-      "value": ""		
+    "sqlAdministratorLoginPassword": {
+      "value": ""
     }
 }

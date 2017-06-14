@@ -5,14 +5,35 @@
   "main": "./publish/index.js",
   "scripts": {
     "start": "npm run build && npm run build:live",
+    "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
+    "pretest": "npm run lint",
+    "test": "jest",
     "build:live": "nodemon --exec npm run build:tsnode",
     "build:tsnode": "ts-node ./src/index.ts",
     "build": "tsc --p ./src"
   },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testMatch": [
+      "**/__tests__/*.(ts|tsx|js)"
+    ]
+  },
   "bin": {
     "remote-cli": "./publish/index.js"
   },
-  "keywords": [ "remote", "monitoring", "pcs", "cli" ],
+  "keywords": [
+    "remote",
+    "monitoring",
+    "pcs",
+    "cli"
+  ],
   "author": "Parvez Pathan",
   "license": "MIT",
   "devDependencies": {
@@ -21,8 +42,12 @@
     "@types/chalk": "^0.4.31",
     "@types/commander": "^2.9.1",
     "@types/inquirer": "0.0.34",
+    "@types/jest": "^19.2.4",
     "@types/node": "^7.0.29",
+    "import-sort": "^2.4.0",
+    "jest": "^20.0.4",
     "nodemon": "^1.11.0",
+    "ts-jest": "^20.0.6",
     "ts-node": "^3.0.6",
     "typescript": "^2.3.4"
   },
