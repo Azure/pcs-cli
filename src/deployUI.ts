@@ -26,7 +26,7 @@ class DeployUI {
         clearInterval(this.id);
         let message = this.deployed;
         if(err){
-            message = 'Deployment failed' + err;
+            message = 'Deployment failed ' + err;
         }
 
         this.ui.updateBottomBar(message);

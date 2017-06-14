@@ -2,7 +2,7 @@
   "name": "remote-cli",
   "version": "1.0.0",
   "description": "",
-  "main": "./lib/index.js",
+  "main": "./publish/index.js",
   "scripts": {
     "start": "npm run build && npm run build:live",
     "build:live": "nodemon --exec npm run build:tsnode",
@@ -10,7 +10,7 @@
     "build": "tsc --p ./src"
   },
   "bin": {
-    "remote-cli": "./lib/index.js"
+    "remote-cli": "./publish/index.js"
   },
   "keywords": [ "remote", "monitoring", "pcs", "cli" ],
   "author": "Parvez Pathan",
