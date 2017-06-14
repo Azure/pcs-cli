@@ -10,19 +10,18 @@
     "test": "jest",
     "build:live": "nodemon --exec npm run build:tsnode",
     "build:tsnode": "ts-node ./src/index.ts",
-    "build": "tsc --p ./src"
+    "build": "tsc -p tsconfig.json"
   },
   "jest": {
     "moduleFileExtensions": [
       "ts",
-      "tsx",
       "js"
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testMatch": [
-      "**/__tests__/*.(ts|tsx|js)"
+      "**/__tests__/*.(ts)"
     ]
   },
   "bin": {

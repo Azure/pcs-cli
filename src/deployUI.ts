@@ -13,10 +13,10 @@ class DeployUI {
     private i = 4;
     private ui = new inquirer.ui.BottomBar();
 
-    private id: NodeJS.Timer;
+    private timer: NodeJS.Timer;
 
     public start(): void {
-        this.id = setInterval(
+        this.timer = setInterval(
             () => {
                 this.ui.updateBottomBar(this.loader[this.i++ % 4]);
             }, 
@@ -24,7 +24,7 @@ class DeployUI {
     }
 
     public stop(err?: Error): void {
-        clearInterval(this.id);
+        clearInterval(this.timer);
         let message = this.deployed;
         if (err) {
             message = 'Deployment failed ' + err;
