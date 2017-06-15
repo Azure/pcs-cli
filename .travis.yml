@@ -1,28 +1,16 @@
-# Cache node_modules and typings for future runs. This does make the builds
-# sometimes fail because of a bad cache but usually this is a huge test
-# performance win.
 cache:
   directories:
-    - node_modules
-# Set up environment variables for tests
+  - node_modules
 env:
-  global:
-# Use the Travis Docker build system which is faster
+  global: 
 sudo: false
-# Specify to use node
 language: node_js
-# Specify the node versions to run on
 node_js:
-  - "6"
-# Make sure to have typings before the test
+- '6'
 before_install:
-  - npm install
+- npm install
 script:
-  - npm start
-# Do not send build notifications
-notifications:
-  email: false
+- npm start
 notifications:
   slack:
-    rooms:
-    - secure: kj0k4OxDg11boMe2uKITH/PHvc3DUEv3pCmEW7LU1Nvyi5kRzmHOF5GDNUqE6RvAzJ2BspzPNfmgBOEqwBui4KBnSLQNFav6p06dEdKzAdfu808izYlIq7kylLbioGDg/rzu1O05nvPJNmBjK7t3X/bG0Wod60mGSb3BW0tqmZAcECi+Rdm1/IYFCRZgBsXcYDR98S4NngGB6wGlCBYCYhmu6pO+W2JL3Yyo2i4p5GWTvUuP+iQkh1t358cbnRadtfOI3PFg7F/wdrbvP/2GYl+SaHyxna2JsgGLgMLiQdEU6ag8xJP86BoOV40lIj3mtX20P1SHckUM1yugI9OGfgn163Rpcv3517mC8oJSN6piNR4KQIAkYRw1w5eMi+xnmmG3AfC8s2d0XxEjruu70I8LmzBpSObpFFKoG3NMxGx6I/ypYgelZKnNGvEv2LnZl7Tv4GhksPQ6PHYGT2E1RS84N+GPcqZmA31Mtzx9B6sVScC7t+h7XRPFhC2Se0/WBsXUvosSPN0s2s2Iz1x+A5Niun7oZGpfJ/mykbWbwoFjGzuzFMbMBzJJpj7a8iQPmoTBUbg29BbCNtw/HF0VM0uddNGuwAyWKfybNgg7vjHs5j2s2+44eWCN2PW0wnT3TNovpgTeB70DMtXVZKHXVgcBtiagwGuEl6as7ngqGoE=
+    secure: QYJ/KdpV9uTsXJidxv/4Xrf0q/XtSJUyns2ZDHBnqNpfeAzqYPnqqnHHdrZZE2x/WaBU/7DOZeygvQuZL8y8kCZPqGV+ZUtQiFc2hjNTTQWKbuXkpZ/3jkAzOqE++vc6dnDfNuR227meaE+2OBB99BMH7XfK9kTTMX1RoeUM6HaOJOAqv3xqqDc9k9SoQO4haUbUDb47xQukIkuXvi20oE+AKB5DT/J9Vz0Zp9PqLVQFs2YcZsiTyCmdqRWTVifVfyxqyirP8d71WiXU0eMEJYz+yCsgz9O3UyUcxfJzNaQr+tdY9KhWexud5LtTdFqxpXyZ5w95ELPNPFWXFXIo4xHSEcyabeDvk0YOZ3pn8G0MzRzT8MJa06E5q4lkXrZrD8KkScdHlj12H9TooClK7a3g3/WkpruEyjTFg8KdOnwwu1XTVFc3Kg14AzFZuDf5lJCqSm75vDCqjpxi/Jzfvz6xj885YIMbDxMF0QSx7BpDtJlyLVi7EvEofXFKbBfUM6AS5Ug3pldybw86V17Qfc4b0zfCFFCWk0ElX2hwhefG9QNauqd5hFCwGoxdhe1S/l0aXCEaUJpbR6RE8qZfhSoCbv44i8qNhQp0jl2zie/B3fuzl0Q/kzIGgVk+owfxod33QWEI6kUaoKJiWk7UJ6+nh17pXYgMYRJPoXNDS3g=
