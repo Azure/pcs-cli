@@ -28,7 +28,7 @@ const passwordRegex: RegExp = /^(?!.*')((?=.*[a-z])(?=.*[0-9])(?=.*\W)|(?=.*[A-Z
 /* tslint:enable */
 
 const program = new Command(packageJson.name)
-    .version(packageJson.version)
+    .version(packageJson.version, '-v, --version')
     .usage(`${chalk.green('<login>')} [options]`)
     .parse(process.argv);
 

@@ -10,28 +10,25 @@ CLI for deploying remote monitoring solution into a user's subscription
 Overview
 ========
 
-To deploy run remote-cli from command prompt after clone, build and npm install -g
-
-```
-For help remote-cli -h
-For version remote-cli -V
-```
+To execute the script run `remote-cli` the prompts will walk you through steps \
+To get help run `remote-cli -h` \
+To get the version run `remote-cli -v`
 
 How to use it
 =============
 
-```
+
 1) Clone the project
-2) npm install -g
-3) npm link
-4) Build using npm start
-5) Run remote-cli from command prompt
-```
+2) `npm install -g`
+3) `npm link`
+4) `npm start`
+5) `remote-cli`
+
 
 Configuration
 =============
 
-... how to customize the service, settings, etc. ...f
+... how to customize the service, settings, etc. ...
 
 Other documents
 ===============
