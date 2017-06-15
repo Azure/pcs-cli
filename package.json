@@ -4,13 +4,13 @@
   "description": "",
   "main": "./publish/index.js",
   "scripts": {
-    "start": "npm run build && npm run build:live",
+    "start": "npm run build && npm test",
+    "build": "tsc -p tsconfig.json",
     "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
     "pretest": "npm run lint",
     "test": "jest",
     "build:live": "nodemon --exec npm run build:tsnode",
-    "build:tsnode": "ts-node ./src/index.ts",
-    "build": "tsc -p tsconfig.json"
+    "build:tsnode": "ts-node ./src/index.ts"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -48,6 +48,7 @@
     "nodemon": "^1.11.0",
     "ts-jest": "^20.0.6",
     "ts-node": "^3.0.6",
+    "tslint": "^5.4.3",
     "typescript": "^2.3.4"
   },
   "dependencies": {
