@@ -11,22 +11,27 @@ Overview
 ========
 
 To deploy run remote-cli from command prompt after clone, build and npm install -g
+
+```
 For help remote-cli -h
 For version remote-cli -V
+```
 
 How to use it
 =============
 
+```
 1) Clone the project
-2) Build using npm run build
-3) npm install -g
-4) npm link
+2) npm install -g
+3) npm link
+4) Build using npm start
 5) Run remote-cli from command prompt
+```
 
 Configuration
 =============
 
-... how to customize the service, settings, etc. ...
+... how to customize the service, settings, etc. ...f
 
 Other documents
 ===============
@@ -34,9 +39,9 @@ Other documents
 * [Contributing and Development setup](CONTRIBUTING.md)
 * [Development setup, scripts and tools](DEVELOPMENT.md)
 
-[build-badge]: https://img.shields.io/travis/Azure/PROJECT-ID-HERE-dotnet.svg
-[build-url]: https://travis-ci.org/Azure/PROJECT-ID-HERE-dotnet
-[issues-badge]: https://img.shields.io/github/issues/azure/PROJECT-ID-HERE-dotnet.svg
-[issues-url]: https://github.com/azure/PROJECT-ID-HERE-dotnet/issues
+[build-badge]: https://img.shields.io/travis/Azure/azure-remote-monitoring-cli.svg
+[build-url]: https://travis-ci.com/Azure/azure-remote-monitoring-cli
+[issues-badge]: https://img.shields.io/github/issues/azure/azure-remote-monitoring-cli.svg
+[issues-url]: https://github.com/azure/azure-remote-monitoring-cli/issues
 [gitter-badge]: https://img.shields.io/gitter/room/azure/iot-pcs.js.svg
 [gitter-url]: https://gitter.im/azure/iot-pcs
