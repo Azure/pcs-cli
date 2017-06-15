@@ -1,9 +1,9 @@
 # Cache node_modules and typings for future runs. This does make the builds
 # sometimes fail because of a bad cache but usually this is a huge test
 # performance win.
-# cache:
-#   directories:
-#     - node_modules
+cache:
+  directories:
+    - node_modules
 # Set up environment variables for tests
 env:
   global:

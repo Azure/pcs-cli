@@ -174,11 +174,9 @@ function main() {
                     .createOrUpdate(result.name as string, answers.solutionName + '-deployment', deployment)
                     .then(() => {
                         deployUI.stop();
-                        process.exit();
                     });
                 }).catch((err: Error) => {
                     deployUI.stop(err);
-                    process.exit();
                 });
         });
     });

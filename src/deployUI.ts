@@ -11,9 +11,12 @@ class DeployUI {
         ];
 
     private i = 4;
-    private ui = new inquirer.ui.BottomBar();
-
+    private ui: inquirer.ui.BottomBar;
     private timer: NodeJS.Timer;
+
+    constructor()  {
+        this.ui = new inquirer.ui.BottomBar();
+    }
 
     public start(): void {
         this.timer = setInterval(
@@ -31,6 +34,11 @@ class DeployUI {
         }
 
         this.ui.updateBottomBar(message);
+        this.close();
+    }
+
+    public close(): void {
+        this.ui.close();
     }
 }
 
