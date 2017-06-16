@@ -2,17 +2,17 @@ import * as ResourceManagement from 'azure-arm-resource';
 import * as msRestAzure from 'ms-rest-azure';
 
 import { Answers, Question } from 'inquirer';
-import DeployUI from './deployUI';
+import DeployUI from './deployui';
 
 type ResourceGroup = ResourceManagement.ResourceModels.ResourceGroup;
 type Deployment = ResourceManagement.ResourceModels.Deployment;
 type DeploymentProperties = ResourceManagement.ResourceModels.DeploymentProperties;
 
-interface IDeploymentManager {
+export interface IDeploymentManager {
     submit(solutionName: string, subscriptionName: string, location: string): Promise<any>;
 }
 
-class DeploymentManager implements IDeploymentManager {
+export class DeploymentManager implements IDeploymentManager {
     private _authReponse: msRestAzure.AuthResponse;
     private _solutionType: string;
     private _template: any;

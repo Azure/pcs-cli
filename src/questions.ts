@@ -1,12 +1,12 @@
 import { Answers, Question } from 'inquirer';
 
-interface IQuestions {
+export interface IQuestions {
     value: Question[];
     addQuestion(question: Question): void;
     addQuestions(questions: Question[]): void;
 }
 
-class Questions implements Questions {
+export class Questions implements Questions {
     public solutionNameRegex: RegExp = /^[a-z0-9]{1,17}$/;
     public userNameRegex: RegExp = /^[a-zA-Z_][a-zA-Z0-9_@$#]{0,127}$/;
 

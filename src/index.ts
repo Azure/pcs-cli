@@ -6,8 +6,8 @@ import * as inquirer from 'inquirer';
 import * as msRestAzure from 'ms-rest-azure';
 
 import { Answers, Question } from 'inquirer';
-import DeploymentManager from './DeploymentManager';
-import Questions from './Questions';
+import { DeploymentManager, IDeploymentManager} from './deploymentmanager';
+import { Questions, IQuestions } from './questions';
 import { Command } from 'commander';
 
 const packageJson = require('../package.json');
@@ -65,9 +65,9 @@ function main() {
      */
     msRestAzure.interactiveLoginWithAuthResponse().then((authResponse: msRestAzure.AuthResponse) => {
         const subs: string[] = [];
-        const deploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
+        const deploymentManager: IDeploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
 
-        const questions = new Questions();
+        const questions: IQuestions = new Questions();
         questions.addQuestions([
         {
             choices: subs,
