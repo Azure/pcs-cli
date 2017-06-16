@@ -8,11 +8,11 @@ type ResourceGroup = ResourceManagement.ResourceModels.ResourceGroup;
 type Deployment = ResourceManagement.ResourceModels.Deployment;
 type DeploymentProperties = ResourceManagement.ResourceModels.DeploymentProperties;
 
-export interface IDeploymentManager {
+interface IDeploymentManager {
     submit(solutionName: string, subscriptionName: string, location: string): Promise<any>;
 }
 
-export class DeploymentManager implements IDeploymentManager {
+class DeploymentManager implements IDeploymentManager {
     private _authReponse: msRestAzure.AuthResponse;
     private _solutionType: string;
     private _template: any;
@@ -61,3 +61,5 @@ export class DeploymentManager implements IDeploymentManager {
                 });
     }
 }
+
+export default DeploymentManager;
