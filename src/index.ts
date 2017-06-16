@@ -1,69 +1,75 @@
 #!/usr/bin/env node
 
-import * as fs from 'fs';
 import * as ResourceManagement from 'azure-arm-resource';
-import * as msRest from "ms-rest";
-import * as msRestAzure from "ms-rest-azure";
-import { TableService, BlobService } from "@types/azure";
-import * as inquirer from "inquirer";
-import { Questions, Question, Answers } from 'inquirer';
-import { Command } from 'commander';
 import * as chalk from 'chalk';
-import DeployUI from './deployUI'
-var packageJson = require('../package.json');
+import * as fs from 'fs';
+import * as inquirer from 'inquirer';
+import * as msRest from 'ms-rest';
+import * as msRestAzure from 'ms-rest-azure';
+
+import { Answers, Question, Questions } from 'inquirer';
+import { BlobService, TableService } from 'azure';
+
+import { Command } from 'commander';
+import DeployUI from './deployUI';
+
+const packageJson = require('../package.json');
 
 type ResourceGroup = ResourceManagement.ResourceModels.ResourceGroup;
 type Deployment = ResourceManagement.ResourceModels.Deployment;
 type DeploymentProperties = ResourceManagement.ResourceModels.DeploymentProperties;
 type DeviceTokenCredentials = msRestAzure.DeviceTokenCredentials;
 
-const solutionNameRegex:RegExp = /^[a-z0-9]{1,17}$/;
-const userNameRegex:RegExp = /^[a-zA-Z_][a-zA-Z0-9_@$#]{0,127}$/;
-const passwordRegex:RegExp = /^(?!.*')((?=.*[a-z])(?=.*[0-9])(?=.*\W)|(?=.*[A-Z])(?=.*[0-9])(?=.*\W)|(?=.*[A-Z])(?=.*[a-z])(?=.*\W)|(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])|(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\W)).{8,128}$/;
+const solutionNameRegex: RegExp = /^[a-z0-9]{1,17}$/;
+const userNameRegex: RegExp = /^[a-zA-Z_][a-zA-Z0-9_@$#]{0,127}$/;
+
+/* tslint:disable */
+const passwordRegex: RegExp = /^(?!.*')((?=.*[a-z])(?=.*[0-9])(?=.*\W)|(?=.*[A-Z])(?=.*[0-9])(?=.*\W)|(?=.*[A-Z])(?=.*[a-z])(?=.*\W)|(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])|(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\W)).{8,128}$/;
+/* tslint:enable */
 
 const program = new Command(packageJson.name)
-    .version(packageJson.version)
+    .version(packageJson.version, '-v, --version')
     .usage(`${chalk.green('<login>')} [options]`)
     .parse(process.argv);
 
-var questions:Question[] = [
+const questions: Question[] = [
     {
-        type: 'input',
         message: 'Enter a solution name:',
         name: 'solutionName',
-        validate: function(value:string) {
-            let pass:RegExpMatchArray | null = value.match(solutionNameRegex);
-            if(pass){
+        type: 'input',
+        validate: (value: string) => {
+            const pass: RegExpMatchArray | null = value.match(solutionNameRegex);
+            if (pass) {
                 return true;
             }
 
-            return "Please enter a valid solution name";
-        }
+            return 'Please enter a valid solution name';
+        },
     },
     {
-        type: 'input',
         message: 'Enter a sql server username:',
         name: 'userName',
-        validate: function(value:string) {
-            let pass:RegExpMatchArray | null = value.match(userNameRegex);
-            if(pass){
+        type: 'input',
+        validate: (value: string) => {
+            const pass: RegExpMatchArray | null = value.match(userNameRegex);
+            if (pass) {
                 return true;
             }
 
-            return "Please enter a valid user name";
-        }
+            return 'Please enter a valid user name';
+        },
     },
     {
-        type: 'password',
         message: 'Enter a password:',
         name: 'sqlPassword',
-        validate: function(value:string) {
-            let pass:RegExpMatchArray | null = value.match(passwordRegex);
-            if(pass){
+        type: 'password',
+        validate: (value: string) => {
+            const pass: RegExpMatchArray | null = value.match(passwordRegex);
+            if (pass) {
                 return true;
             }
 
-            return "Please enter a valid password";
+            return 'Please enter a valid user name';
         },
         // ,
         // TODO:
@@ -74,20 +80,15 @@ var questions:Question[] = [
         //
     },
     {
-        type: 'input',
         message: 'Enter a template file path:',
-        name: 'templateFilePath'
+        name: 'templateFilePath',
+        type: 'input',
     },
     {
-        type: 'input',
         message: 'Enter a parameter file path:',
-        name: 'parametersFilePath'
+        name: 'parametersFilePath',
+        type: 'input',
     }];
-
-
-function validate(value:string, exp:RegExp){
-    return value.match(exp);
-}
 
 main();
 
@@ -110,72 +111,73 @@ function main() {
      * Submit deployment
      */
     msRestAzure.interactiveLoginWithAuthResponse().then((authResponse: msRestAzure.AuthResponse) => {
-        let subs:string[] = [];
-        var creds:any = authResponse.credentials;
-        creds.tokenCache;
+        const subs: string[] = [];
+
         authResponse.subscriptions.map((subscription: msRestAzure.LinkedSubscription) => {
             subs.push(subscription.name);
         });
-        questions.push({
-            type: 'list',
+        questions.push(
+        {
+            choices: subs,
             message: 'Select a subscription:',
             name: 'subscriptionsList',
-            choices: subs
+            type: 'list',
         },
         {
             // TODO: List the locations based on selected subscription
-            type: 'list',
-            message: "Select a location",
+            choices: ['westus', 'eastus'],
+            message: 'Select a location',
             name: 'location',
-            choices: ['westus', 'eastus']
+            type: 'list',
         });
 
-        inquirer.prompt(questions).then((answers: Answers) => {            
-            let selectedSubscription: msRestAzure.LinkedSubscription[]  = authResponse.subscriptions.filter( (subs: msRestAzure.LinkedSubscription) => {
-                if(subs.name == answers['subscriptionsList']) {
-                    return subs.id;
-                }
-            });
-            let client = new ResourceManagement.ResourceManagementClient(authResponse.credentials, selectedSubscription[0].id);
-            let resourceGroup: ResourceGroup = {
-                name: answers['name'],
-                location: answers['location'],
-                tags: { 'pcs': 'Pre-configured solution' }
-            }
+        inquirer.prompt(questions).then((answers: Answers) => {
+            const selectedSubscription: msRestAzure.LinkedSubscription[] =
+                authResponse.subscriptions.filter((linkedSubs: msRestAzure.LinkedSubscription) => {
+                    if (linkedSubs.name === answers.subscriptionsList) {
+                        return linkedSubs.id;
+                    }
+                });
+            const client = new ResourceManagement
+                .ResourceManagementClient(authResponse.credentials, selectedSubscription[0].id);
+            const resourceGroup: ResourceGroup = {
+                location: answers.location,
+                name: answers.name,
+                tags: { pcs: 'Pre-configured solution' },
+            };
 
-            let template:any;
-            let templateParameters:any
-            try 
-            {
-                let filePath:string = answers['templateFilePath'];
-                let buffer:Buffer = fs.readFileSync(filePath);
+            let template: any;
+            let parameters: any;
+
+            try {
+                const filePath: string = answers.templateFilePath;
+                const buffer: Buffer = fs.readFileSync(filePath);
                 template = JSON.parse(buffer.toString());
-                templateParameters = JSON.parse(fs.readFileSync(answers['parametersFilePath']).toString());
-                templateParameters.sqlAdministratorLogin.value = answers['userName'];
-                templateParameters.sqlAdministratorLoginPassword.value = answers['sqlPassword'];
+                parameters = JSON.parse(fs.readFileSync(answers.parametersFilePath).toString());
+                parameters.sqlAdministratorLogin.value = answers.userName;
+                parameters.sqlAdministratorLoginPassword.value = answers.sqlPassword;
             } catch (error) {
                 console.log(error);
             }
 
-            let properties: DeploymentProperties = {
-                template: template,
-                parameters: templateParameters,
-                mode: 'Incremental'
+            const properties: DeploymentProperties = {
+                mode: 'Incremental',
+                parameters,
+                template,
             };
-            let deployment: Deployment = {
-                properties: properties
-            }
-            let deployUI = new DeployUI();
-            client.resourceGroups.createOrUpdate(answers['solutionName'], resourceGroup).then((resourceGroup: ResourceGroup) => {
-                deployUI.start();
-                return client.deployments.createOrUpdate(resourceGroup.name as string, answers['solutionName'] + '-deployment', deployment).then(() => {
-                    deployUI.stop();
-                    process.exit();
+            const deployment: Deployment = { properties };
+            const deployUI = new DeployUI();
+            client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
+                .then((result: ResourceGroup) => {
+                    deployUI.start();
+                    return client.deployments
+                    .createOrUpdate(result.name as string, answers.solutionName + '-deployment', deployment)
+                    .then(() => {
+                        deployUI.stop();
+                    });
+                }).catch((err: Error) => {
+                    deployUI.stop(err);
                 });
-            }).catch((err: Error) => {
-                deployUI.stop(err);
-                process.exit();
-            });
         });
     });
 }
