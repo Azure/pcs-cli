@@ -67,10 +67,6 @@ function main() {
         const subs: string[] = [];
         const deploymentManager: IDeploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
 
-        authResponse.subscriptions.map((subscription: msRestAzure.LinkedSubscription) => {
-            subs.push(subscription.name);
-        });
-
         const questions: IQuestions = new Questions();
         questions.addQuestions([
         {

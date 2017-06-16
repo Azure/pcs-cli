@@ -1,8 +1,6 @@
 cache:
   directories:
   - node_modules
-env:
-  global: 
 sudo: false
 language: node_js
 node_js:
