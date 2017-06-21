@@ -16,6 +16,10 @@ let solutionType: string = 'RemoteMonitoring';
 let template = require('../templates/remoteMonitoring.json');
 let parameters = require('../templates/remoteMonitoringParameters.json');
 
+const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
+const locations: string[] = ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia', 
+                     'Japan East', 'Japan West', 'Australia East', 'Australia Southeast'];
+
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
     .usage(`${chalk.green('<solutiontype>')} [options]`)
@@ -37,7 +41,7 @@ const program = new Command(packageJson.name)
             `    If you have any problems, do not hesitate to file an issue:`
             );
         console.log(
-            `    ${chalk.cyan('https://github.com/azure/azure-remote-monitoring-cli/issues/new')}`
+            `    ${chalk.cyan(gitHubIssuesUrl)}`
             );
         console.log();
     })
@@ -67,6 +71,10 @@ function main() {
         const subs: string[] = [];
         const deploymentManager: IDeploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
 
+        authResponse.subscriptions.map((subscription: msRestAzure.LinkedSubscription) => {
+            subs.push(subscription.name);
+        });
+
         const questions: IQuestions = new Questions();
         questions.addQuestions([
         {
@@ -77,8 +85,7 @@ function main() {
         },
         {
             // TODO: List the locations based on selected subscription
-            choices: ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia', 
-                     'Japan East', 'Japan West', 'Australia East', 'Australia Southeast'],
+            choices: locations,
             message: 'Select a location',
             name: 'location',
             type: 'list',

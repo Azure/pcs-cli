@@ -5,7 +5,7 @@
         "solutionName": {
             "type": "string",
             "metadata": {
-                "description": "The name of the suite"
+                "description": "The name of the solution"
             }
         },
         "docDBName": {
@@ -19,28 +19,28 @@
             "type": "string",
             "defaultValue": "Standard",
             "metadata": {
-                "description": "The DocumentDB Sku"
+                "description": "The DocumentDB SKU"
             }
         },
         "iotHubName": {
             "type": "string",
             "defaultValue": "[concat('hub-', uniqueString(parameters('solutionName')))]",
             "metadata": {
-                "description": "The name of the iotHub"
+                "description": "The name of Azure IoT Hub"
             }
         },
         "iotHubSku": {
             "type": "string",
             "defaultValue": "S2",
             "metadata": {
-                "description": "The Iothub Sku"
+                "description": "The Azure IoT Hub SKU"
             }
         },
         "iotHubTier": {
             "type": "string",
             "defaultValue": "Standard",
             "metadata": {
-                "description": "The Iothub tier"
+                "description": "The Azure IoT Hub tier"
             }
         },        
         "packageUri": {
@@ -55,7 +55,7 @@
             "type": "string",
             "defaultValue": "Premium",
             "metadata": {
-                "description": "The Sku type of the webapp"
+                "description": "The SKU type of the webapp"
             }
         },
         "webWorkerSize": {
@@ -87,7 +87,9 @@
         "rulesCGName": "rulescg",
         "deviceInfoCGName": "deviceinfocg",
         "telemetryCGName": "telemetrycg",
-        "suiteType": "RemoteMonitoring"
+        "solutionType": "RemoteMonitoring",
+        "repoURL": "https://github.com/ppathan/react-sample-app.git",
+        "branch": "master"
     },
     "resources": [
         {
@@ -96,7 +98,7 @@
             "name": "[parameters('docDBName')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[variables('suiteType')]"
+                "IotSolutionType": "[variables('solutionType')]"
             },
             "properties": {
                 "name": "[parameters('docDBName')]",
@@ -114,7 +116,7 @@
                 "capacity": 1
             },
             "tags": {
-                "IotSuiteType": "[variables('suiteType')]"
+                "IotSolutionType": "[variables('solutionType')]"
             },
             "properties": {
                 "location": "[variables('location')]"
@@ -150,7 +152,7 @@
             "type": "Microsoft.Web/serverfarms",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[variables('suiteType')]"
+                "IotSolutionType": "[variables('solutionType')]"
             },
             "properties": {
                 "name": "[variables('webPlanName')]",
@@ -172,7 +174,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('webPlanName'))]"
             ],
             "tags": {
-                "IotSuiteType": "[variables('suiteType')]"
+                "IotSolutionType": "[variables('solutionType')]"
             },
             "properties": {
                 "serverFarmId": "[variables('webPlanName')]",
@@ -183,15 +185,15 @@
             "resources": [
                 {
                     "apiVersion": "[variables('webVersion')]",
-                    "name": "MSDeploy",
-                    "type": "extensions",
+                    "name": "web",
+                    "type": "sourcecontrols",
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/Sites', variables('webSiteName'))]"
                     ],
                     "properties": {
-                        "packageUri": "[parameters('packageUri')]",
-                        "connectionString": "",
-                        "dbType": ""
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "[variables('branch')]",
+                        "IsManualIntegration": true
                     }
                 },
                 {
@@ -199,8 +201,7 @@
                     "name": "Appsettings",
                     "type": "config",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', variables('webSiteName'))]",
-                        "[concat('Microsoft.Web/Sites/', variables('webSiteName'), '/Extensions/MSDeploy')]"
+                        "[resourceId('Microsoft.Web/Sites', variables('webSiteName'))]"
                     ],
                     "properties": {
                         "docdb.EndpointUrl": "[reference(variables('docDBResourceId')).documentEndpoint]",

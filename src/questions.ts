@@ -8,11 +8,6 @@ export interface IQuestions {
 
 export class Questions implements Questions {
     public solutionNameRegex: RegExp = /^[a-z0-9]{1,17}$/;
-    public userNameRegex: RegExp = /^[a-zA-Z_][a-zA-Z0-9_@$#]{0,127}$/;
-
-    /* tslint:disable */
-    public passwordRegex: RegExp = /^(?!.*')((?=.*[a-z])(?=.*[0-9])(?=.*\W)|(?=.*[A-Z])(?=.*[0-9])(?=.*\W)|(?=.*[A-Z])(?=.*[a-z])(?=.*\W)|(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])|(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\W)).{8,128}$/;
-    /* tslint:enable */
 
     private _questions: Question[] ;
 
