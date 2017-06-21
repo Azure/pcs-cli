@@ -20,4 +20,12 @@ describe('Template deployment through DeploymentManager', () => {
             expect(error).toBeDefined();
         });
     });
+
+    test('Matching subscription name not found in the list should fail', () => {
+        return deploymentManager
+        .submit('test', 'testSub', 'West US')
+        .catch((error) => {
+            expect(error).toBeDefined();
+        });
+    });
 });

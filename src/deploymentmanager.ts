@@ -36,6 +36,11 @@ export class DeploymentManager implements IDeploymentManager {
                     return linkedSubs.id;
                 }
             });
+
+        if (!!!selectedSubscription || !!!selectedSubscription.length) {
+            return Promise.reject('Selected subscription name didn\'t match any of the subscriptions from the list');
+        }
+        
         const client = new ResourceManagement
             .ResourceManagementClient(this._authReponse.credentials, selectedSubscription[0].id);
         const resourceGroup: ResourceGroup = {
