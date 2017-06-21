@@ -1,0 +1,237 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "solutionName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the solution"
+            }
+        },
+        "docDBName": {
+            "type": "string",
+            "defaultValue": "[concat('docdb-', uniqueString(parameters('solutionName')))]",
+            "metadata": {
+                "description": "The name of the documentDB"
+            }
+        },
+        "docDBSku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The DocumentDB SKU"
+            }
+        },
+        "iotHubName": {
+            "type": "string",
+            "defaultValue": "[concat('hub-', uniqueString(parameters('solutionName')))]",
+            "metadata": {
+                "description": "The name of Azure IoT Hub"
+            }
+        },
+        "iotHubSku": {
+            "type": "string",
+            "defaultValue": "S2",
+            "metadata": {
+                "description": "The Azure IoT Hub SKU"
+            }
+        },
+        "iotHubTier": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The Azure IoT Hub tier"
+            }
+        },        
+        "packageUri": {
+            "type": "string",
+            "defaultValue": "https://aka.ms/azureiot/remotemonitoring/web"
+        },
+        "webJobPackageUri": {
+            "type": "string",
+            "defaultValue": "https://aka.ms/azureiot/remotemonitoring/webjob"
+        },
+        "webSku": {
+            "type": "string",
+            "defaultValue": "Premium",
+            "metadata": {
+                "description": "The SKU type of the webapp"
+            }
+        },
+        "webWorkerSize": {
+            "type": "int",
+            "defaultValue": 0,
+            "metadata": {
+                "description": "The size of the webapp"
+            }
+        },
+        "webWorkerCount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+                "description": "The webapp worker count"
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "webVersion": "2015-04-01",
+        "webPlanName": "[concat(parameters('solutionName'), '-plan')]",
+        "webSiteName": "[parameters('solutionName')]",
+        "docDBVersion": "2015-04-08",
+        "docDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('docDBName'))]",
+        "iotHubVersion": "2016-02-03",
+        "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
+        "iotHubKeyName": "iothubowner",
+        "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
+        "rulesCGName": "rulescg",
+        "deviceInfoCGName": "deviceinfocg",
+        "telemetryCGName": "telemetrycg",
+        "solutionType": "RemoteMonitoring",
+        "repoURL": "https://github.com/ppathan/react-sample-app.git",
+        "branch": "master"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('docDBVersion')]",
+            "type": "Microsoft.DocumentDb/databaseAccounts",
+            "name": "[parameters('docDBName')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSolutionType": "[variables('solutionType')]"
+            },
+            "properties": {
+                "name": "[parameters('docDBName')]",
+                "databaseAccountOfferType": "[parameters('docDBSku')]"
+            }
+        },        
+        {
+            "apiVersion": "[variables('iotHubVersion')]",
+            "type": "Microsoft.Devices/Iothubs",
+            "name": "[parameters('iotHubName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[parameters('iotHubSku')]",
+                "tier": "[parameters('iotHubTier')]",
+                "capacity": 1
+            },
+            "tags": {
+                "IotSolutionType": "[variables('solutionType')]"
+            },
+            "properties": {
+                "location": "[variables('location')]"
+            }
+        },
+        {
+            "apiVersion": "[variables('iotHubVersion')]",
+            "name": "[concat(parameters('iotHubName'), '/events/', variables('rulesCGName'))]",
+            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
+        },
+        {
+            "apiVersion": "[variables('iotHubVersion')]",
+            "name": "[concat(parameters('iotHubName'), '/events/', variables('deviceInfoCGName'))]",
+            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
+        },
+        {
+            "apiVersion": "[variables('iotHubVersion')]",
+            "name": "[concat(parameters('iotHubName'), '/events/', variables('telemetryCGName'))]",
+            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
+        },
+        {
+            "apiVersion": "[variables('webVersion')]",
+            "name": "[variables('webPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSolutionType": "[variables('solutionType')]"
+            },
+            "properties": {
+                "name": "[variables('webPlanName')]",
+                "sku": "[parameters('webSku')]",
+                "workerSize": "[parameters('webWorkerSize')]",
+                "numberOfWorkers": "[parameters('webWorkerCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('docDBName'))]",
+                "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]"
+            ]
+        },
+        {
+            "apiVersion": "[variables('webVersion')]",
+            "name": "[variables('webSiteName')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('webPlanName'))]"
+            ],
+            "tags": {
+                "IotSolutionType": "[variables('solutionType')]"
+            },
+            "properties": {
+                "serverFarmId": "[variables('webPlanName')]",
+                "siteConfig": {
+                    "AlwaysOn": true
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "[variables('webVersion')]",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', variables('webSiteName'))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "[variables('branch')]",
+                        "IsManualIntegration": true
+                    }
+                },
+                {
+                    "apiVersion": "[variables('webVersion')]",
+                    "name": "Appsettings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', variables('webSiteName'))]"
+                    ],
+                    "properties": {
+                        "docdb.EndpointUrl": "[reference(variables('docDBResourceId')).documentEndpoint]",
+                        "docdb.PrimaryAuthorizationKey": "[listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey]",
+                        "iotHub.HostName": "[reference(variables('iotHubResourceId')).hostName]",
+                        "iotHub.ConnectionString": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]",
+                        "device.TableName": "DeviceList",
+                        "ObjectTypePrefix": "",
+                        "SolutionName": "[variables('webSiteName')]"
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "iotHubHostName": {
+            "type": "string",
+            "value": "[reference(variables('iotHubResourceId')).hostName]"
+        },
+        "iotHubConnectionString": {
+            "type": "string",
+            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
+        },
+        "docDbURI": {
+            "type": "string",
+            "value": "[reference(variables('docDBResourceId')).documentEndpoint]"
+        },
+        "docDbKey": {
+            "type": "string",
+            "value": "[listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey]"
+        }
+    }
+}
