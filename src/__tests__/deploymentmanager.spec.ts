@@ -1,5 +1,5 @@
 import * as msRestAzure from 'ms-rest-azure';
-import { DeploymentManager, IDeploymentManager } from '../deploymentManager';
+import { DeploymentManager, IDeploymentManager } from '../deploymentmanager';
 
 const solutionType: string = 'RemoteMonitoring';
 
