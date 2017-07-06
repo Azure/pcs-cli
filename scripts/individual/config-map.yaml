@@ -1,0 +1,9 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: deployment-configmap
+  namespace: default
+data:
+  #IoT Hub Manager
+  iothubmanager.webservice.url: "http://iothub-manager-dotnet-svc:9002/v1"
+  iothub.conn.string: "{Your IoT Hub connection string}"

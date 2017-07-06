@@ -1,4 +1,4 @@
-import DeployUI from '../deployui';
+import DeployUI from './deployui';
 
 describe('sample test for setting up jest', () => {
   test('null check for deployUI',  () => {

@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: device-simulation-dotnet
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: device-simulation-dotnet
+    spec:
+      containers:
+      - name: device-simulation-dotnet-pod
+        image: azureiotpcs/device-simulation-dotnet:latest
+        ports:
+        - containerPort: 9003
+        env:
+        - name: PCS_DEVICESIMULATION_WEBSERVICE_PORT
+          value: "9003"
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-simulation-dotnet-svc
+  labels:
+    app: device-simulation-dotnet
+spec:
+  type: NodePort
+  ports:
+  - port: 9003
+  selector:
+    app: device-simulation-dotnet

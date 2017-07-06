@@ -1,0 +1,14 @@
+{
+    "solutionName": {
+      "value": "{Added through cli}"
+    },
+    "sshRSAPublicKey": {
+      "value": "{Provide}"
+    },
+    "servicePrincipalClientId": {
+      "value": "{Provide}"
+    },
+    "servicePrincipalClientSecret": {
+      "value": "{Provide}"
+    }
+}

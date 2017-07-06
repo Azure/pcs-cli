@@ -17,8 +17,6 @@ let template = require('../templates/remoteMonitoring.json');
 let parameters = require('../templates/remoteMonitoringParameters.json');
 
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
-const locations: string[] = ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia', 
-                     'Japan East', 'Japan West', 'Australia East', 'Australia Southeast'];
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
@@ -68,28 +66,20 @@ function main() {
      * Submit deployment
      */
     msRestAzure.interactiveLoginWithAuthResponse().then((authResponse: msRestAzure.AuthResponse) => {
-        const subs: string[] = [];
+        const subs: inquirer.ChoiceType[] = [];
         const deploymentManager: IDeploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
 
         authResponse.subscriptions.map((subscription: msRestAzure.LinkedSubscription) => {
-            subs.push(subscription.name);
+            subs.push({name: subscription.name, value: subscription.id});
         });
 
         const questions: IQuestions = new Questions();
-        questions.addQuestions([
-        {
+        questions.insertQuestion(1, {
             choices: subs,
             message: 'Select a subscription:',
             name: 'subscription',
             type: 'list',
-        },
-        {
-            // TODO: List the locations based on selected subscription
-            choices: locations,
-            message: 'Select a location',
-            name: 'location',
-            type: 'list',
-        }]);
+        });
 
         inquirer.prompt(questions.value)
         .then((answers: Answers) => {

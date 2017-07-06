@@ -1,0 +1,179 @@
+# ConfigMap - Start
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: deployment-configmap
+  namespace: default
+data:
+  #IoT Hub Manager
+  iothubmanager.webservice.url: "http://iothub-manager-dotnet-svc:9002/v1"
+  iothub.conn.string: "{Your IoT Hub connection string}"
+# ConfigMap - End
+
+---
+
+# Device Simulation - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: device-simulation-dotnet
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: device-simulation-dotnet
+    spec:
+      containers:
+      - name: device-simulation-dotnet-pod
+        image: azureiotpcs/device-simulation-dotnet:latest
+        ports:
+        - containerPort: 9003
+        env:
+        - name: PCS_DEVICESIMULATION_WEBSERVICE_PORT
+          value: "9003"
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-simulation-dotnet-svc
+  labels:
+    app: device-simulation-dotnet
+spec:
+  type: NodePort
+  ports:
+  - port: 9003
+  selector:
+    app: device-simulation-dotnet
+# Device Simulation - End
+
+---
+
+# IotHub Manager - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iothub-manager-dotnet
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: iothub-manager-dotnet
+    spec:
+      containers:
+      - name: iothub-manager-dotnet-pod
+        image: azureiotpcs/iothubmanager-dotnet:0.1.20170630-1341-SNAPSHOT
+        ports:
+        - containerPort: 9002
+        env:
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_PORT
+          value: "9002"
+        - name: PCS_IOTHUB_CONN_STRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothub.conn.string
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iothub-manager-dotnet-svc
+  labels:
+    app: iothub-manager-dotnet
+spec:
+  type: NodePort
+  ports:
+  - port: 9002
+  selector:
+    app: iothub-manager-dotnet
+# IotHub Manager - End
+
+---
+
+# Remote Monitoring WebUI - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: remote-monitoring-webui
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: remote-monitoring-webui
+    spec:
+      containers:
+      - name: remote-monitoring-webui-pod
+        image: azureiotpcs/remote-monitoring-webui:0.1-SNAPSHOT
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-monitoring-webui-svc
+  labels:
+    app: remote-monitoring-webui
+spec:
+  type: NodePort
+  ports:
+  - port: 9000
+    targetPort: 80
+  selector:
+    app: remote-monitoring-webui
+# Remote Monitoring WebUI - End
+
+---
+
+# Ingress - Start
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: remotemonitoring
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/rewrite-target: /
+    # ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+  - host: "{Friendly DNS name}"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: remote-monitoring-webui-svc
+          servicePort: 9000
+      - path: /hubmanager
+        backend:
+          serviceName: iothub-manager-dotnet-svc
+          servicePort: 9002
+      - path: /devices
+        backend:
+          serviceName: device-simulation-dotnet-svc
+          servicePort: 9003
+# Ingress - End

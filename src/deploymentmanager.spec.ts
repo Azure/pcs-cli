@@ -1,5 +1,5 @@
 import * as msRestAzure from 'ms-rest-azure';
-import { DeploymentManager, IDeploymentManager } from '../deploymentmanager';
+import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
 
 const solutionType: string = 'RemoteMonitoring';
 
@@ -17,14 +17,6 @@ describe('Template deployment through DeploymentManager', () => {
         return deploymentManager
         .submit('', '' , '')
         .catch((error) => { 
-            expect(error).toBeDefined();
-        });
-    });
-
-    test('Matching subscription name not found in the list should fail', () => {
-        return deploymentManager
-        .submit('test', 'testSub', 'West US')
-        .catch((error) => {
             expect(error).toBeDefined();
         });
     });
