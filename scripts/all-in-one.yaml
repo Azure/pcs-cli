@@ -6,7 +6,11 @@ metadata:
   namespace: default
 data:
   #IoT Hub Manager
-  iothubmanager.webservice.url: "http://iothub-manager-dotnet-svc:9002/v1"
+  iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
+  #The connection string will be of format "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key}
+  #Policy Type can have following values: iothubowner, service, device, registryRea, registryReadWrite
+  #The key will be shown in CLI window as output when remote-cli command has finished running.
+  #Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} and resrouce type "Iot Hub" then "Shared access policies" menu.
   iothub.conn.string: "{Your IoT Hub connection string}"
 # ConfigMap - End
 
@@ -16,7 +20,7 @@ data:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: device-simulation-dotnet
+  name: device-simulation
 spec:
   replicas: 2
   minReadySeconds: 10
@@ -28,10 +32,10 @@ spec:
   template:
     metadata:
       labels:
-        app: device-simulation-dotnet
+        app: device-simulation
     spec:
       containers:
-      - name: device-simulation-dotnet-pod
+      - name: device-simulation-pod
         image: azureiotpcs/device-simulation-dotnet:latest
         ports:
         - containerPort: 9003
@@ -47,15 +51,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: device-simulation-dotnet-svc
+  name: device-simulation-svc
   labels:
-    app: device-simulation-dotnet
+    app: device-simulation
 spec:
   type: NodePort
   ports:
   - port: 9003
   selector:
-    app: device-simulation-dotnet
+    app: device-simulation
 # Device Simulation - End
 
 ---
@@ -64,7 +68,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: iothub-manager-dotnet
+  name: iothub-manager
 spec:
   replicas: 2
   minReadySeconds: 10
@@ -76,10 +80,10 @@ spec:
   template:
     metadata:
       labels:
-        app: iothub-manager-dotnet
+        app: iothub-manager
     spec:
       containers:
-      - name: iothub-manager-dotnet-pod
+      - name: iothub-manager-pod
         image: azureiotpcs/iothubmanager-dotnet:0.1.20170630-1341-SNAPSHOT
         ports:
         - containerPort: 9002
@@ -95,15 +99,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: iothub-manager-dotnet-svc
+  name: iothub-manager-svc
   labels:
-    app: iothub-manager-dotnet
+    app: iothub-manager
 spec:
   type: NodePort
   ports:
   - port: 9002
   selector:
-    app: iothub-manager-dotnet
+    app: iothub-manager
 # IotHub Manager - End
 
 ---
@@ -170,10 +174,10 @@ spec:
           servicePort: 9000
       - path: /hubmanager
         backend:
-          serviceName: iothub-manager-dotnet-svc
+          serviceName: iothub-manager-svc
           servicePort: 9002
       - path: /devices
         backend:
-          serviceName: device-simulation-dotnet-svc
+          serviceName: device-simulation-svc
           servicePort: 9003
 # Ingress - End

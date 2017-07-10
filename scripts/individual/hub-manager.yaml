@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: iothub-manager-dotnet
+  name: iothub-manager
 spec:
   replicas: 2
   minReadySeconds: 10
@@ -13,11 +13,10 @@ spec:
   template:
     metadata:
       labels:
-        app: iothub-manager-dotnet
+        app: iothub-manager
     spec:
       containers:
-      - name: iothub-manager-dotnet-pod
-        # image: azureiotpcs/device-simulation-dotnet:0.1-SNAPSHOT
+      - name: iothub-manager-pod
         image: azureiotpcs/iothubmanager-dotnet:0.1.20170630-1341-SNAPSHOT
         ports:
         - containerPort: 9002
@@ -36,12 +35,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: iothub-manager-dotnet-svc
+  name: iothub-manager-svc
   labels:
-    app: iothub-manager-dotnet
+    app: iothub-manager
 spec:
   type: NodePort
   ports:
   - port: 9002
   selector:
-    app: iothub-manager-dotnet
+    app: iothub-manager
