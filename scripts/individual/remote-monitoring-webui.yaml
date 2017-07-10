@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: remote-monitoring-webui
 spec:
-  replicas: 2
+  replicas: 3
   minReadySeconds: 10
   strategy:
     type: RollingUpdate

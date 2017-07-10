@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: device-simulation
 spec:
-  replicas: 2
+  replicas: 1
   minReadySeconds: 10
   strategy:
     type: RollingUpdate

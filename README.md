@@ -21,7 +21,7 @@ Pre-requisite
 2) [Install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 > **Important** \
-Make sure both paths are set in environment variables on Windows. You should be able to type 'az' or 'kubectl' in console window and see the help content.
+Make sure the path of az and kubectl are set in environtment variables. You should be able to type 'az' or 'kubectl' in console window and see the help content.
 
 How to use it
 =============
@@ -34,8 +34,8 @@ How to use it
 5) `remote-cli`
 6) Save output result of deployment
 
-**Sample output format**
-<pre><code>
+**Sample output format:**
+``` json
 "resourceGroup" : {
     "type": "string",
     "value": "{myResourceGroupName}"
@@ -46,10 +46,10 @@ How to use it
 },
 "iotHubConnectionString": {
     "type": "string",
-    "value": "{"HostName={hubname}.azure-devices.net;
-    SharedAccessKeyName={policy type};SharedAccessKey={Access Key}"}"
+    "value": "{HostName={hubname}.azure-devices.net;
+    SharedAccessKeyName={policy type};SharedAccessKey={Access Key}}"
 }
-</pre></code>
+```
 
 > **Important** \
 To create a service principal, you must have permissions to register an application with \
@@ -68,7 +68,7 @@ If your account doesn't have the Azure Active Directory(AAD) and subscription pe
 ## Deploy Docker images through Kubernetes
 To verify access test with `kubectl get nodes`
 1) `kubectl create -f .\scripts\nginx-ingress-controller.yaml`
-2) Goto your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalance Ingress" by running `kubectl describe svc nginx-ingress`
+2) Goto your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
 3) Replace following values in file .\scripts\all-in-one.yaml
     * **{Friendly DNS name}** with value from step 2
     * **{Your IoT Hub connection string}**
