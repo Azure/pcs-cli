@@ -1,3 +1,4 @@
+import * as chalk from 'chalk';
 import * as ResourceManagement from 'azure-arm-resource';
 import * as msRestAzure from 'ms-rest-azure';
 
@@ -7,6 +8,7 @@ import DeployUI from './deployui';
 type ResourceGroup = ResourceManagement.ResourceModels.ResourceGroup;
 type Deployment = ResourceManagement.ResourceModels.Deployment;
 type DeploymentProperties = ResourceManagement.ResourceModels.DeploymentProperties;
+type DeploymentExtended = ResourceManagement.ResourceModels.DeploymentExtended;
 
 export interface IDeploymentManager {
     submit(solutionName: string, subscriptionName: string, location: string): Promise<any>;
@@ -25,24 +27,13 @@ export class DeploymentManager implements IDeploymentManager {
         this._parameters = parameters;
     }
 
-    public submit(solutionName: string, subscriptionName: string, location: string): Promise<any> {
-        if (!!!solutionName || !!!subscriptionName || !!!location) {
+    public submit(solutionName: string, subscriptionId: string, location: string): Promise<any> {
+        if (!!!solutionName || !!!subscriptionId || !!!location) {
             return Promise.reject('Solution, subscription and location cannot be empty');
         }
 
-        const selectedSubscription: msRestAzure.LinkedSubscription[] =
-            this._authReponse.subscriptions.filter((linkedSubs: msRestAzure.LinkedSubscription) => {
-                if (linkedSubs.name === subscriptionName) {
-                    return linkedSubs.id;
-                }
-            });
-
-        if (!!!selectedSubscription || !!!selectedSubscription.length) {
-            return Promise.reject('Selected subscription name didn\'t match any of the subscriptions from the list');
-        }
-        
         const client = new ResourceManagement
-            .ResourceManagementClient(this._authReponse.credentials, selectedSubscription[0].id);
+            .ResourceManagementClient(this._authReponse.credentials, subscriptionId);
         const resourceGroup: ResourceGroup = {
             location,
             // TODO: Explore if it makes sense to add more tags, e.g. Language(Java/.Net), version etc
@@ -58,12 +49,16 @@ export class DeploymentManager implements IDeploymentManager {
 
         const deployment: Deployment = { properties };
         const deployUI = new DeployUI();
-        return client.resourceGroups.createOrUpdate('rg-' + solutionName, resourceGroup)
+        return client.resourceGroups.createOrUpdate(solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 deployUI.start();
                 return client.deployments
                 .createOrUpdate(result.name as string, 'deployment-' + solutionName, deployment)
-                .then(() => {
+                .then((res: DeploymentExtended) => {
+                    const deployProperties: any = res.properties;
+                    console.log();
+                    console.log(`${chalk.green('Please save following properties:')}`);
+                    console.log(JSON.stringify(deployProperties.outputs, null, 2));
                     deployUI.stop();
                 });
             }).catch((err: Error) => {

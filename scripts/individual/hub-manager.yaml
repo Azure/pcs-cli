@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iothub-manager
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: iothub-manager
+    spec:
+      containers:
+      - name: iothub-manager-pod
+        image: azureiotpcs/iothubmanager-dotnet:0.1.20170630-1341-SNAPSHOT
+        ports:
+        - containerPort: 9002
+        env:
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.port
+        - name: PCS_IOTHUB_CONN_STRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothub.conn.string
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iothub-manager-svc
+  labels:
+    app: iothub-manager
+spec:
+  type: NodePort
+  ports:
+  - port: 9002
+  selector:
+    app: iothub-manager
