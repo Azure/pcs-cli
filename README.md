@@ -21,7 +21,7 @@ Pre-requisite
 2) [Install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 > **Important** \
-Make sure the path of az and kubectl are set in environtment variables. You should be able to type 'az' or 'kubectl' in console window and see the help content.
+Make sure the path of az and kubectl are set in environment variables. You should be able to type 'az' or 'kubectl' in console window and see the help content.
 
 How to use it
 =============
@@ -35,7 +35,7 @@ How to use it
 6) Save output result of deployment
 
 **Sample output format:**
-``` json
+```json
 "resourceGroup" : {
     "type": "string",
     "value": "{myResourceGroupName}"
@@ -68,16 +68,16 @@ If your account doesn't have the Azure Active Directory(AAD) and subscription pe
 ## Deploy Docker images through Kubernetes
 To verify access test with `kubectl get nodes`
 1) `kubectl create -f .\scripts\nginx-ingress-controller.yaml`
-2) Goto your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
+2) Go to your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
 3) Replace following values in file .\scripts\all-in-one.yaml
     * **{Friendly DNS name}** with value from step 2
     * **{Your IoT Hub connection string}**
 4) `kubectl create -f .\scripts\all-in-one.yaml`
 
 ## Verify the webui and microservices are deployed
-1) Goto {Friendly DNS name} name in browser to see the webui
-2) Goto {Friendly DNS name}/hubmanager/v1/status to see HubManager microservice status
-3) Goto {Friendly DNS name}/devices/v1/status to see Devices microservice status
+1) Go to {Friendly DNS name} name in browser to see the webui
+2) Go to {Friendly DNS name}/hubmanager/v1/status to see HubManager microservice status
+3) Go to {Friendly DNS name}/devices/v1/status to see Devices microservice status
 
 Configuration
 =============
