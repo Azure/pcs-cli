@@ -13,10 +13,10 @@ data:
   #Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} and resrouce type "Iot Hub" then "Shared access policies" menu.
   iothub.conn.string: "{Your IoT Hub connection string}"
 
-  #The connection string Azure Cosmos DB will be of format "AccountEndpoint={URI};AccountKey={Key}"
+  #The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key}"
   #The key will be shown in CLI window as output when remote-cli command has finished running.
   #Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} and resrouce type "Azure Cosmos DB account" then "Keys" menu.
-  cosmosdb.conn.string: "{Your DocumentDB connection string}"
+  docdb.conn.string: "{Your DocumentDB connection string}"
 # ConfigMap - End
 
 ---
@@ -147,7 +147,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: cosmosdb.conn.string
+              key: docdb.conn.string
 ---
 apiVersion: v1
 kind: Service

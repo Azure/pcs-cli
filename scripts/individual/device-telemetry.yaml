@@ -27,7 +27,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: cosmosdb.conn.string
+              key: docdb.conn.string
 ---
 apiVersion: v1
 kind: Service
