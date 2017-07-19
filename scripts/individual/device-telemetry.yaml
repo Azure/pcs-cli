@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: device-telemetry
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: device-telemetry
+    spec:
+      containers:
+      - name: device-telemetry-pod
+        image: azureiotpcs/device-telemetry-java:latest
+        ports:
+        - containerPort: 9004
+        env:
+        - name: PCS_DEVICE_TELEMETRY_WEBSERVICE_PORT
+          value: "9004"
+        - name: PCS_DEVICE_TELEMETRY_DOCDB_CONN_STRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: cosmosdb.conn.string
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-telemetry-svc
+  labels:
+    app: device-telemetry
+spec:
+  type: NodePort
+  ports:
+  - port: 9004
+  selector:
+    app: device-telemetry

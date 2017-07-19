@@ -126,13 +126,9 @@
             "type": "string",
             "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
         },
-        "docDbURI": {
+        "documentDBConnecitonString" : {
             "type": "string",
-            "value": "[reference(variables('docDBResourceId')).documentEndpoint]"
-        },
-        "docDbKey": {
-            "type": "string",
-            "value": "[listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey]"
+            "value": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey)]"
         }
     }
 }

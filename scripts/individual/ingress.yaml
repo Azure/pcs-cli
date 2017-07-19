@@ -24,3 +24,7 @@ spec:
         backend:
           serviceName: device-simulation-dotnet-svc
           servicePort: 9003
+      - path: /telemetry
+        backend:
+          serviceName: device-telemetry-svc
+          servicePort: 9004
