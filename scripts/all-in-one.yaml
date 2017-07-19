@@ -218,7 +218,7 @@ metadata:
     # ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: "pcs-rm-v2.westus.cloudapp.azure.com"
+  - host: "{Friendly DNS name}"
     http:
       paths:
       - path: /
