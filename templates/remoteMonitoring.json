@@ -124,11 +124,11 @@
         },
         "iotHubConnectionString": {
             "type": "string",
-            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
+            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey, ';')]"
         },
-        "documentDBConnecitonString" : {
+        "documentDBConnectionString" : {
             "type": "string",
-            "value": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey)]"
+            "value": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey, ';')]"
         }
     }
 }

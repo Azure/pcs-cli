@@ -47,11 +47,11 @@ How to use it
 "iotHubConnectionString": {
     "type": "string",
     "value": "{HostName={hubname}.azure-devices.net;
-    SharedAccessKeyName={policy type};SharedAccessKey={Access Key}}"
+    SharedAccessKeyName={policy type};SharedAccessKey={Access Key};}"
 },
 "documentDBConnecitonString" : {
     "type": "string",
-    "value": "{AccountEndpoint={URI};AccountKey={Key}}"
+    "value": "{AccountEndpoint={URI};AccountKey={Key};}"
 }
 ```
 
@@ -76,20 +76,20 @@ To verify access test with `kubectl get nodes`
 1) `kubectl create -f .\scripts\nginx-ingress-controller.yaml`
 2) Go to your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
 3) Replace following values in file .\scripts\all-in-one.yaml
-    * **{Friendly DNS name}** with value from step 2
+    * **{DNS}** with value from step 2
     * **{Your IoT Hub connection string}**
     * **{Your DocumentDB connection string}**
 4) `kubectl create -f .\scripts\all-in-one.yaml`
 
 ## Verify the webui and microservices are deployed
-1) Go to {Friendly DNS name} name in browser to see the webui
-2) Go to {Friendly DNS name}/hubmanager/v1/status to see HubManager microservice status
-3) Go to {Friendly DNS name}/devices/v1/status to see Devices microservice status
+1) Go to {DNS} name in browser to see the webui
+2) Go to {DNS}/hubmanager/v1/status to see HubManager microservice status
+3) Go to {DNS}/devices/v1/status to see Devices microservice status
 
 Configuration
 =============
 
-To view Kubernetes dashboard run following command which will start local web proxy for your cluster (it will start a local server to listening 127.0.0.1:8001/ui) \
+To view Kubernetes dashboard run following command which will start local web proxy for your cluster (it will start a local server at 127.0.0.1:8001/ui) \
 `az acs kubernetes browse -g {myResourceGroupName} -n {myClusterName} --ssh-key-file {path to ssh file}`
 
 Other documents

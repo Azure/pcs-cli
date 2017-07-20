@@ -9,7 +9,7 @@ metadata:
     # ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: "{Friendly DNS name}"
+  - host: "{DNS}"
     http:
       paths:
       - path: /

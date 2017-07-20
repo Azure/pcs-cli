@@ -5,17 +5,20 @@ metadata:
   name: deployment-configmap
   namespace: default
 data:
-  #IoT Hub Manager
+  # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
-  #The connection string will be of format "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key}
-  #Policy Type can have following values: iothubowner, service, device, registryRea, registryReadWrite
-  #The key will be shown in CLI window as output when remote-cli command has finished running.
-  #Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} and resrouce type "Iot Hub" then "Shared access policies" menu.
+  # The connection string will be of format 
+  # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
+  # Policy Type can have following values: iothubowner, service, device, registryRea, registryReadWrite
+  # The key will be shown in CLI window as output when remote-cli command has finished running.
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # and resource type "Iot Hub" then "Shared access policies" menu.
   iothub.conn.string: "{Your IoT Hub connection string}"
 
-  #The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key}"
-  #The key will be shown in CLI window as output when remote-cli command has finished running.
-  #Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} and resrouce type "Azure Cosmos DB account" then "Keys" menu.
+  # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
+  # The key will be shown in CLI window as output when remote-cli command has finished running.
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # and resource type "Azure Cosmos DB account" then "Keys" menu.
   docdb.conn.string: "{Your DocumentDB connection string}"
 # ConfigMap - End
 
@@ -218,7 +221,7 @@ metadata:
     # ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: "{Friendly DNS name}"
+  - host: "{DNS}"
     http:
       paths:
       - path: /
