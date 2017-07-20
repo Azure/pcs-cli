@@ -49,7 +49,7 @@ How to use it
     "value": "{HostName={hubname}.azure-devices.net;
     SharedAccessKeyName={policy type};SharedAccessKey={Access Key};}"
 },
-"documentDBConnecitonString" : {
+"documentDBConnectionString" : {
     "type": "string",
     "value": "{AccountEndpoint={URI};AccountKey={Key};}"
 }
