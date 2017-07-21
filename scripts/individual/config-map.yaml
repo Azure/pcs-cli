@@ -6,9 +6,9 @@ metadata:
 data:
   # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
-  # The connection string will be of format 
-  # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
-  # Policy Type can have following values: iothubowner, service, device, registryRea, registryReadWrite
+  # The connection string will be of format "HostName={hubname}.azure-devices.net;
+  # SharedAccessKeyName={policy type};SharedAccessKey={Access Key};" Policy Type can
+  # have following values: iothubowner, service, device, registryRead, registryReadWrite
   # The key will be shown in CLI window as output when remote-cli command has finished running.
   # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
   # and resource type "Iot Hub" then "Shared access policies" menu.
