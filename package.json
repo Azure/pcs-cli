@@ -1,7 +1,7 @@
 {
-  "name": "remote-cli",
+  "name": "azure-iot-pcs-cli",
   "version": "1.0.0",
-  "description": "",
+  "description": "CLI for deploying pre-configured IoT solutions through Azure",
   "main": "./publish/index.js",
   "scripts": {
     "start": "npm run build && npm test",
@@ -25,11 +25,10 @@
     ]
   },
   "bin": {
-    "remote-cli": "./publish/index.js"
+    "pcs": "./publish/index.js"
   },
   "keywords": [
-    "remote",
-    "monitoring",
+    "remotemonitoring",
     "pcs",
     "cli"
   ],

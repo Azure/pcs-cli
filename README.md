@@ -28,10 +28,10 @@ How to use it
 
 ## Deploying azure resources for remote monitoring
 1) Clone the project
-2) `npm install -g`
+2) `npm install`
 3) `npm start`
 4) `npm link`
-5) `remote-cli`
+5) `pcs`
 6) Save output result of deployment
 
 **Sample output format:**
