@@ -29,8 +29,8 @@ How to use it
 ## Deploying azure resources for remote monitoring
 1) Clone the project
 2) `npm install -g`
-3) `npm link`
-4) `npm start`
+3) `npm start`
+4) `npm link`
 5) `remote-cli`
 6) Save output result of deployment
 
@@ -47,7 +47,11 @@ How to use it
 "iotHubConnectionString": {
     "type": "string",
     "value": "{HostName={hubname}.azure-devices.net;
-    SharedAccessKeyName={policy type};SharedAccessKey={Access Key}}"
+    SharedAccessKeyName={policy type};SharedAccessKey={Access Key};}"
+},
+"documentDBConnectionString" : {
+    "type": "string",
+    "value": "{AccountEndpoint={URI};AccountKey={Key};}"
 }
 ```
 
@@ -59,30 +63,33 @@ subscription. To see if you have the required permissions, [check in the Portal]
 ## Create a Container Service for Kubernetes
 1) `az login`
 2) `az account set --subscription {subscriptionId from step 6}`
-3) `az acs create -n {myClusterName} -d {myDNSPrefix} -g {resouceGroup from step 6} --generate-ssh-keys --orchestrator-type kubernetes`
-4) `az acs kubernetes get-credentials --resource-group={myResorceGroupName} --name={myClusterName} --ssh-key-file {path to ssh key file to use}`
+3) `az acs create -n {myClusterName} -d {myDNSPrefix} -g {resouceGroup from step 6} -t kubernetes --generate-ssh-keys`
+4) `az acs kubernetes get-credentials -g {myResorceGroupName} -n {myClusterName} --ssh-key-file {path to ssh key file to use}`
 
 > **Important** \
-If your account doesn't have the Azure Active Directory(AAD) and subscription permissions to create a service principal, the command generates an error similar to **Insufficient privileges to complete the operation.**
+If your account doesn't have the Azure Active Directory(AAD) and subscription permissions to create a service principal, the command generates an error similar to **Insufficient privileges to complete the operation.** \
+Also when using **--generate-ssh-keys** if one already exists under ~/.ssh/id_rsa then it will be used
+
 
 ## Deploy Docker images through Kubernetes
 To verify access test with `kubectl get nodes`
 1) `kubectl create -f .\scripts\nginx-ingress-controller.yaml`
 2) Go to your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
 3) Replace following values in file .\scripts\all-in-one.yaml
-    * **{Friendly DNS name}** with value from step 2
+    * **{DNS}** with value from step 2
     * **{Your IoT Hub connection string}**
+    * **{Your DocumentDB connection string}**
 4) `kubectl create -f .\scripts\all-in-one.yaml`
 
 ## Verify the webui and microservices are deployed
-1) Go to {Friendly DNS name} name in browser to see the webui
-2) Go to {Friendly DNS name}/hubmanager/v1/status to see HubManager microservice status
-3) Go to {Friendly DNS name}/devices/v1/status to see Devices microservice status
+1) Go to {DNS} name in browser to see the webui
+2) Go to {DNS}/hubmanager/v1/status to see HubManager microservice status
+3) Go to {DNS}/devices/v1/status to see Devices microservice status
 
 Configuration
 =============
 
-To view Kubernetes dashboard run following command \
+To view Kubernetes dashboard run following command which will start local web proxy for your cluster (it will start a local server at 127.0.0.1:8001/ui) \
 `az acs kubernetes browse -g {myResourceGroupName} -n {myClusterName} --ssh-key-file {path to ssh file}`
 
 Other documents
