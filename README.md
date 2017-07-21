@@ -2,17 +2,17 @@
 [![Issues][issues-badge]][issues-url]
 [![Gitter][gitter-badge]][gitter-url]
 
-Azure Remote Monitoring CLI
+Azure IoT PCS CLI
 =================
 
-CLI for deploying remote monitoring solution into a user's subscription
+CLI for deploying an IoT pre-configured solution into a user's subscription
 
 Overview
 ========
 
-To execute the script run `remote-cli` the prompts will walk you through steps \
-To get help run `remote-cli -h` \
-To get the version run `remote-cli -v`
+To execute the script run `pcs` the prompts will walk you through steps \
+To get help run `pcs -h` \
+To get the version run `pcs -v`
 
 Pre-requisite
 =============
@@ -26,7 +26,7 @@ Make sure the path of az and kubectl are set in environment variables. You shoul
 How to use it
 =============
 
-## Deploying azure resources for remote monitoring
+## Deploying azure resources for PCS
 1) Clone the project
 2) `npm install`
 3) `npm start`
@@ -98,9 +98,9 @@ Other documents
 * [Contributing and Development setup](CONTRIBUTING.md)
 * [Development setup, scripts and tools](DEVELOPMENT.md)
 
-[build-badge]: https://img.shields.io/travis/Azure/azure-remote-monitoring-cli.svg
-[build-url]: https://travis-ci.com/Azure/azure-remote-monitoring-cli
-[issues-badge]: https://img.shields.io/github/issues/azure/azure-remote-monitoring-cli.svg
-[issues-url]: https://github.com/azure/azure-remote-monitoring-cli/issues
+[build-badge]: https://img.shields.io/travis/Azure/iot-pcs-cli.svg
+[build-url]: https://travis-ci.com/Azure/iot-pcs-cli
+[issues-badge]: https://img.shields.io/github/issues/azure/iot-pcs-cli.svg
+[issues-url]: https://github.com/azure/iot-pcs-cli/issues
 [gitter-badge]: https://img.shields.io/gitter/room/azure/iot-pcs.js.svg
 [gitter-url]: https://gitter.im/azure/iot-pcs
