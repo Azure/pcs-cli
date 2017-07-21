@@ -6,7 +6,7 @@ import * as inquirer from 'inquirer';
 import * as msRestAzure from 'ms-rest-azure';
 
 import { Answers, Question } from 'inquirer';
-import { DeploymentManager, IDeploymentManager} from './deploymentmanager';
+import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
 import { Questions, IQuestions } from './questions';
 import { Command } from 'commander';
 

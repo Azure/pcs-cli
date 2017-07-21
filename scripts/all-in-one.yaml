@@ -5,13 +5,21 @@ metadata:
   name: deployment-configmap
   namespace: default
 data:
-  #IoT Hub Manager
+  # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
-  #The connection string will be of format "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key}
-  #Policy Type can have following values: iothubowner, service, device, registryRea, registryReadWrite
-  #The key will be shown in CLI window as output when remote-cli command has finished running.
-  #Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} and resrouce type "Iot Hub" then "Shared access policies" menu.
+  # The connection string will be of format "HostName={hubname}.azure-devices.net;
+  # SharedAccessKeyName={policy type};SharedAccessKey={Access Key};" Policy Type can
+  # have following values: iothubowner, service, device, registryRead, registryReadWrite
+  # The key will be shown in CLI window as output when remote-cli command has finished running.
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # and resource type "Iot Hub" then "Shared access policies" menu.
   iothub.conn.string: "{Your IoT Hub connection string}"
+
+  # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
+  # The key will be shown in CLI window as output when remote-cli command has finished running.
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # and resource type "Azure Cosmos DB account" then "Keys" menu.
+  docdb.conn.string: "{Your DocumentDB connection string}"
 # ConfigMap - End
 
 ---
@@ -84,7 +92,7 @@ spec:
     spec:
       containers:
       - name: iothub-manager-pod
-        image: azureiotpcs/iothubmanager-dotnet:0.1.20170630-1341-SNAPSHOT
+        image: azureiotpcs/iothubmanager-dotnet:latest
         ports:
         - containerPort: 9002
         env:
@@ -112,6 +120,54 @@ spec:
 
 ---
 
+# Device Telemetry - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: device-telemetry
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: device-telemetry
+    spec:
+      containers:
+      - name: device-telemetry-pod
+        image: azureiotpcs/device-telemetry-java:latest
+        ports:
+        - containerPort: 9004
+        env:
+        - name: PCS_DEVICE_TELEMETRY_WEBSERVICE_PORT
+          value: "9004"
+        - name: PCS_DEVICE_TELEMETRY_DOCDB_CONN_STRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.conn.string
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-telemetry-svc
+  labels:
+    app: device-telemetry
+spec:
+  type: NodePort
+  ports:
+  - port: 9004
+  selector:
+    app: device-telemetry
+# Device Telemetry - End
+
+---
+
 # Remote Monitoring WebUI - Start
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -132,7 +188,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/remote-monitoring-webui:0.1-SNAPSHOT
+        image: azureiotpcs/remote-monitoring-webui:latest
         ports:
         - containerPort: 80
 ---
@@ -165,7 +221,7 @@ metadata:
     # ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: "{Friendly DNS name}"
+  - host: "{DNS}"
     http:
       paths:
       - path: /
@@ -180,4 +236,8 @@ spec:
         backend:
           serviceName: device-simulation-svc
           servicePort: 9003
+      - path: /telemetry
+        backend:
+          serviceName: device-telemetry-svc
+          servicePort: 9004
 # Ingress - End
