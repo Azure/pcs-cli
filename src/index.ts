@@ -13,8 +13,8 @@ import { Command } from 'commander';
 const packageJson = require('../package.json');
 
 let solutionType: string = 'remotemonitoring';
-let template = require('../'+ solutionType + '/templates/remoteMonitoring.json');
-let parameters = require('../'+ solutionType + '/templates/remoteMonitoringParameters.json');
+let template = require('../' + solutionType + '/templates/remoteMonitoring.json');
+let parameters = require('../' + solutionType + '/templates/remoteMonitoringParameters.json');
 
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
