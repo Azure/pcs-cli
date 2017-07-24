@@ -5,14 +5,14 @@
 Azure IoT PCS CLI
 =================
 
-CLI for deploying an IoT pre-configured solution into a user's subscription
+Command Line Interface for deploying an IoT pre-configured solution into a user's subscription
 
 Overview
 ========
 
-To execute the script run `pcs` the prompts will walk you through steps \
-To get help run `pcs -h` \
-To get the version run `pcs -v`
+To execute the script run `pcs` then the prompts will walk you through steps \
+To get help run `pcs -h` or `--help` \
+To get the version run `pcs -v` or `--version`
 
 Pre-requisite
 =============
