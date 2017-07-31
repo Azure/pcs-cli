@@ -1,0 +1,63 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: stream-analytics
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: stream-analytics
+    spec:
+      containers:
+      - name: stream-analytics-pod
+        image: azureiotpcs/stream-analytics-java:latest
+        ports:
+        - containerPort: 9023
+        env:
+        - name: PCS_STREAMANALYTICS_WEBSERVICE_PORT
+          value: "9023"
+        - name: PCS_STREAMANALYTICS_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_IOTHUBREACT_HUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.name
+        - name: PCS_IOTHUBREACT_HUB_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.endpoint
+        - name: PCS_IOTHUBREACT_HUB_PARTITIONS
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.partitions
+        - name: PCS_IOTHUBREACT_ACCESS_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.access.connstring
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stream-analytics-svc
+  labels:
+    app: stream-analytics
+spec:
+  type: NodePort
+  ports:
+  - port: 9023
+  selector:
+    app: stream-analytics

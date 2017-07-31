@@ -5,6 +5,8 @@ metadata:
   name: deployment-configmap
   namespace: default
 data:
+  # Please add values for lables that are in format "{...}" in this file. Other values should not be changed.
+
   # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
   # The connection string will be of format "HostName={hubname}.azure-devices.net;
@@ -13,13 +15,23 @@ data:
   # The key will be shown in CLI window as output when remote-cli command has finished running.
   # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
   # and resource type "Iot Hub" then "Shared access policies" menu.
-  iothub.conn.string: "{Your IoT Hub connection string}"
+  iothub.connstring: "{IoT Hub connection string}"
 
   # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
   # The key will be shown in CLI window as output when remote-cli command has finished running.
   # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
   # and resource type "Azure Cosmos DB account" then "Keys" menu.
-  docdb.conn.string: "{Your DocumentDB connection string}"
+  docdb.connstring: "{DocumentDB connection string}"
+
+  # Storage Adapter
+  storageadapter.webservice.url: "http://uiconfig-svc:9022/v1"
+  storagadapter.collectionlink: "{Storage Adapter DocumentDB collection link}"
+
+  # Stream Analytics
+  iothubreact.hub.name: "{Iot Hub React name}"
+  iothubreact.hub.endpoint: "{Iot Hub React endpoint}"
+  iothubreact.hub.partitions: "{Iot Hub React partitions}"
+  iothubreact.access.connstring: "{Iot Hub React connection string}"
 # ConfigMap - End
 
 ---
@@ -102,7 +114,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothub.conn.string
+              key: iothub.connstring
 ---
 apiVersion: v1
 kind: Service
@@ -150,7 +162,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: docdb.conn.string
+              key: docdb.connstring
 ---
 apiVersion: v1
 kind: Service
@@ -165,6 +177,175 @@ spec:
   selector:
     app: device-telemetry
 # Device Telemetry - End
+
+---
+
+# Storage Adapter - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: storage-adapter
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: storage-adapter
+    spec:
+      containers:
+      - name: storage-adapter-pod
+        image: azureiotpcs/storage-adapter-dotnet:latest
+        ports:
+        - containerPort: 9022
+        env:
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_PORT
+          value: "9022"
+        - name: PCS_STORAGEADAPTER_CONTAINER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storagadapter.collectionlink
+        - name: PCS_STORAGE_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storage-adapter-svc
+  labels:
+    app: storage-adapter
+spec:
+  type: NodePort
+  ports:
+  - port: 9022
+  selector:
+    app: storage-adapter
+# Storage Adapter - End
+
+---
+
+# Stream Analytics - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: stream-analytics
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: stream-analytics
+    spec:
+      containers:
+      - name: stream-analytics-pod
+        image: azureiotpcs/stream-analytics-java:latest
+        ports:
+        - containerPort: 9023
+        env:
+        - name: PCS_STREAMANALYTICS_WEBSERVICE_PORT
+          value: "9023"
+        - name: PCS_STREAMANALYTICS_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_IOTHUBREACT_HUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.name
+        - name: PCS_IOTHUBREACT_HUB_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.endpoint
+        - name: PCS_IOTHUBREACT_HUB_PARTITIONS
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.partitions
+        - name: PCS_IOTHUBREACT_ACCESS_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.access.connstring
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stream-analytics-svc
+  labels:
+    app: stream-analytics
+spec:
+  type: NodePort
+  ports:
+  - port: 9023
+  selector:
+    app: stream-analytics
+# Stream Analytics - End
+
+---
+
+# UI Config - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: uiconfig
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: uiconfig
+    spec:
+      containers:
+      - name: uiconfig-pod
+        image: azureiotpcs/uiconfig-dotnet:latest
+        ports:
+        - containerPort: 9005
+        env:
+        - name: PCS_UICONFIG_WEBSERVICE_PORT
+          value: "9005"
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uiconfig-svc
+  labels:
+    app: uiconfig
+spec:
+  type: NodePort
+  ports:
+  - port: 9005
+  selector:
+    app: uiconfig
+# UI Config - End
 
 ---
 

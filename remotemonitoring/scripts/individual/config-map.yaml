@@ -4,6 +4,8 @@ metadata:
   name: deployment-configmap
   namespace: default
 data:
+  # Please add values for lables that are in format "{...}" in this file. Other values should not be changed.
+
   # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
   # The connection string will be of format "HostName={hubname}.azure-devices.net;
@@ -12,10 +14,20 @@ data:
   # The key will be shown in CLI window as output when remote-cli command has finished running.
   # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
   # and resource type "Iot Hub" then "Shared access policies" menu.
-  iothub.conn.string: "{Your IoT Hub connection string}"
+  iothub.connstring: "{IoT Hub connection string}"
 
   # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
   # The key will be shown in CLI window as output when remote-cli command has finished running.
   # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
   # and resource type "Azure Cosmos DB account" then "Keys" menu.
-  docdb.conn.string: "{Your DocumentDB connection string}"
+  docdb.connstring: "{DocumentDB connection string}"
+
+  # Storage Adapter
+  storageadapter.webservice.url: "http://uiconfig-svc:9022/v1"
+  storagadapter.collectionlink: "{Storage Adapter DocumentDB collection link}"
+
+  # Stream Analytics
+  iothubreact.hub.name: "{Iot Hub React name}"
+  iothubreact.hub.endpoint: "{Iot Hub React endpoint}"
+  iothubreact.hub.partitions: "{Iot Hub React partitions}"
+  iothubreact.access.connstring: "{Iot Hub React connection string}"
