@@ -9,22 +9,26 @@ metadata:
     # ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: "{DNS}"
+  - host: "pcs-rm-v2.westus.cloudapp.azure.com"
     http:
       paths:
       - path: /
         backend:
           serviceName: remote-monitoring-webui-svc
           servicePort: 9000
-      - path: /hubmanager
+      - path: /iothubmanager
         backend:
-          serviceName: iothub-manager-dotnet-svc
+          serviceName: iothub-manager-svc
           servicePort: 9002
-      - path: /devices
+      - path: /devicesimulation
         backend:
-          serviceName: device-simulation-dotnet-svc
+          serviceName: device-simulation-svc
           servicePort: 9003
-      - path: /telemetry
+      - path: /devicetelemetry
         backend:
           serviceName: device-telemetry-svc
           servicePort: 9004
+      - path: /uiconfig
+        backend:
+          serviceName: uiconfig-svc
+          servicePort: 9005

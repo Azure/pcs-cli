@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: uiconfig-pod
-        image: azureiotpcs/uiconfig-dotnet:latest
+        image: azureiotpcs/pcs-ui-config-dotnet:latest
         ports:
         - containerPort: 9005
         env:

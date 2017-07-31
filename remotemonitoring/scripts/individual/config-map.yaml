@@ -23,7 +23,7 @@ data:
   docdb.connstring: "{DocumentDB connection string}"
 
   # Storage Adapter
-  storageadapter.webservice.url: "http://uiconfig-svc:9022/v1"
+  storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
   storagadapter.collectionlink: "{Storage Adapter DocumentDB collection link}"
 
   # Stream Analytics

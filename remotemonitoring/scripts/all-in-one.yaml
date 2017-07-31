@@ -24,7 +24,7 @@ data:
   docdb.connstring: "{DocumentDB connection string}"
 
   # Storage Adapter
-  storageadapter.webservice.url: "http://uiconfig-svc:9022/v1"
+  storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
   storagadapter.collectionlink: "{Storage Adapter DocumentDB collection link}"
 
   # Stream Analytics
@@ -200,7 +200,7 @@ spec:
     spec:
       containers:
       - name: storage-adapter-pod
-        image: azureiotpcs/storage-adapter-dotnet:latest
+        image: azureiotpcs/pcs-storage-adapter-dotnet:latest
         ports:
         - containerPort: 9022
         env:
@@ -253,7 +253,7 @@ spec:
     spec:
       containers:
       - name: stream-analytics-pod
-        image: azureiotpcs/stream-analytics-java:latest
+        image: azureiotpcs/iot-stream-analytics-java:latest
         ports:
         - containerPort: 9023
         env:
@@ -321,7 +321,7 @@ spec:
     spec:
       containers:
       - name: uiconfig-pod
-        image: azureiotpcs/uiconfig-dotnet:latest
+        image: azureiotpcs/pcs-ui-config-dotnet:latest
         ports:
         - containerPort: 9005
         env:
@@ -409,16 +409,20 @@ spec:
         backend:
           serviceName: remote-monitoring-webui-svc
           servicePort: 9000
-      - path: /hubmanager
+      - path: /iothubmanager
         backend:
           serviceName: iothub-manager-svc
           servicePort: 9002
-      - path: /devices
+      - path: /devicesimulation
         backend:
           serviceName: device-simulation-svc
           servicePort: 9003
-      - path: /telemetry
+      - path: /devicetelemetry
         backend:
           serviceName: device-telemetry-svc
           servicePort: 9004
+      - path: /uiconfig
+        backend:
+          serviceName: uiconfig-svc
+          servicePort: 9005
 # Ingress - End
