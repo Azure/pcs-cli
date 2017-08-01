@@ -5,7 +5,7 @@ metadata:
   name: deployment-configmap
   namespace: default
 data:
-  # Please add values for lables that are in format "{...}" in this file. Other values should not be changed.
+  # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
 
   # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
