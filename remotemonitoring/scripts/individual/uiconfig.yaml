@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: device-telemetry
+  name: uiconfig
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -13,31 +13,31 @@ spec:
   template:
     metadata:
       labels:
-        app: device-telemetry
+        app: uiconfig
     spec:
       containers:
-      - name: device-telemetry-pod
-        image: azureiotpcs/device-telemetry-java:latest
+      - name: uiconfig-pod
+        image: azureiotpcs/pcs-ui-config-dotnet:latest
         ports:
-        - containerPort: 9004
+        - containerPort: 9005
         env:
-        - name: PCS_DEVICE_TELEMETRY_WEBSERVICE_PORT
-          value: "9004"
-        - name: PCS_DEVICE_TELEMETRY_DOCDB_CONN_STRING
+        - name: PCS_UICONFIG_WEBSERVICE_PORT
+          value: "9005"
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: docdb.connstring
+              key: storageadapter.webservice.url
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: device-telemetry-svc
+  name: uiconfig-svc
   labels:
-    app: device-telemetry
+    app: uiconfig
 spec:
   type: NodePort
   ports:
-  - port: 9004
+  - port: 9005
   selector:
-    app: device-telemetry
+    app: uiconfig
