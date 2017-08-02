@@ -104,7 +104,7 @@ spec:
     spec:
       containers:
       - name: iothub-manager-pod
-        image: azureiotpcs/iothubmanager-dotnet:latest
+        image: azureiotpcs/iothub-manager-dotnet:latest
         ports:
         - containerPort: 9002
         env:
@@ -369,7 +369,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/remote-monitoring-webui:latest
+        image: azureiotpcs/pcs-remote-monitoring-webui:latest
         ports:
         - containerPort: 80
 ---
