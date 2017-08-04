@@ -1,0 +1,488 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "solutionName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the solution"
+            }
+        },
+        "storageName": {
+            "type": "string",
+            "defaultValue": "[concat('storage', uniqueString(parameters('solutionName')))]",
+            "metadata": {
+                "description": "The name of the storageAccount"
+            }
+        },
+        "storageKind": {
+            "type": "string",
+            "defaultValue": "Storage",
+            "metadata": {
+                "description": "The kind of the storage account."
+            }
+        },
+        "storageSkuName": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "metadata": {
+                "description": "The storage Sku name"
+            }
+        },
+        "storageEndpointSuffix": {
+            "type": "string",
+            "defaultValue": "core.windows.net",
+            "allowedValues": [
+                "core.windows.net", "core.chinacloudapi.cn", "core.cloudapi.de"
+            ],
+            "metadata": {
+                "description": "Suffix added to Azure Storage hostname"
+            }
+        },
+        "docDBName": {
+            "type": "string",
+            "defaultValue": "[concat('docdb-', uniqueString(parameters('solutionName')))]",
+            "metadata": {
+                "description": "The name of the documentDB"
+            }
+        },
+        "docDBSku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The DocumentDB SKU"
+            }
+        },
+        "iotHubName": {
+            "type": "string",
+            "defaultValue": "[concat('hub-', uniqueString(parameters('solutionName')))]",
+            "metadata": {
+                "description": "The name of Azure IoT Hub"
+            }
+        },
+        "iotHubSku": {
+            "type": "string",
+            "defaultValue": "S1",
+            "metadata": {
+                "description": "The Azure IoT Hub SKU"
+            }
+        },
+        "iotHubTier": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The Azure IoT Hub tier"
+            }
+        },
+        "VMSize": {
+            "type": "string",
+            "defaultValue": "Standard_D2_v2",
+            "allowedValues": [
+                    "Standard_A0", "Standard_A1", "Standard_A2", "Standard_A3", "Standard_A4", "Standard_A5",
+                    "Standard_A6", "Standard_A7", "Standard_A8", "Standard_A9", "Standard_A10", "Standard_A11",
+                    "Standard_D1", "Standard_D2", "Standard_D3", "Standard_D4",
+                    "Standard_D11", "Standard_D12", "Standard_D13", "Standard_D14",
+                    "Standard_D1_v2", "Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_D5_v2",
+                    "Standard_D11_v2", "Standard_D12_v2", "Standard_D13_v2", "Standard_D14_v2",
+                    "Standard_G1", "Standard_G2", "Standard_G3", "Standard_G4", "Standard_G5",
+                    "Standard_DS1", "Standard_DS2", "Standard_DS3", "Standard_DS4",
+                    "Standard_DS11", "Standard_DS12", "Standard_DS13", "Standard_DS14",
+                    "Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5"
+            ],
+            "metadata": {
+                "description": "The size of the Virtual Machine."
+            }
+        },
+        "ubuntuOSVersion": {
+            "type": "string",
+            "defaultValue": "16.04.0-LTS",
+            "allowedValues": [
+                "12.04.5-LTS",
+                "14.04.5-LTS",
+                "15.10",
+                "16.04.0-LTS"
+            ],
+            "metadata": {
+                "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "azureuser",
+            "metadata": {
+                "description": "User name for the Linux Virtual Machines."
+            }
+        },
+        "adminPassword": {
+            "type": "string",
+            "defaultValue": "Passw0rd!",
+            "metadata": {
+                "description": "User name for the Linux Virtual Machines."
+            }
+        },
+        "runAllContainersUri": {
+            "type": "string",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/run_containers/remotemonitoring/scripts/run-all-containers.sh?token=AB6vs1DmorJRn2BR1KJaVSDwbO1lb3Duks5ZjENuwA%3D%3D",
+             "metadata": {
+                "description": "The Uri of the script to run all containers."
+            }
+        },
+        "vmFQDNSuffix": {
+            "type": "string",
+            "defaultValue": "cloudapp.azure.com",
+            "allowedValues": [
+                "cloudapp.azure.com",
+                "cloudapp.chinacloudapi.cn"
+            ]
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "docDBVersion": "2015-04-08",
+        "docDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('docDBName'))]",
+        "iotHubVersion": "2016-02-03",
+        "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
+        "iotHubKeyName": "iothubowner",
+        "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
+        "suiteType": "RemoteMonitoring",
+        "storageVersion": "2016-01-01",
+        "computeVmVersion": "2017-03-30",
+        "netVersion": "2017-06-01",
+        "imagePublisher": "Canonical",
+        "imageOffer": "UbuntuServer",
+        "OSDiskName": "[concat(parameters('solutionName'), '-osdisk')]",
+        "nicName": "[concat(parameters('solutionName'), '-nic')]",
+        "addressPrefix": "10.0.0.0/16",
+        "subnetName": "default",
+        "subnetPrefix": "10.0.0.0/24",
+        "vmStorageAccountContainerName": "vhds",
+        "vmName": "[concat(parameters('solutionName'), '-vm')]",
+        "virtualNetworkName": "[concat(parameters('solutionName'), '-vnet')]",
+        "networkSecurityGroup": "[concat(parameters('solutionName'), '-nsg')]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+        "publicIpName": "[concat(parameters('solutionName'), '-public-ip')]",
+        "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]"
+    },
+    "resources": [
+          {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageName')]",
+            "apiVersion": "[variables('storageVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[variables('suiteType')]"
+            },
+            "kind": "[parameters('storageKind')]",
+            "sku": {
+                "name": "[parameters('storageSkuName')]"
+            }
+        },
+        {
+            "apiVersion": "[variables('docDBVersion')]",
+            "type": "Microsoft.DocumentDb/databaseAccounts",
+            "name": "[parameters('docDBName')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSolutionType": "[variables('suiteType')]"
+            },
+            "properties": {
+                "name": "[parameters('docDBName')]",
+                "databaseAccountOfferType": "[parameters('docDBSku')]"
+            }
+        },
+        {
+            "apiVersion": "[variables('iotHubVersion')]",
+            "type": "Microsoft.Devices/Iothubs",
+            "name": "[parameters('iotHubName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[parameters('iotHubSku')]",
+                "tier": "[parameters('iotHubTier')]",
+                "capacity": 1
+            },
+            "tags": {
+                "IotSolutionType": "[variables('suiteType')]"
+            },
+            "properties": {
+                "location": "[variables('location')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroup')]",
+            "apiVersion": "[variables('netVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "WebHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "HubManagerHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9002",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "StorageAdapterHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9022",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "DeviceSimulationHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9003",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 140,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "TelemetryHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9004",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 150,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "UIConfigHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9005",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 160,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "StreamAnalyticsHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9023",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 170,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "apiVersion": "[variables('netVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIpName')]",
+            "apiVersion": "2016-03-30",
+            "location": "[variables('location')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(variables('vmName'))]"
+                },
+                "idleTimeoutInMinutes": 4
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "apiVersion": "[variables('netVersion')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroup'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.0.0.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmName')]",
+            "apiVersion": "[variables('computeVmVersion')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[parameters('ubuntuOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "osdisk1",
+                        "vhd": {
+                            "uri": "[concat('http://',parameters('storageName'),'.blob.',parameters('storageEndpointSuffix'),'/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": "true",
+                        "storageUri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('storageName')), '2016-01-01').primaryEndpoints.blob)]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmName'), '/', 'DockerExtension')]",
+            "apiVersion": "[variables('computeVmVersion')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "DockerExtension",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {}
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmName'), '/', 'scriptextensions')]",
+            "apiVersion": "[variables('computeVmVersion')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmName'), 'DockerExtension')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[parameters('runAllContainersUri')]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('sh run-all-containers.sh localhost 80 latest ', '\"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey), '\" ', '\"', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey, '\"' )]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "resourceGroup" : {
+            "type": "string",
+            "value": "[resourceGroup().name]"
+        },
+        "iotHubHostName": {
+            "type": "string",
+            "value": "[reference(variables('iotHubResourceId')).hostName]"
+        },
+        "iotHubConnectionString": {
+            "type": "string",
+            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
+        },
+        "docDbURI": {
+            "type": "string",
+            "value": "[reference(variables('docDBResourceId')).documentEndpoint]"
+        },
+        "docDbKey": {
+            "type": "string",
+            "value": "[listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey]"
+        },
+        "vmFQDN": {
+            "type": "string",
+            "value": "[concat(variables('vmName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
+        }
+    }
+}
