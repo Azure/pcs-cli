@@ -30,5 +30,5 @@ spec:
           servicePort: 9004
       - path: /uiconfig
         backend:
-          serviceName: uiconfig-svc
+          serviceName: ui-config-svc
           servicePort: 9005

@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: uiconfig
+  name: ui-config
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -13,10 +13,10 @@ spec:
   template:
     metadata:
       labels:
-        app: uiconfig
+        app: ui-config
     spec:
       containers:
-      - name: uiconfig-pod
+      - name: ui-config-pod
         image: azureiotpcs/pcs-ui-config-dotnet:latest
         ports:
         - containerPort: 9005
@@ -32,12 +32,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: uiconfig-svc
+  name: ui-config-svc
   labels:
-    app: uiconfig
+    app: ui-config
 spec:
   type: NodePort
   ports:
   - port: 9005
   selector:
-    app: uiconfig
+    app: ui-config

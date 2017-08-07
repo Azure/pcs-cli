@@ -70,7 +70,7 @@
                 "name": "[parameters('docDBName')]",
                 "databaseAccountOfferType": "[parameters('docDBSku')]"
             }
-        },        
+        },
         {
             "apiVersion": "[variables('iotHubVersion')]",
             "type": "Microsoft.Devices/Iothubs",
