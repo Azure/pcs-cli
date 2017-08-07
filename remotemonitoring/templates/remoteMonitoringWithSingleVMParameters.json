@@ -1,5 +1,8 @@
 {
     "solutionName": {
-      "value": "iotpcsdemoonebox"
+      "value": "iotpcsrmv2onebox"
+    },
+    "adminPassword": {
+      "value": "Changethispassw0rd!"
     }
 }
