@@ -21,13 +21,16 @@ spec:
         ports:
         - containerPort: 9004
         env:
-        - name: PCS_DEVICE_TELEMETRY_WEBSERVICE_PORT
-          value: "9004"
-        - name: PCS_DEVICE_TELEMETRY_DOCDB_CONN_STRING
+        - name: PCS_DEVICETELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
 ---
 apiVersion: v1
 kind: Service

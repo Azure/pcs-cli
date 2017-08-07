@@ -1,4 +1,5 @@
 # Customize gitignore
+*_.sh
 
 # Create-React-App build output
 build

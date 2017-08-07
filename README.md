@@ -75,7 +75,7 @@ Also when using **--generate-ssh-keys** if one already exists under ~/.ssh/id_rs
 To verify access test with `kubectl get nodes`
 1) `kubectl create -f .\scripts\nginx-ingress-controller.yaml`
 2) Go to your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
-3) Add actual values in the ConfigMap section in file [all-in-one.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/all-in-one.yaml) and [config-map.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/individual/config-map.yaml). \
+3) Add actual values in the ConfigMap section in file [all-in-one.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/all-in-one.yaml) and [deployment-configmap.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/individual/deployment-configmap.yaml). \
 Values to replace will be of format **"{...}"**. Some examples below.
     * **{DNS}** with value from step 2
     * **{IoT Hub connection string}**

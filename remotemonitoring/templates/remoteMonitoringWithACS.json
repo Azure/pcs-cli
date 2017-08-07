@@ -42,7 +42,7 @@
             "metadata": {
                 "description": "The Azure IoT Hub tier"
             }
-        },        
+        },
         "packageUri": {
             "type": "string",
             "defaultValue": "https://aka.ms/azureiot/remotemonitoring/web"
@@ -192,7 +192,7 @@
                 "name": "[parameters('docDBName')]",
                 "databaseAccountOfferType": "[parameters('docDBSku')]"
             }
-        },        
+        },
         {
             "apiVersion": "[variables('iotHubVersion')]",
             "type": "Microsoft.Devices/Iothubs",

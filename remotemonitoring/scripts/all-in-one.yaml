@@ -7,19 +7,17 @@ metadata:
 data:
   # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
 
-  # IoT Hub Manager
-  iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
-  # The connection string will be of format "HostName={hubname}.azure-devices.net;
-  # SharedAccessKeyName={policy type};SharedAccessKey={Access Key};" Policy Type can
-  # have following values: iothubowner, service, device, registryRead, registryReadWrite
+  # The connection string will be of format
+  # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
+  # Policy Type can have following values: iothubowner, service, device, registryRead, registryReadWrite
   # The key will be shown in CLI window as output when remote-cli command has finished running.
-  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName}
   # and resource type "Iot Hub" then "Shared access policies" menu.
   iothub.connstring: "{IoT Hub connection string}"
 
   # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
   # The key will be shown in CLI window as output when remote-cli command has finished running.
-  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName}
   # and resource type "Azure Cosmos DB account" then "Keys" menu.
   docdb.connstring: "{DocumentDB connection string}"
 
@@ -59,14 +57,17 @@ spec:
         image: azureiotpcs/device-simulation-dotnet:latest
         ports:
         - containerPort: 9003
-        env:
-        - name: PCS_DEVICESIMULATION_WEBSERVICE_PORT
-          value: "9003"
-        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: iothubmanager.webservice.url
+      env:
+      - name: PCS_IOTHUB_CONNSTRING
+        valueFrom:
+          configMapKeyRef:
+            name: deployment-configmap
+            key: iothub.connstring
+      - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+        valueFrom:
+          configMapKeyRef:
+            name: deployment-configmap
+            key: storageadapter.webservice.url
 ---
 apiVersion: v1
 kind: Service
@@ -156,13 +157,16 @@ spec:
         ports:
         - containerPort: 9004
         env:
-        - name: PCS_DEVICE_TELEMETRY_WEBSERVICE_PORT
-          value: "9004"
-        - name: PCS_DEVICE_TELEMETRY_DOCDB_CONN_STRING
+        - name: PCS_DEVICETELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
 ---
 apiVersion: v1
 kind: Service
@@ -305,7 +309,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: uiconfig
+  name: ui-config
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -317,10 +321,10 @@ spec:
   template:
     metadata:
       labels:
-        app: uiconfig
+        app: ui-config
     spec:
       containers:
-      - name: uiconfig-pod
+      - name: ui-config-pod
         image: azureiotpcs/pcs-ui-config-dotnet:latest
         ports:
         - containerPort: 9005
@@ -336,15 +340,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: uiconfig-svc
+  name: ui-config-svc
   labels:
-    app: uiconfig
+    app: ui-config
 spec:
   type: NodePort
   ports:
   - port: 9005
   selector:
-    app: uiconfig
+    app: ui-config
 # UI Config - End
 
 ---
@@ -423,6 +427,6 @@ spec:
           servicePort: 9004
       - path: /uiconfig
         backend:
-          serviceName: uiconfig-svc
+          serviceName: ui-config-svc
           servicePort: 9005
 # Ingress - End
