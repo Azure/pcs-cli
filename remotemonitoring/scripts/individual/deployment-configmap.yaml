@@ -6,19 +6,17 @@ metadata:
 data:
   # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
 
-  # IoT Hub Manager
-  iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
-  # The connection string will be of format "HostName={hubname}.azure-devices.net;
-  # SharedAccessKeyName={policy type};SharedAccessKey={Access Key};" Policy Type can
-  # have following values: iothubowner, service, device, registryRead, registryReadWrite
+  # The connection string will be of format
+  # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
+  # Policy Type can have following values: iothubowner, service, device, registryRead, registryReadWrite
   # The key will be shown in CLI window as output when remote-cli command has finished running.
-  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName}
   # and resource type "Iot Hub" then "Shared access policies" menu.
   iothub.connstring: "{IoT Hub connection string}"
 
   # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
   # The key will be shown in CLI window as output when remote-cli command has finished running.
-  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName} 
+  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName}
   # and resource type "Azure Cosmos DB account" then "Keys" menu.
   docdb.connstring: "{DocumentDB connection string}"
 

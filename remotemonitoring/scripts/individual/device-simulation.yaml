@@ -21,13 +21,16 @@ spec:
         ports:
         - containerPort: 9003
         env:
-        - name: PCS_DEVICESIMULATION_WEBSERVICE_PORT
-          value: "9003"
-        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+        - name: PCS_IOTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothubmanager.webservice.url
+              key: iothub.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
 ---
 apiVersion: v1
 kind: Service
