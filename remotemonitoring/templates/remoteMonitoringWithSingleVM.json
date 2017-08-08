@@ -8,6 +8,30 @@
                 "description": "The name of the solution"
             }
         },
+        "solutionWebAppPort": {
+            "type": "string",
+            "defaultValue": "80",
+            "metadata": {
+                "description": "The port of the solution web application (e.g. 80, 443)"
+            }
+        },
+        "microServiceRuntime": {
+            "type": "string",
+            "defaultValue": "dotnet",
+            "allowedValues": [
+                "dotnet", "java"
+            ],
+            "metadata": {
+                "description": "The micro service runtime of the solution"
+            }
+        },
+        "microServiceVersion": {
+            "type": "string",
+            "defaultValue": "latest",
+            "metadata": {
+                "description": "The container image version of the solution"
+            }
+        },
         "storageName": {
             "type": "string",
             "defaultValue": "[concat('storage', uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')))]",
@@ -145,6 +169,7 @@
         "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
         "storageApiVersion": "2017-06-01",
         "computeApiVersion": "2017-03-30",
+        "vmFQDN": "[concat(parameters('vmName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]",
         "imagePublisher": "Canonical",
         "imageOffer": "UbuntuServer",
         "vmStorageAccountContainerName": "vhds",
@@ -425,7 +450,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh runallcontainers localhost 80 latest ', '\"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" ', '\"', listkeys(variables('docDBResourceId'), variables('docDBApiVersion')).primaryMasterKey, '\"' )]"
+                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('docDBResourceId'), variables('docDBApiVersion')).primaryMasterKey, '\"' )]"
                 }
             }
         }
@@ -445,7 +470,7 @@
         },
         "vmFQDN": {
             "type": "string",
-            "value": "[concat(parameters('vmName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
+            "value": "[variables('vmFQDN')]"
         }
     }
 }
