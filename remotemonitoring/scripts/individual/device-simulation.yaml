@@ -18,6 +18,7 @@ spec:
       containers:
       - name: device-simulation-pod
         image: azureiotpcs/device-simulation-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9003
         env:

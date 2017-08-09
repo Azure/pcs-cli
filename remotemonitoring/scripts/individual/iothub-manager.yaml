@@ -18,6 +18,7 @@ spec:
       containers:
       - name: iothub-manager-pod
         image: azureiotpcs/iothub-manager-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9002
         env:

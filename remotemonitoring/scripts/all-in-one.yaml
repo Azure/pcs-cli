@@ -55,6 +55,7 @@ spec:
       containers:
       - name: device-simulation-pod
         image: azureiotpcs/device-simulation-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9003
       env:
@@ -106,6 +107,7 @@ spec:
       containers:
       - name: iothub-manager-pod
         image: azureiotpcs/iothub-manager-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9002
         env:
@@ -154,6 +156,7 @@ spec:
       containers:
       - name: device-telemetry-pod
         image: azureiotpcs/device-telemetry-java:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9004
         env:
@@ -205,6 +208,7 @@ spec:
       containers:
       - name: storage-adapter-pod
         image: azureiotpcs/pcs-storage-adapter-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9022
         env:
@@ -258,6 +262,7 @@ spec:
       containers:
       - name: stream-analytics-pod
         image: azureiotpcs/iot-stream-analytics-java:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9023
         env:
@@ -326,6 +331,7 @@ spec:
       containers:
       - name: ui-config-pod
         image: azureiotpcs/pcs-ui-config-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9005
         env:
@@ -374,6 +380,7 @@ spec:
       containers:
       - name: remote-monitoring-webui-pod
         image: azureiotpcs/pcs-remote-monitoring-webui:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 ---

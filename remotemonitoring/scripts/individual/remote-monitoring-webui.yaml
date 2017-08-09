@@ -18,6 +18,7 @@ spec:
       containers:
       - name: remote-monitoring-webui-pod
         image: azureiotpcs/pcs-remote-monitoring-webui:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 ---
