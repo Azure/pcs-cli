@@ -22,7 +22,7 @@
                 "dotnet", "java"
             ],
             "metadata": {
-                "description": "The micro service runtime of the solution"
+                "description": "The microservice runtime of the solution"
             }
         },
         "microServiceVersion": {
@@ -34,7 +34,7 @@
         },
         "storageName": {
             "type": "string",
-            "defaultValue": "[concat('storage', uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')))]",
+            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of the storageAccount"
             }
@@ -63,14 +63,14 @@
         },
         "docDBName": {
             "type": "string",
-            "defaultValue": "[concat('docdb-', uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')))]",
+            "defaultValue": "[concat('docdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of the documentDB"
             }
         },
         "iotHubName": {
             "type": "string",
-            "defaultValue": "[concat('iothub-', uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')))]",
+            "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of Azure IoT Hub"
             }
@@ -78,6 +78,9 @@
         "iotHubSku": {
             "type": "string",
             "defaultValue": "S1",
+            "allowedValues": [
+                "F1", "S1", "S2", "S3"
+            ],
             "metadata": {
                 "description": "The Azure IoT Hub SKU"
             }
@@ -85,13 +88,16 @@
         "iotHubTier": {
             "type": "string",
             "defaultValue": "Standard",
+            "allowedValues": [
+                "Free", "Standard"
+            ],
             "metadata": {
                 "description": "The Azure IoT Hub tier"
             }
         },
         "vmName": {
             "type": "string",
-            "defaultValue": "[concat('vm-', uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')))]",
+            "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of the Linux Virtual Machine"
             }
@@ -138,7 +144,7 @@
         "adminPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "User name for the Linux Virtual Machines."
+                "description": "User password for the Linux Virtual Machines, must between 12 and 72 characters long and have 3 of the following: 1 uppercase character, 1 lowercase character, 1 number and 1 special character that is not slash (\\) or dash (-)"
             }
         },
         "runAllContainersUri": {
@@ -471,6 +477,10 @@
         "vmFQDN": {
             "type": "string",
             "value": "[variables('vmFQDN')]"
+        },
+        "adminPassword": {
+            "type": "string",
+            "value": "[parameters('adminPassword')]"
         }
     }
 }
