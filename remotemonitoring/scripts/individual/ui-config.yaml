@@ -18,6 +18,7 @@ spec:
       containers:
       - name: ui-config-pod
         image: azureiotpcs/pcs-ui-config-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9005
         env:

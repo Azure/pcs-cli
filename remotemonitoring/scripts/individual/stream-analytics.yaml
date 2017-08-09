@@ -18,6 +18,7 @@ spec:
       containers:
       - name: stream-analytics-pod
         image: azureiotpcs/iot-stream-analytics-java:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9023
         env:

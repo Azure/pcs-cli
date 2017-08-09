@@ -18,6 +18,7 @@ spec:
       containers:
       - name: storage-adapter-pod
         image: azureiotpcs/pcs-storage-adapter-dotnet:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9022
         env:
