@@ -28,6 +28,16 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.account
+        - name: PCS_IOTHUBREACT_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.key
         - name: PCS_IOTHUBREACT_HUB_NAME
           valueFrom:
             configMapKeyRef:
