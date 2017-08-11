@@ -28,4 +28,5 @@ data:
   iothubreact.hub.name: "{Iot Hub React name}"
   iothubreact.hub.endpoint: "{Iot Hub React endpoint}"
   iothubreact.hub.partitions: "{Iot Hub React partitions}"
-  iothubreact.access.connstring: "{Iot Hub React connection string}"
+  iothubreact.azureblob.account: "{Azure Blob account name}"
+  iothubreact.azureblob.key: "{Azure Blob account key}"
