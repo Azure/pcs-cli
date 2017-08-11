@@ -30,6 +30,8 @@ data:
   iothubreact.hub.endpoint: "{Iot Hub React endpoint}"
   iothubreact.hub.partitions: "{Iot Hub React partitions}"
   iothubreact.access.connstring: "{Iot Hub React connection string}"
+  iothubreact.azureblob.account: "{Azure Blob account name}"
+  iothubreact.azureblob.key: "{Azure Blob account key}"
 # ConfigMap - End
 
 ---
@@ -268,6 +270,16 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.account
+        - name: PCS_IOTHUBREACT_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.key
         - name: PCS_IOTHUBREACT_HUB_NAME
           valueFrom:
             configMapKeyRef:

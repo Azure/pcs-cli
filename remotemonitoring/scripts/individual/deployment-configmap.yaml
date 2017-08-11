@@ -404,3 +404,5 @@ data:
                       }
                       {{ end }}
               {{ end }}
+  iothubreact.azureblob.account: "{Azure Blob account name}"
+  iothubreact.azureblob.key: "{Azure Blob account key}"
