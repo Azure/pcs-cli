@@ -53,7 +53,7 @@
                 "Standard_LRS", "Standard_GRS", "Standard_RAGRS", "Standard_ZRS", "Premium_LRS"
             ],
             "metadata": {
-                "description": "The storage Sku name"
+                "description": "The storage SKU name"
             }
         },
         "storageEndpointSuffix": {
@@ -68,9 +68,9 @@
                 "description": "Suffix added to Azure Storage hostname"
             }
         },
-        "docDBName": {
+        "documentDBName": {
             "type": "string",
-            "defaultValue": "[concat('docdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
+            "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
             "metadata": {
                 "description": "The name of the documentDB"
             }
@@ -138,14 +138,14 @@
                 "16.04.0-LTS"
             ],
             "metadata": {
-                "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+                "description": "The Ubuntu version for the Virtual Machine."
             }
         },
         "adminUsername": {
             "type": "string",
             "defaultValue": "azureuser",
             "metadata": {
-                "description": "User name for the Linux Virtual Machines."
+                "description": "User name for the Linux Virtual Machine."
             }
         },
         "adminPassword": {
@@ -173,8 +173,8 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "docDBApiVersion": "2016-03-19",
-        "docDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('docDBName'))]",
+        "documentDBApiVersion": "2016-03-19",
+        "documentDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
         "iotHubApiVersion": "2017-01-19",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
@@ -212,15 +212,15 @@
             }
         },
         {
-            "apiVersion": "[variables('docDBApiVersion')]",
+            "apiVersion": "[variables('documentDBApiVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
-            "name": "[parameters('docDBName')]",
+            "name": "[parameters('documentDBName')]",
             "location": "[variables('location')]",
             "tags": {
                 "IotSuiteType": "[parameters('suiteType')]"
             },
             "properties": {
-                "name": "[parameters('docDBName')]",
+                "name": "[parameters('documentDBName')]",
                 "databaseAccountOfferType": "standard"
             }
         },
@@ -477,7 +477,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('docDBResourceId'), variables('docDBApiVersion')).primaryMasterKey, '\"' )]"
+                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, '\"' )]"
                 }
             }
         }
@@ -493,7 +493,7 @@
         },
         "documentDBConnectionString" : {
             "type": "string",
-            "value": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), variables('docDBApiVersion')).primaryMasterKey, ';')]"
+            "value": "[concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';')]"
         },
         "vmFQDN": {
             "type": "string",
