@@ -26,18 +26,28 @@ const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in l
 const invalidPasswordMessage = 'Passwords must be 12 - 123 characters in length and meet 3 out of the following 4 complexity requirements:\nHave lower characters\nHave upper characters\nHave a digit\nHave a special character';
 /* tslint:enable */
 
+const gitHubUrl: string = 'https://github.com/Azure/pcs-cli#azure-iot-pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .usage(`${chalk.green('<solution>')} [options]`)
-    .option('-t, --type <solutiontype>', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
+    .usage('[options]')
+    .option('-t, --type', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
+    .option('-s, --sku', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
     .on('--help', () => {
         console.log(
-            `    Default value for ${chalk.green('<solution>')} is ${chalk.green('RemoteMonitoring')}.`
+            `    Default value for ${chalk.green('-t, type')} is ${chalk.green('remotemonitoring')}.`
+            );
+        console.log(
+            `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
             );
         console.log();
+        console.log(
+            `    For further documentation, please visit:`
+        );
+        console.log(
+            `    ${chalk.cyan(gitHubUrl)}`
+            );
         console.log(
             `    If you have any problems, do not hesitate to file an issue:`
             );
