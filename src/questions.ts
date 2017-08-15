@@ -36,7 +36,7 @@ export class Questions implements Questions {
     public static notAllowedPasswords = ['abc@123', 'P@$$w0rd', '@ssw0rd', 'P@ssword123', 'Pa$$word',
                                         'pass@word1', 'Password!', 'Password1', 'Password22', 'iloveyou!'];
     public solutionNameRegex: RegExp = /^[a-z0-9]{1,17}$/;
-    public locations: string[] = ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia', 
+    public locations: string[] = ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia',
                      'Japan East', 'Japan West', 'Australia East', 'Australia Southeast'];  
 
     private _questions: Question[] ;
