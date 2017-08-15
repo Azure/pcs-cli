@@ -2,13 +2,13 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "suiteName": {
+        "solutionName": {
             "type": "string",
             "metadata": {
                 "description": "The name of the solution"
             }
         },
-        "suiteType": {
+        "solutionType": {
            "type": "string",
            "defaultValue": "RemoteMonitoringV2",
            "metadata": {
@@ -41,7 +41,7 @@
         },
         "storageName": {
             "type": "string",
-            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
+            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of the storageAccount"
             }
@@ -70,14 +70,14 @@
         },
         "documentDBName": {
             "type": "string",
-            "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
+            "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of the documentDB"
             }
         },
         "iotHubName": {
             "type": "string",
-            "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
+            "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of Azure IoT Hub"
             }
@@ -104,7 +104,7 @@
         },
         "vmName": {
             "type": "string",
-            "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
+            "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of the Linux Virtual Machine"
             }
@@ -185,17 +185,17 @@
         "imagePublisher": "Canonical",
         "imageOffer": "UbuntuServer",
         "vmStorageAccountContainerName": "vhds",
-        "osDiskName": "[concat(parameters('suiteName'), '-osdisk')]",
+        "osDiskName": "[concat(parameters('solutionName'), '-osdisk')]",
         "networkApiVersion": "2017-06-01",
-        "vnetName": "[concat(parameters('suiteName'), '-vnet')]",
+        "vnetName": "[concat(parameters('solutionName'), '-vnet')]",
         "vnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
         "vnetAddressPrefix": "10.0.0.0/16",
-        "networkSecurityGroupName": "[concat(parameters('suiteName'), '-nsg')]",
+        "networkSecurityGroupName": "[concat(parameters('solutionName'), '-nsg')]",
         "subnetName": "default",
         "subnetPrefix": "10.0.0.0/24",
         "subnetResourceId": "[concat(variables('vnetResourceId'),'/subnets/',variables('subnetName'))]",
-        "publicIpName": "[concat(parameters('suiteName'), '-public-ip')]",
-        "nicName": "[concat(parameters('suiteName'), '-nic')]"
+        "publicIpName": "[concat(parameters('solutionName'), '-public-ip')]",
+        "nicName": "[concat(parameters('solutionName'), '-nic')]"
     },
     "resources": [
           {
@@ -204,7 +204,7 @@
             "apiVersion": "[variables('storageApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "kind": "Storage",
             "sku": {
@@ -217,7 +217,7 @@
             "name": "[parameters('documentDBName')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "properties": {
                 "name": "[parameters('documentDBName')]",
@@ -230,7 +230,7 @@
             "name": "[parameters('iotHubName')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "sku": {
                 "name": "[parameters('iotHubSku')]",
@@ -247,7 +247,7 @@
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "properties": {
                 "securityRules": [
@@ -325,7 +325,7 @@
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "properties": {
                 "addressSpace": {
@@ -349,7 +349,7 @@
             "apiVersion": "2016-03-30",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
@@ -365,7 +365,7 @@
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]",
@@ -396,7 +396,7 @@
             "apiVersion": "[variables('computeApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('suiteType')]"
+                "IotSuiteType": "[parameters('solutionType')]"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
