@@ -464,7 +464,9 @@
             "apiVersion": "[variables('computeApiVersion')]",
             "location": "[variables('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]"
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
+                "[concat('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",

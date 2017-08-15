@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import * as chalk from 'chalk';
-import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import * as msRestAzure from 'ms-rest-azure';
 
@@ -36,7 +35,7 @@ const program = new Command(packageJson.name)
     .option('-s, --sku', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
     .on('--help', () => {
         console.log(
-            `    Default value for ${chalk.green('-t, type')} is ${chalk.green('remotemonitoring')}.`
+            `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
             );
         console.log(
             `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
@@ -110,7 +109,7 @@ function main() {
                 params = templateNamePrefix + 'Parameters.json';
 
                 questions.addQuestion({
-                    message: 'Enter a user name',
+                    message: 'Enter a user name for the Virtual Machine',
                     name: 'adminUsername',
                     type: 'input',
                     validate: (userName: string) => {
