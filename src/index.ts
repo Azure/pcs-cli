@@ -15,24 +15,27 @@ const packageJson = require('../package.json');
 let solutionType: string = 'remotemonitoring';
 let template = require('../' + solutionType + '/templates/remoteMonitoring.json');
 let parameters = require('../' + solutionType + '/templates/remoteMonitoringParameters.json');
+enum solutionSku {
+    basic,
+    enterprise,
+    test
+}
+
+const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
+/* tslint:disable */
+const invalidPasswordMessage = 'Passwords must be 12 - 123 characters in length and meet 3 out of the following 4 complexity requirements:\nHave lower characters\nHave upper characters\nHave a digit\nHave a special character';
+/* tslint:enable */
 
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .usage(`${chalk.green('<solutiontype>')} [options]`)
-    .action((type)  => {
-        if  (type) {
-            solutionType = type;
-            const solution = type + '.json';
-            const params = type + 'Parameters.json';
-            template = require('../templates/' + solution);
-            parameters = require('../templates/' + params);
-        }
-    })
+    .usage(`${chalk.green('<solution>')} [options]`)
+    .option('-t, --type <solutiontype>', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
+    .option('-s, --sku <sku>', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
     .on('--help', () => {
         console.log(
-            `    Default value for ${chalk.green('<solutiontype>')} is ${chalk.green('RemoteMonitoring')}.`
+            `    Default value for ${chalk.green('<solution>')} is ${chalk.green('RemoteMonitoring')}.`
             );
         console.log();
         console.log(
@@ -66,27 +69,87 @@ function main() {
      * Submit deployment
      */
     msRestAzure.interactiveLoginWithAuthResponse().then((authResponse: msRestAzure.AuthResponse) => {
+        solutionType = program.type;
+        let templateNamePrefix = solutionType;
+        let solution = templateNamePrefix + '.json';
+        let params = templateNamePrefix + 'Parameters.json';
+
         const subs: inquirer.ChoiceType[] = [];
-        const deploymentManager: IDeploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
-
         authResponse.subscriptions.map((subscription: msRestAzure.LinkedSubscription) => {
-            subs.push({name: subscription.name, value: subscription.id});
+            if (subscription.state === 'Enabled') {
+                subs.push({name: subscription.name, value: subscription.id});
+            }
         });
 
-        const questions: IQuestions = new Questions();
-        questions.insertQuestion(1, {
-            choices: subs,
-            message: 'Select a subscription:',
-            name: 'subscription',
-            type: 'list',
-        });
+        if (!subs || !subs.length) {
+            console.log('Could not find any subscriptions in this account. /n \
+            Please login with an account that has at least one active subscription');
+        } else {
+            const questions: IQuestions = new Questions();
+            questions.insertQuestion(1, {
+                choices: subs,
+                message: 'Select a subscription:',
+                name: 'subscriptionId',
+                type: 'list',
+            });
 
-        inquirer.prompt(questions.value)
-        .then((answers: Answers) => {
-            return deploymentManager.submit(answers.solutionName, answers.subscription, answers.location);
-        })
-        .catch((error: Error) => {
-            console.log('Prompt error: ' + error);
-        });
+            if (program.sku === solutionSku[solutionSku.basic]) {
+                // Setting the ARM template that is meant to do demo deployment
+                templateNamePrefix += 'WithSingleVM';
+                solution = templateNamePrefix + '.json';
+                params = templateNamePrefix + 'Parameters.json';
+
+                questions.addQuestion({
+                    message: 'Enter a user name',
+                    name: 'adminUsername',
+                    type: 'input',
+                    validate: (userName: string) => {
+                        const pass: RegExpMatchArray | null = userName.match(Questions.userNameRegex);
+                        const notAllowedUserNames = Questions.notAllowedUserNames.filter((u: string) => {
+                            return u === userName;
+                        });
+                        if (pass && notAllowedUserNames.length === 0) {
+                            return true;
+                        }
+
+                        return invalidUsernameMessage;
+                    },
+                });
+                questions.addQuestion({
+                    mask: '*',
+                    message: 'Enter a password',
+                    name: 'adminPassword',
+                    type: 'password',
+                    validate: (password: string) => {
+                        const pass: RegExpMatchArray | null = password.match(Questions.passwordRegex);
+                        const notAllowedPasswords = Questions.notAllowedPasswords.filter((p: string) => {
+                            return p === password;
+                        });
+                        if (pass && notAllowedPasswords.length === 0) {
+                            return true;
+                        }
+
+                        return invalidPasswordMessage;
+                    },
+                });
+            }
+
+            try {
+                template = require('../' + solutionType + '/templates/' + solution);
+                parameters = require('../' + solutionType + '/templates/' + params);
+            } catch (ex) {
+                console.log('Could not find template or parameters file, Exception:', ex);
+                return;
+            }
+
+            const deploymentManager: IDeploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
+            inquirer.prompt(questions.value)
+            .then((answers: Answers) => {
+                return deploymentManager.submit(answers);
+            })
+            .catch((error: Error) => {
+                console.log('Prompt error: ' + error);
+            });
+        }
     });
 }

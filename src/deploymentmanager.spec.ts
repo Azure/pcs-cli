@@ -1,4 +1,5 @@
 import * as msRestAzure from 'ms-rest-azure';
+import { Answers } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
 
 const solutionType: string = 'RemoteMonitoring';
@@ -15,7 +16,7 @@ describe('Template deployment through DeploymentManager', () => {
 
     test('Empty solution, subscription or location should fail', () => {
         return deploymentManager
-        .submit('', '' , '')
+        .submit(undefined)
         .catch((error) => { 
             expect(error).toBeDefined();
         });
