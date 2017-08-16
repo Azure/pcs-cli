@@ -1,4 +1,6 @@
 import * as chalk from 'chalk';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as ResourceManagement from 'azure-arm-resource';
 import * as msRestAzure from 'ms-rest-azure';
 
@@ -65,9 +67,15 @@ export class DeploymentManager implements IDeploymentManager {
                 .createOrUpdate(result.name as string, 'deployment-' + params.solutionName, deployment)
                 .then((res: DeploymentExtended) => {
                     const deployProperties: any = res.properties;
+                    const fileName: string = process.cwd() + path.sep + 'output.json';
+                    fs.writeFileSync(fileName, JSON.stringify(deployProperties.outputs, null, 2));
                     console.log();
-                    console.log(`${chalk.green('Please save following properties:')}`);
-                    console.log(JSON.stringify(deployProperties.outputs, null, 2));
+                    if (deployProperties.outputs.vmFQDN) {
+                        console.log('Please click %s%s %s',
+                                    `${chalk.cyan('http://')}`, `${chalk.cyan(deployProperties.outputs.vmFQDN.value)}`,
+                                    'to deployed solution:', `${chalk.green(params.solutionName)}`);
+                    }
+                    console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
                     deployUI.stop();
                 });
             }).catch((err: Error) => {
