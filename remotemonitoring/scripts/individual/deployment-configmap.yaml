@@ -30,6 +30,10 @@ data:
   iothubreact.hub.partitions: "{Iot Hub React partitions}"
   iothubreact.access.connstring: "{Iot Hub React connection string}"
 
+  # Auth
+  auth.aad_global_tenantid: "{AAD Tenant Id}"
+  auth.aad_global_clientid: "{AAD Client Id}"
+  
   # Nginx Template 
   nginx.tmpl: |
               {{ $cfg := .cfg }}
