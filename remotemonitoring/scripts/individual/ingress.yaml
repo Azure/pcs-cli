@@ -16,6 +16,10 @@ spec:
         backend:
           serviceName: remote-monitoring-webui-svc
           servicePort: 9000
+      - path: /auth
+        backend:
+          serviceName: auth-svc
+          servicePort: 9001
       - path: /iothubmanager
         backend:
           serviceName: iothub-manager-svc

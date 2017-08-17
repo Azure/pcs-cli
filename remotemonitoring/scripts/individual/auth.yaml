@@ -19,20 +19,25 @@ spec:
       - name: auth-pod
         image: azureiotpcs/pcs-auth-dotnet:latest
         ports:
-        - containerPort: 9006
+        - containerPort: 9001
         env:
         - name: PCS_AUTH_WEBSERVICE_PORT
-          value: "9006"
+          value: "9001"
+        - name: PCS_AUTH_AAD_GLOBAL_LOGINURI
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.aad.global.loginuri
         - name: PCS_AUTH_AAD_GLOBAL_TENANTID
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: auth.aad_global_tenantid
+              key: auth.aad.global.tenantid
         - name: PCS_AUTH_AAD_GLOBAL_CLIENTID
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: auth.aad_global_clientid
+              key: auth.aad.global.clientid
 ---
 apiVersion: v1
 kind: Service
@@ -43,6 +48,6 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 9006
+  - port: 9001
   selector:
     app: auth

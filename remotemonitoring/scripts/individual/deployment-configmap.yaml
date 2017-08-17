@@ -31,8 +31,9 @@ data:
   iothubreact.access.connstring: "{Iot Hub React connection string}"
 
   # Auth
-  auth.aad_global_tenantid: "{AAD Tenant Id}"
-  auth.aad_global_clientid: "{AAD Client Id}"
+  auth.aad.global.tenantid: "{AAD Tenant Id}"
+  auth.aad.global.clientid: "{AAD Client Id}"
+  auth.aad.global.loginuri: "https://login.microsoftonline.com/"
   
   # Nginx Template 
   nginx.tmpl: |
