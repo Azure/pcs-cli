@@ -103,7 +103,7 @@ docker run -d -p $PCS_AUTHENTICATION_WEBSERVICE_PORT:$PCS_AUTHENTICATION_WEBSERV
     "$DOCKER_HUB_ACCOUNT/pcs-auth-$APP_RUNTIME:$APP_VERSION"
 
 docker run -d -p $APP_PORT:$APP_PORT \
-    -e "REACT_APP_BASE_SERVICE_URL=\"http://$HOST_NAME\"" \
+    -e "REACT_APP_BASE_SERVICE_URL="http://$HOST_NAME" \
     "$DOCKER_HUB_ACCOUNT/pcs-remote-monitoring-webui:$APP_VERSION"
 
 set +x
