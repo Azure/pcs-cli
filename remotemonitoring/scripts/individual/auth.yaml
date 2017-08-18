@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth-pod
+        image: azureiotpcs/pcs-auth-dotnet:latest
+        ports:
+        - containerPort: 9001
+        env:
+        - name: PCS_AUTH_WEBSERVICE_PORT
+          value: "9001"
+        - name: PCS_AUTH_AAD_GLOBAL_LOGINURI
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.aad.global.loginuri
+        - name: PCS_AUTH_AAD_GLOBAL_TENANTID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.aad.global.tenantid
+        - name: PCS_AUTH_AAD_GLOBAL_CLIENTID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.aad.global.clientid
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-svc
+  labels:
+    app: auth
+spec:
+  type: NodePort
+  ports:
+  - port: 9001
+  selector:
+    app: auth
