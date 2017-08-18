@@ -2,6 +2,25 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "aadTenant": {
+            "type": "string",
+            "metadata": {
+                "description": "The AAD tenant identifier (GUID)"
+            }
+        },
+        "aadInstance": {
+            "type": "string",
+            "defaultValue": "https://login.microsoftonline.com/",
+            "metadata": {
+                "description": "Url of the AAD login page (example: https://login.microsoftonline.com/)"
+            }
+        },
+        "aadClientId": {
+            "type": "string",
+            "metadata": {
+                "description": "AAD application identifier (GUID)"
+            }
+        },
         "solutionName": {
             "type": "string",
             "metadata": {
@@ -260,6 +279,19 @@
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "AuthHttpIn",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9001",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
                             "priority": 110,
                             "direction": "Inbound"
                         }
@@ -479,7 +511,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, '\"' )]"
+                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenant'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, '\"' )]"
                 }
             }
         }
