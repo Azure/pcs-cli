@@ -21,20 +21,20 @@
                 "description": "AAD application identifier (GUID)"
             }
         },
-        "solutionName": {
+        "suiteName": {
             "type": "string",
             "metadata": {
                 "description": "The name of the solution"
             }
         },
-        "solutionType": {
+        "suiteType": {
            "type": "string",
            "defaultValue": "RemoteMonitoringV2",
            "metadata": {
                "description": "The type of the solution"
            }
         },
-        "solutionWebAppPort": {
+        "suiteWebAppPort": {
             "type": "string",
             "defaultValue": "80",
             "metadata": {
@@ -60,7 +60,7 @@
         },
         "storageName": {
             "type": "string",
-            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
             "metadata": {
                 "description": "The name of the storageAccount"
             }
@@ -87,16 +87,16 @@
                 "description": "Suffix added to Azure Storage hostname"
             }
         },
-        "documentDBName": {
+        "docDBName": {
             "type": "string",
-            "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
             "metadata": {
                 "description": "The name of the documentDB"
             }
         },
         "iotHubName": {
             "type": "string",
-            "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
             "metadata": {
                 "description": "The name of Azure IoT Hub"
             }
@@ -123,7 +123,7 @@
         },
         "vmName": {
             "type": "string",
-            "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
             "metadata": {
                 "description": "The name of the Linux Virtual Machine"
             }
@@ -193,7 +193,7 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "documentDBApiVersion": "2016-03-19",
-        "documentDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
+        "documentDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('docDBName'))]",
         "iotHubApiVersion": "2017-01-19",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
@@ -204,17 +204,17 @@
         "imagePublisher": "Canonical",
         "imageOffer": "UbuntuServer",
         "vmStorageAccountContainerName": "vhds",
-        "osDiskName": "[concat(parameters('solutionName'), '-osdisk')]",
+        "osDiskName": "[concat(parameters('suiteName'), '-osdisk')]",
         "networkApiVersion": "2017-06-01",
-        "vnetName": "[concat(parameters('solutionName'), '-vnet')]",
+        "vnetName": "[concat(parameters('suiteName'), '-vnet')]",
         "vnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
         "vnetAddressPrefix": "10.0.0.0/16",
-        "networkSecurityGroupName": "[concat(parameters('solutionName'), '-nsg')]",
+        "networkSecurityGroupName": "[concat(parameters('suiteName'), '-nsg')]",
         "subnetName": "default",
         "subnetPrefix": "10.0.0.0/24",
         "subnetResourceId": "[concat(variables('vnetResourceId'),'/subnets/',variables('subnetName'))]",
-        "publicIpName": "[concat(parameters('solutionName'), '-public-ip')]",
-        "nicName": "[concat(parameters('solutionName'), '-nic')]"
+        "publicIpName": "[concat(parameters('suiteName'), '-public-ip')]",
+        "nicName": "[concat(parameters('suiteName'), '-nic')]"
     },
     "resources": [
           {
@@ -223,7 +223,7 @@
             "apiVersion": "[variables('storageApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "kind": "Storage",
             "sku": {
@@ -233,13 +233,13 @@
         {
             "apiVersion": "[variables('documentDBApiVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
-            "name": "[parameters('documentDBName')]",
+            "name": "[parameters('docDBName')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "properties": {
-                "name": "[parameters('documentDBName')]",
+                "name": "[parameters('docDBName')]",
                 "databaseAccountOfferType": "standard"
             }
         },
@@ -249,7 +249,7 @@
             "name": "[parameters('iotHubName')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "sku": {
                 "name": "[parameters('iotHubSku')]",
@@ -266,7 +266,7 @@
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "properties": {
                 "securityRules": [
@@ -357,7 +357,7 @@
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "properties": {
                 "addressSpace": {
@@ -381,7 +381,7 @@
             "apiVersion": "2016-03-30",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
@@ -397,7 +397,7 @@
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]",
@@ -428,7 +428,7 @@
             "apiVersion": "[variables('computeApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[parameters('suiteType')]"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
@@ -498,7 +498,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
                 "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
-                "[concat('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]"
+                "[concat('Microsoft.DocumentDb/databaseAccounts/', parameters('docDBName'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -511,7 +511,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenant'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, '\"' )]"
+                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('suiteWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenant'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, '\"' )]"
                 }
             }
         }
