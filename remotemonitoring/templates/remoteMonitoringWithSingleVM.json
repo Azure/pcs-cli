@@ -94,6 +94,38 @@
                 "description": "The name of the documentDB"
             }
         },
+        "docDBConsistencyLevel": {
+            "type": "string",
+            "allowedValues": [
+                "Strong",
+                "BoundedStaleness",
+                "Session",
+                "ConsistentPrefix",
+                "Eventual"
+            ],
+            "defaultValue": "Strong",
+            "metadata": {
+                "description": "The documentDB deault consistency level for this account."
+            }
+        },
+        "docDBMaxStalenessPrefix": {
+            "type": "int",
+            "minValue": 10,
+            "maxValue": 1000,
+            "defaultValue": 10,
+            "metadata": {
+                "description": "When documentDB consistencyLevel is set to BoundedStaleness, then this value is required, else it can be ignored."
+            }
+        },
+        "docDBMaxIntervalInSeconds": {
+            "type": "int",
+            "minValue": 5,
+            "maxValue": 600,
+            "defaultValue": 5,
+            "metadata": {
+                "description": "When documentDB consistencyLevel is set to BoundedStaleness, then this value is required, else it can be ignored."
+            }
+        },
         "iotHubName": {
             "type": "string",
             "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('suiteName')), 5))]",
@@ -240,7 +272,12 @@
             },
             "properties": {
                 "name": "[parameters('docDBName')]",
-                "databaseAccountOfferType": "standard"
+                "databaseAccountOfferType": "standard",
+                "consistencyPolicy": {
+                    "defaultConsistencyLevel": "[parameters('docDBConsistencyLevel')]",
+                    "maxStalenessPrefix": "[parameters('docDBMaxStalenessPrefix')]",
+                    "maxIntervalInSeconds": "[parameters('docDBMaxIntervalInSeconds')]"
+                }
             }
         },
         {
@@ -511,7 +548,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('suiteWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenant'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, '\"' )]"
+                    "commandToExecute": "[concat('sh runallcontainers ', variables('vmFQDN') , ' ', parameters('suiteWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenant'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\"' )]"
                 }
             }
         }
