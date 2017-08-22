@@ -9,6 +9,9 @@
         "name": "Launch Program",
         "sourceMaps": true,
         "program": "${workspaceRoot}/src/index.ts",
+        "args": [
+            "-t test -s test"
+        ],
         "outFiles": [
             "${workspaceRoot}/publish/**/*.js"
         ]

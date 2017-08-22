@@ -31,8 +31,8 @@ const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitorin
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
     .usage('[options]')
-    .option('-t, --type', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
+    .option('-t, --type <type>', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
+    .option('-s, --sku <sku>', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -102,6 +102,8 @@ function main() {
                 type: 'list',
             });
 
+            console.log(program.sku);
+            console.log(solutionSku[solutionSku.basic]);
             if (program.sku === solutionSku[solutionSku.basic]) {
                 // Setting the ARM template that is meant to do demo deployment
                 templateNamePrefix += 'WithSingleVM';
