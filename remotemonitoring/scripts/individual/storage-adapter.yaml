@@ -28,7 +28,7 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: storagadapter.collectionlink
-        - name: PCS_STORAGE_CONNSTRING
+        - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
