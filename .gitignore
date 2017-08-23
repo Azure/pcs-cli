@@ -9,6 +9,9 @@ src/**/*.css
 
 # ssh ignore
 .ssh/
+ssl/*
+*.crt
+*.key
 
 #Kubernetes
 .kube/

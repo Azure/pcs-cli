@@ -102,8 +102,6 @@ function main() {
                 type: 'list',
             });
 
-            console.log(program.sku);
-            console.log(solutionSku[solutionSku.basic]);
             if (program.sku === solutionSku[solutionSku.basic]) {
                 // Setting the ARM template that is meant to do demo deployment
                 templateNamePrefix += 'WithSingleVM';
@@ -111,7 +109,7 @@ function main() {
                 params = templateNamePrefix + 'Parameters.json';
 
                 questions.addQuestion({
-                    message: 'Enter a user name for the Virtual Machine',
+                    message: 'Enter a user name for the virtual machine',
                     name: 'adminUsername',
                     type: 'input',
                     validate: (userName: string) => {
