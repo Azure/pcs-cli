@@ -6,6 +6,9 @@ metadata:
 data:
   # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
 
+  # Base service URL, where all our microservices are hosted
+  webservice.url: "{Base Service URL}"
+
   # The connection string will be of format
   # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
   # Policy Type can have following values: iothubowner, service, device, registryRead, registryReadWrite
@@ -29,6 +32,8 @@ data:
   iothubreact.hub.endpoint: "{Iot Hub React endpoint}"
   iothubreact.hub.partitions: "{Iot Hub React partitions}"
   iothubreact.access.connstring: "{Iot Hub React connection string}"
+  iothubreact.azureblob.account: "{Azure Blob account name}"
+  iothubreact.azureblob.key: "{Azure Blob account key}"
 
   # Auth
   auth.aad.global.tenantid: "{AAD Tenant Id}"
@@ -409,5 +414,3 @@ data:
                       }
                       {{ end }}
               {{ end }}
-  iothubreact.azureblob.account: "{Azure Blob account name}"
-  iothubreact.azureblob.key: "{Azure Blob account key}"
