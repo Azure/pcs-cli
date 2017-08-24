@@ -71,8 +71,8 @@ export class DeploymentManager implements IDeploymentManager {
                     fs.writeFileSync(fileName, JSON.stringify(deployProperties.outputs, null, 2));
                     console.log();
                     if (deployProperties.outputs.vmFQDN) {
-                        console.log('Please click %s%s %s',
-                                    `${chalk.cyan('http://')}`, `${chalk.cyan(deployProperties.outputs.vmFQDN.value)}`,
+                        const webUrl = 'http://' + deployProperties.outputs.vmFQDN.value;
+                        console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
                                     'to deployed solution:', `${chalk.green(params.solutionName)}`);
                     }
                     console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);

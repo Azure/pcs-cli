@@ -31,8 +31,8 @@ const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitorin
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
     .usage('[options]')
-    .option('-t, --type', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
+    .option('-t, --type <type>', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
+    .option('-s, --sku <sku>', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -109,7 +109,7 @@ function main() {
                 params = templateNamePrefix + 'Parameters.json';
 
                 questions.addQuestion({
-                    message: 'Enter a user name for the Virtual Machine',
+                    message: 'Enter a user name for the virtual machine',
                     name: 'adminUsername',
                     type: 'input',
                     validate: (userName: string) => {
