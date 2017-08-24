@@ -92,14 +92,14 @@ subscription. To see if you have the required permissions, [check in the Portal]
 
 ### Create a Container Service for Kubernetes
 1) `az login`
-2) `az account set --subscription {subscriptionId from "Enterprise Deployment: Deploy Azure Resources" step 6}`
-3) `az acs create -n {myClusterName} -d {myDNSPrefix} -g {resouceGroup from "Enterprise Deployment: Deploy Azure Resources" step 6} -t kubernetes --generate-ssh-keys`
+2) `az account set --subscription {subscriptionId from "Deploy Azure Resources" step 3}`
+3) `az acs create -n {myClusterName} -d {myDNSPrefix} -g {resouceGroup from "Deploy Azure Resources" step 3} -t kubernetes --generate-ssh-keys`
 4) `az acs kubernetes get-credentials -g {myResorceGroupName} -n {myClusterName} --ssh-key-file {path to ssh key file to use}`
 
 ### Deploy Docker images through Kubernetes
 To verify access test with `kubectl get nodes`
 1) `kubectl create -f .\scripts\nginx-ingress-controller.yaml`
-2) Go to your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 1. It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
+2) Go to your resource group on [portal.azure.com](http://portal.azure.com) and set up friendly DNS name for Public IP address that got created in step 3 of [Create a Container Service for Kubernetes](README.md#create-a-container-service-for-kubernetes). It will start with **{myClusterName}**. To confirm match the IP address with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
 3) Add actual values in the ConfigMap section in file [all-in-one.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/all-in-one.yaml) and [deployment-configmap.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/individual/deployment-configmap.yaml). \
 Values to replace will be of format **"{...}"**. Some examples below.
     * **{DNS}** with value from step 2
