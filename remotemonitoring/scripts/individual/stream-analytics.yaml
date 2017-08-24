@@ -21,13 +21,26 @@ spec:
         ports:
         - containerPort: 9023
         env:
-        - name: PCS_STREAMANALYTICS_WEBSERVICE_PORT
-          value: "9023"
         - name: PCS_STREAMANALYTICS_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
+        - name: PCS_DEVICETELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: devicetelemetry.webservice.url
+        - name: PCS_UICONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: uiconfig.webservice.url
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
         - name: PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
           valueFrom:
             configMapKeyRef:
