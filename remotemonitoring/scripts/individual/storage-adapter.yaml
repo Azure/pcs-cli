@@ -23,11 +23,6 @@ spec:
         env:
         - name: PCS_STORAGEADAPTER_WEBSERVICE_PORT
           value: "9022"
-        - name: PCS_STORAGEADAPTER_CONTAINER_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: storageadapter.collectionlink
         - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
