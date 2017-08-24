@@ -92,8 +92,8 @@ subscription. To see if you have the required permissions, [check in the Portal]
 
 ### Create a Container Service for Kubernetes
 1) `az login`
-2) `az account set --subscription {subscriptionId from "Deploy Azure Resources" step 3}`
-3) `az acs create -n {myClusterName} -d {myDNSPrefix} -g {resouceGroup from "Deploy Azure Resources" step 3} -t kubernetes --generate-ssh-keys`
+2) `az account set --subscription {subscriptionId }` from step 3 of [Deploy Azure Resources](README.md#deploy-azure-resources-1)
+3) `az acs create -n {myClusterName} -d {myDNSPrefix} -g {resouceGroup} -t kubernetes --generate-ssh-keys` where resouceGroup from step 3 of [Deploy Azure Resources](README.md#deploy-azure-resources-1)
 4) `az acs kubernetes get-credentials -g {myResorceGroupName} -n {myClusterName} --ssh-key-file {path to ssh key file to use}`
 
 ### Deploy Docker images through Kubernetes
