@@ -23,7 +23,6 @@ data:
 
   # Storage Adapter
   storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
-  storageadapter.collectionlink: "{Storage Adapter DocumentDB collection link}"
 
   # Stream Analytics
   iothubreact.hub.name: "{Iot Hub React name}"
