@@ -25,7 +25,6 @@ data:
 
   # Storage Adapter
   storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
-  storagadapter.collectionlink: "{Storage Adapter DocumentDB collection link}"
 
   # Stream Analytics
   iothubreact.hub.name: "{Iot Hub React name}"
@@ -35,12 +34,21 @@ data:
   iothubreact.azureblob.account: "{Azure Blob account name}"
   iothubreact.azureblob.key: "{Azure Blob account key}"
 
+  # IoT Hub Manager
+  iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
+
+  # Device Telemetry
+  devicetelemetry.webservice.url: "http://device-telemetry-svc:9004/v1"
+
+  # UI config
+  uiconfig.webservice.url: "http://ui-config-svc:9005/v1"
+
   # Auth
   auth.aad.global.tenantid: "{AAD Tenant Id}"
   auth.aad.global.clientid: "{AAD Client Id}"
   auth.aad.global.loginuri: "https://login.microsoftonline.com/"
-  
-  # Nginx Template 
+
+  # Nginx Template
   nginx.tmpl: |
               {{ $cfg := .cfg }}
               daemon off;
