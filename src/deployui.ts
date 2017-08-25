@@ -67,7 +67,7 @@ class DeployUI {
     public stop(err?: string): void {
         clearInterval(this.timer);
         let message = this.deployed;
-        if (this.errorMessages) {
+        if (this.errorMessages && this.errorMessages.size > 0) {
             message = 'Deployment failed \n';
             this.errorMessages.forEach((value: string) => {
                 message += `${chalk.red(value)}` + '\n';
