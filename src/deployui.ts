@@ -54,11 +54,11 @@ class DeployUI {
                         }
                         this.ui.updateBottomBar(operationsStatus);
                     } else {
-                        this.ui.updateBottomBar(this.deploying + loader + '\n');
+                        this.ui.updateBottomBar(loader + this.deploying);
                     }
                 })
                 .catch((err: Error) => {
-                    this.ui.updateBottomBar(this.deploying + this.loader[this.i++ % 4] + '\n');
+                    this.ui.updateBottomBar(this.loader[this.i++ % 4] + this.deploying);
                 });
             },
             200);
@@ -66,14 +66,14 @@ class DeployUI {
 
     public stop(err?: string): void {
         clearInterval(this.timer);
-        let message = this.deployed;
+        let message = `${chalk.green(this.deployed)}`;
         if (this.errorMessages && this.errorMessages.size > 0) {
-            message = 'Deployment failed \n';
+            message = `${chalk.red('Deployment failed \n')}`;
             this.errorMessages.forEach((value: string) => {
                 message += `${chalk.red(value)}` + '\n';
             });
         } else if (err) {
-            message = 'Deployment failed \n' + `${chalk.red(err)}` + '\n';
+            message = `${chalk.red(err)}` + '\n';
         }
 
         this.ui.updateBottomBar(message);
@@ -95,16 +95,19 @@ class DeployUI {
                     this.operationSet.add(key);
                     let iconState = loader;
                     if (props.provisioningState === 'Succeeded') {
-                        iconState = `${chalk.green('\u2713')}`; // Check mark
+                        iconState = `${chalk.green('\u2713 ')}`; // Check mark
                     } else if (props.provisioningState === 'Failed') {
-                        iconState = `${chalk.red('\u2715')}`; // Cross sign
+                        iconState = `${chalk.red('\u2715 ')}`; // Cross sign
                         const message = props.statusMessage.error.message;
                         if (!this.errorMessages.has(key)) {
+                            // Add the error messages to the map so that we can show it at the end
+                            // of deployment, we don't want to cancel it because you can run it again
+                            // to do incremental deployment that will save time.
                             this.errorMessages.set(key, props.statusMessage.error.message);
                         }
                     }
-                    operationsStatus.push('Resource Type: ' + targetResource.resourceType +
-                    ', Provisioning State: ' + props.provisioningState + ' ' + iconState );
+                    operationsStatus.push(iconState + 'Provisioning State: ' + props.provisioningState +
+                        '\tResource Type: ' + targetResource.resourceType);
                 }
             }
         });
@@ -124,7 +127,7 @@ class DeployUI {
             operationsStatus.forEach((status: string) => {
                 combinedStatus += status + '\n';
             });
-            combinedStatus += this.deploying + loader + '\n';
+            combinedStatus += loader + this.deploying + '\n';
         }
         return combinedStatus;
     }
