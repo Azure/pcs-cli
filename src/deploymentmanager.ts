@@ -79,17 +79,12 @@ export class DeploymentManager implements IDeploymentManager {
                     }
                     console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
                     deployUI.stop();
+                })
+                .catch((error: Error) => {
+                    deployUI.stop(error.message);
                 });
                 deployUI.start(client, params.solutionName, deploymentName, properties.template.resources.length as number);
             }).catch((err: Error) => {
-                client.deploymentOperations.list(params.solutionName, deploymentName)
-                .then((value: DeploymentOperationsListResult) => {
-                    value.forEach((operation: DeploymentOperation) => {
-                        if (operation.properties && operation.properties.provisioningState === 'Failed') {
-                            console.log(`${chalk.red(operation.properties.statusMessage)}`);
-                        }
-                    });
-                });
                 deployUI.stop();
             });
     }

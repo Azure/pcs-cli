@@ -24,6 +24,7 @@ class DeployUI {
     private timer: NodeJS.Timer;
     private operationSet: Set<string>;
     private resourcesStatusAvailable: number;
+    private errorMessages: Map<string, string>;
 
     constructor()  {
         this.resourcesStatusAvailable = 0;
@@ -37,15 +38,16 @@ class DeployUI {
                 client.deploymentOperations.list(resourceGroupName, deploymentName)
                 .then((value: DeploymentOperationsListResult) => {
                     this.operationSet = new Set();
+                    this.errorMessages = new Map();
                     const loader = this.loader[this.i++ % 4];
                     const operationsStatus = this.operationsStatusFormatter(value, loader);
                     if (operationsStatus) {
                         // Leaving empty lines to show status message as they appear
-                        if (totalResources >= this.resourcesStatusAvailable) {
+                        if (totalResources > this.resourcesStatusAvailable) {
                             while (value.length > this.resourcesStatusAvailable) {
                                 console.log('');
                                 this.resourcesStatusAvailable++;
-                                if (totalResources <= this.resourcesStatusAvailable) {
+                                if (totalResources === this.resourcesStatusAvailable) {
                                     break;
                                 }
                             }
@@ -62,11 +64,16 @@ class DeployUI {
             200);
     }
 
-    public stop(err?: Error): void {
+    public stop(err?: string): void {
         clearInterval(this.timer);
         let message = this.deployed;
-        if (err) {
-            message = 'Deployment failed ' + err;
+        if (this.errorMessages) {
+            message = 'Deployment failed \n';
+            this.errorMessages.forEach((value: string) => {
+                message += `${chalk.red(value)}` + '\n';
+            });
+        } else if (err) {
+            message = 'Deployment failed \n' + `${chalk.red(err)}` + '\n';
         }
 
         this.ui.updateBottomBar(message);
@@ -89,11 +96,15 @@ class DeployUI {
                     let iconState = loader;
                     if (props.provisioningState === 'Succeeded') {
                         iconState = `${chalk.green('\u2713')}`; // Check mark
-                    } else if (props.provisioningState !== 'Running') {
-                        iconState = `${chalk.green('\u2715')}`; // Cross sign
+                    } else if (props.provisioningState === 'Failed') {
+                        iconState = `${chalk.red('\u2715')}`; // Cross sign
+                        const message = props.statusMessage.error.message;
+                        if (!this.errorMessages.has(key)) {
+                            this.errorMessages.set(key, props.statusMessage.error.message);
+                        }
                     }
                     operationsStatus.push('Resource Type: ' + targetResource.resourceType +
-                    ', Provisioning State: ' + props.provisioningState + ' ' + iconState);
+                    ', Provisioning State: ' + props.provisioningState + ' ' + iconState );
                 }
             }
         });
