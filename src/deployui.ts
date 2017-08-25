@@ -24,7 +24,10 @@ class DeployUI {
     private timer: NodeJS.Timer;
     private operationSet: Set<string>;
     private resourcesStatusAvailable: number;
+    private combinedStatus: string;
     private errorMessages: Map<string, string>;
+    private checkMark = `${chalk.green('\u2713 ')}`;
+    private crossMark = `${chalk.red('\u2715 ')}`;
 
     constructor()  {
         this.resourcesStatusAvailable = 0;
@@ -32,7 +35,6 @@ class DeployUI {
     }
 
     public start(client: ResourceManagementClient, resourceGroupName: string, deploymentName: string, totalResources: number): void {
-        console.log('');
         this.timer = setInterval(
             () => {
                 client.deploymentOperations.list(resourceGroupName, deploymentName)
@@ -40,7 +42,7 @@ class DeployUI {
                     this.operationSet = new Set();
                     this.errorMessages = new Map();
                     const loader = this.loader[this.i++ % 4];
-                    const operationsStatus = this.operationsStatusFormatter(value, loader);
+                    let operationsStatus = this.operationsStatusFormatter(value, loader);
                     if (operationsStatus) {
                         // Leaving empty lines to show status message as they appear
                         if (totalResources > this.resourcesStatusAvailable) {
@@ -52,6 +54,7 @@ class DeployUI {
                                 }
                             }
                         }
+                        operationsStatus += loader + this.deploying;
                         this.ui.updateBottomBar(operationsStatus);
                     } else {
                         this.ui.updateBottomBar(loader + this.deploying);
@@ -66,14 +69,16 @@ class DeployUI {
 
     public stop(err?: string): void {
         clearInterval(this.timer);
-        let message = `${chalk.green(this.deployed)}`;
+        let message: string = '';
         if (this.errorMessages && this.errorMessages.size > 0) {
-            message = `${chalk.red('Deployment failed \n')}`;
+            message = this.crossMark + `${chalk.red('Deployment failed \n')}`;
             this.errorMessages.forEach((value: string) => {
                 message += `${chalk.red(value)}` + '\n';
             });
         } else if (err) {
-            message = `${chalk.red(err)}` + '\n';
+            message = this.crossMark + `${chalk.red(err)}` + '\n';
+        } else {
+            message += this.combinedStatus + this.checkMark + `${chalk.green(this.deployed)}` + '\n';
         }
 
         this.ui.updateBottomBar(message);
@@ -86,6 +91,7 @@ class DeployUI {
 
     private operationsStatusFormatter(operations: DeploymentOperationsListResult, loader: string): string {
         const operationsStatus: string[] = [];
+        this.combinedStatus = '';
         operations.forEach((operation: DeploymentOperation) => {
             const props: DeploymentOperationProperties = operation.properties as DeploymentOperationProperties;
             const targetResource: TargetResource = props.targetResource as TargetResource;
@@ -95,9 +101,9 @@ class DeployUI {
                     this.operationSet.add(key);
                     let iconState = loader;
                     if (props.provisioningState === 'Succeeded') {
-                        iconState = `${chalk.green('\u2713 ')}`; // Check mark
+                        iconState = this.checkMark;
                     } else if (props.provisioningState === 'Failed') {
-                        iconState = `${chalk.red('\u2715 ')}`; // Cross sign
+                        iconState = this.crossMark;
                         const message = props.statusMessage.error.message;
                         if (!this.errorMessages.has(key)) {
                             // Add the error messages to the map so that we can show it at the end
@@ -111,7 +117,6 @@ class DeployUI {
                 }
             }
         });
-        let combinedStatus: string = '';
         if (operationsStatus && operationsStatus.length) {
             // Sort so that we show the running state last
             operationsStatus.sort((first: string, second: string) => {
@@ -125,11 +130,10 @@ class DeployUI {
                 return 0;
             });
             operationsStatus.forEach((status: string) => {
-                combinedStatus += status + '\n';
+                this.combinedStatus += status + '\n';
             });
-            combinedStatus += loader + this.deploying + '\n';
         }
-        return combinedStatus;
+        return this.combinedStatus;
     }
 }
 

@@ -70,7 +70,7 @@ export class DeploymentManager implements IDeploymentManager {
                 .validate(params.solutionName, deploymentName, deployment)
                 .then((validationResult: DeploymentValidateResult) => {
                     if (validationResult.error) {
-                        deployUI.stop('Deployment validation failed:\n' + `${chalk.red(JSON.stringify(validationResult.error, null, 2))}`);
+                        deployUI.stop('Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2));
                     } else {
                         client.deployments.createOrUpdate(result.name as string, deploymentName, deployment)
                         .then((res: DeploymentExtended) => {
@@ -79,7 +79,6 @@ export class DeploymentManager implements IDeploymentManager {
                             fs.writeFileSync(fileName, JSON.stringify(deployProperties.outputs, null, 2));
                             deployUI.stop();
                             if (deployProperties.outputs.vmFQDN) {
-                                console.log();
                                 const webUrl = 'http://' + deployProperties.outputs.vmFQDN.value;
                                 console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
                                             'to deployed solution:', `${chalk.green(params.solutionName)}`);
