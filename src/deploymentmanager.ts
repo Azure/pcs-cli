@@ -11,6 +11,8 @@ type ResourceGroup = ResourceManagement.ResourceModels.ResourceGroup;
 type Deployment = ResourceManagement.ResourceModels.Deployment;
 type DeploymentProperties = ResourceManagement.ResourceModels.DeploymentProperties;
 type DeploymentExtended = ResourceManagement.ResourceModels.DeploymentExtended;
+type DeploymentOperationsListResult = ResourceManagement.ResourceModels.DeploymentOperationsListResult;
+type DeploymentOperation = ResourceManagement.ResourceModels.DeploymentOperation;
 
 export interface IDeploymentManager {
     submit(params: Answers | undefined): Promise<any>;
@@ -60,11 +62,11 @@ export class DeploymentManager implements IDeploymentManager {
 
         const deployment: Deployment = { properties };
         const deployUI = new DeployUI();
+        const deploymentName = 'deployment-' + params.solutionName;
         return client.resourceGroups.createOrUpdate(params.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
-                deployUI.start();
-                return client.deployments
-                .createOrUpdate(result.name as string, 'deployment-' + params.solutionName, deployment)
+                client.deployments
+                .createOrUpdate(result.name as string, deploymentName, deployment)
                 .then((res: DeploymentExtended) => {
                     const deployProperties: any = res.properties;
                     const fileName: string = process.cwd() + path.sep + 'output.json';
@@ -78,8 +80,17 @@ export class DeploymentManager implements IDeploymentManager {
                     console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
                     deployUI.stop();
                 });
+                deployUI.start(client, params.solutionName, deploymentName, properties.template.resources.length as number);
             }).catch((err: Error) => {
-                deployUI.stop(err);
+                client.deploymentOperations.list(params.solutionName, deploymentName)
+                .then((value: DeploymentOperationsListResult) => {
+                    value.forEach((operation: DeploymentOperation) => {
+                        if (operation.properties && operation.properties.provisioningState === 'Failed') {
+                            console.log(`${chalk.red(operation.properties.statusMessage)}`);
+                        }
+                    });
+                });
+                deployUI.stop();
             });
     }
 }
