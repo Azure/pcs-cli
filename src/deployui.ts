@@ -1,36 +1,84 @@
+import * as chalk from 'chalk';
 import * as inquirer from 'inquirer';
+import * as ResourceManagement from 'azure-arm-resource';
+import * as msRestAzure from 'ms-rest-azure';
+
+type DeploymentOperationsListResult = ResourceManagement.ResourceModels.DeploymentOperationsListResult;
+type DeploymentOperation = ResourceManagement.ResourceModels.DeploymentOperation;
+type DeploymentOperationProperties = ResourceManagement.ResourceModels.DeploymentOperationProperties;
+type TargetResource = ResourceManagement.ResourceModels.TargetResource;
+type ResourceManagementClient = ResourceManagement.ResourceManagementClient;
 
 class DeployUI {
     private deploying = 'Deploying...';
     private deployed = 'Deployed successfully';
     private loader = [
-        '/ ' + this.deploying,
-        '| ' + this.deploying,
-        '\\ ' + this.deploying,
-        '- ' + this.deploying,
+        '/ ' ,
+        '| ' ,
+        '\\ ',
+        '- ' ,
         ];
 
     private i = 4;
     private ui: inquirer.ui.BottomBar;
     private timer: NodeJS.Timer;
+    private operationSet: Set<string>;
+    private resourcesStatusAvailable: number;
+    private combinedStatus: string;
+    private errorMessages: Map<string, string>;
+    private checkMark = `${chalk.green('\u2713 ')}`;
+    private crossMark = `${chalk.red('\u2715 ')}`;
 
     constructor()  {
+        this.resourcesStatusAvailable = 0;
         this.ui = new inquirer.ui.BottomBar();
     }
 
-    public start(): void {
+    public start(client: ResourceManagementClient, resourceGroupName: string, deploymentName: string, totalResources: number): void {
         this.timer = setInterval(
             () => {
-                this.ui.updateBottomBar(this.loader[this.i++ % 4]);
-            }, 
+                client.deploymentOperations.list(resourceGroupName, deploymentName)
+                .then((value: DeploymentOperationsListResult) => {
+                    this.operationSet = new Set();
+                    this.errorMessages = new Map();
+                    const loader = this.loader[this.i++ % 4];
+                    let operationsStatus = this.operationsStatusFormatter(value, loader);
+                    if (operationsStatus) {
+                        // Leaving empty lines to show status message as they appear
+                        if (totalResources > this.resourcesStatusAvailable) {
+                            while (value.length > this.resourcesStatusAvailable) {
+                                console.log('');
+                                this.resourcesStatusAvailable++;
+                                if (totalResources === this.resourcesStatusAvailable) {
+                                    break;
+                                }
+                            }
+                        }
+                        operationsStatus += loader + this.deploying;
+                        this.ui.updateBottomBar(operationsStatus);
+                    } else {
+                        this.ui.updateBottomBar(loader + this.deploying);
+                    }
+                })
+                .catch((err: Error) => {
+                    this.ui.updateBottomBar(this.loader[this.i++ % 4] + this.deploying);
+                });
+            },
             200);
     }
 
-    public stop(err?: Error): void {
+    public stop(err?: string): void {
         clearInterval(this.timer);
-        let message = this.deployed;
-        if (err) {
-            message = 'Deployment failed ' + err;
+        let message: string = '';
+        if (this.errorMessages && this.errorMessages.size > 0) {
+            message = this.crossMark + `${chalk.red('Deployment failed \n')}`;
+            this.errorMessages.forEach((value: string) => {
+                message += `${chalk.red(value)}` + '\n';
+            });
+        } else if (err) {
+            message = this.crossMark + `${chalk.red(err)}` + '\n';
+        } else {
+            message += this.combinedStatus + this.checkMark + `${chalk.green(this.deployed)}` + '\n';
         }
 
         this.ui.updateBottomBar(message);
@@ -39,6 +87,53 @@ class DeployUI {
 
     public close(): void {
         this.ui.close();
+    }
+
+    private operationsStatusFormatter(operations: DeploymentOperationsListResult, loader: string): string {
+        const operationsStatus: string[] = [];
+        this.combinedStatus = '';
+        operations.forEach((operation: DeploymentOperation) => {
+            const props: DeploymentOperationProperties = operation.properties as DeploymentOperationProperties;
+            const targetResource: TargetResource = props.targetResource as TargetResource;
+            if (targetResource && targetResource.resourceType && targetResource.resourceName) {
+                const key: string = targetResource.id as string;
+                if (!this.operationSet.has(key)) {
+                    this.operationSet.add(key);
+                    let iconState = loader;
+                    if (props.provisioningState === 'Succeeded') {
+                        iconState = this.checkMark;
+                    } else if (props.provisioningState === 'Failed') {
+                        iconState = this.crossMark;
+                        const message = props.statusMessage.error.message;
+                        if (!this.errorMessages.has(key)) {
+                            // Add the error messages to the map so that we can show it at the end
+                            // of deployment, we don't want to cancel it because you can run it again
+                            // to do incremental deployment that will save time.
+                            this.errorMessages.set(key, props.statusMessage.error.message);
+                        }
+                    }
+                    operationsStatus.push(iconState + 'Provisioning State: ' + props.provisioningState +
+                        '\tResource Type: ' + targetResource.resourceType);
+                }
+            }
+        });
+        if (operationsStatus && operationsStatus.length) {
+            // Sort so that we show the running state last
+            operationsStatus.sort((first: string, second: string) => {
+                const f = first.search('Succeeded');
+                const s = second.search('Succeeded');
+                if (f > s) {
+                    return -1;
+                } else if (s > f) {
+                    return 1;
+                }
+                return 0;
+            });
+            operationsStatus.forEach((status: string) => {
+                this.combinedStatus += status + '\n';
+            });
+        }
+        return this.combinedStatus;
     }
 }
 
