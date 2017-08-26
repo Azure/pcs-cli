@@ -87,30 +87,6 @@
             "properties": {
                 "location": "[variables('location')]"
             }
-        },
-        {
-            "apiVersion": "[variables('iotHubVersion')]",
-            "name": "[concat(parameters('iotHubName'), '/events/', variables('rulesCGName'))]",
-            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
-            "dependsOn": [
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
-            ]
-        },
-        {
-            "apiVersion": "[variables('iotHubVersion')]",
-            "name": "[concat(parameters('iotHubName'), '/events/', variables('deviceInfoCGName'))]",
-            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
-            "dependsOn": [
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
-            ]
-        },
-        {
-            "apiVersion": "[variables('iotHubVersion')]",
-            "name": "[concat(parameters('iotHubName'), '/events/', variables('telemetryCGName'))]",
-            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
-            "dependsOn": [
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
-            ]
         }
     ],
     "outputs": {

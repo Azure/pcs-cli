@@ -11,6 +11,9 @@ type ResourceGroup = ResourceManagement.ResourceModels.ResourceGroup;
 type Deployment = ResourceManagement.ResourceModels.Deployment;
 type DeploymentProperties = ResourceManagement.ResourceModels.DeploymentProperties;
 type DeploymentExtended = ResourceManagement.ResourceModels.DeploymentExtended;
+type DeploymentOperationsListResult = ResourceManagement.ResourceModels.DeploymentOperationsListResult;
+type DeploymentOperation = ResourceManagement.ResourceModels.DeploymentOperation;
+type DeploymentValidateResult = ResourceManagement.ResourceModels.DeploymentValidateResult;
 
 export interface IDeploymentManager {
     submit(params: Answers | undefined): Promise<any>;
@@ -60,26 +63,36 @@ export class DeploymentManager implements IDeploymentManager {
 
         const deployment: Deployment = { properties };
         const deployUI = new DeployUI();
+        const deploymentName = 'deployment-' + params.solutionName;
         return client.resourceGroups.createOrUpdate(params.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
-                deployUI.start();
-                return client.deployments
-                .createOrUpdate(result.name as string, 'deployment-' + params.solutionName, deployment)
-                .then((res: DeploymentExtended) => {
-                    const deployProperties: any = res.properties;
-                    const fileName: string = process.cwd() + path.sep + 'output.json';
-                    fs.writeFileSync(fileName, JSON.stringify(deployProperties.outputs, null, 2));
-                    console.log();
-                    if (deployProperties.outputs.vmFQDN) {
-                        const webUrl = 'http://' + deployProperties.outputs.vmFQDN.value;
-                        console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
-                                    'to deployed solution:', `${chalk.green(params.solutionName)}`);
+                client.deployments
+                .validate(params.solutionName, deploymentName, deployment)
+                .then((validationResult: DeploymentValidateResult) => {
+                    if (validationResult.error) {
+                        deployUI.stop('Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2));
+                    } else {
+                        client.deployments.createOrUpdate(result.name as string, deploymentName, deployment)
+                        .then((res: DeploymentExtended) => {
+                            const deployProperties: any = res.properties;
+                            const fileName: string = process.cwd() + path.sep + 'output.json';
+                            fs.writeFileSync(fileName, JSON.stringify(deployProperties.outputs, null, 2));
+                            deployUI.stop();
+                            if (deployProperties.outputs.vmFQDN) {
+                                const webUrl = 'http://' + deployProperties.outputs.vmFQDN.value;
+                                console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
+                                            'to deployed solution:', `${chalk.green(params.solutionName)}`);
+                            }
+                            const resourceGroupUrl = 'https://portal.azure.com/#resource' + result.id;
+                            console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
+                                        'to manage your deployed resources');
+                            console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
+                        });
+                        deployUI.start(client, params.solutionName, deploymentName, properties.template.resources.length as number);
                     }
-                    console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
-                    deployUI.stop();
                 });
             }).catch((err: Error) => {
-                deployUI.stop(err);
+                deployUI.stop();
             });
     }
 }

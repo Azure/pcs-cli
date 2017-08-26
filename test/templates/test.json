@@ -1,0 +1,110 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "solutionName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the solution"
+            }
+        },
+        "storageName": {
+            "type": "string",
+            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "The name of the storageAccount"
+            }
+        },
+        "storageSkuName": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS", "Standard_GRS", "Standard_RAGRS", "Standard_ZRS", "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage SKU name"
+            }
+        },
+        "storageEndpointSuffix": {
+            "type": "string",
+            "defaultValue": "core.windows.net",
+            "allowedValues": [
+                "core.windows.net",
+                "core.chinacloudapi.cn",
+                "core.cloudapi.de"
+            ],
+            "metadata": {
+                "description": "Suffix added to Azure Storage hostname"
+            }
+        },
+        "iotHubName": {
+            "type": "string",
+            "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "The name of Azure IoT Hub"
+            }
+        },
+        "iotHubSku": {
+            "type": "string",
+            "defaultValue": "S1",
+            "allowedValues": [
+                "F1", "S1", "S2", "S3"
+            ],
+            "metadata": {
+                "description": "The Azure IoT Hub SKU"
+            }
+        },
+        "iotHubTier": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Free", "Standard"
+            ],
+            "metadata": {
+                "description": "The Azure IoT Hub tier"
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "storageApiVersion": "2017-06-01",
+        "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
+        "iotHubApiVersion": "2017-01-19",
+        "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
+        "iotHubKeyName": "iothubowner",
+        "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]"
+    },
+    "resources": [
+        {
+          "type": "Microsoft.Storage/storageAccounts",
+          "name": "[parameters('storageName')]",
+          "apiVersion": "[variables('storageApiVersion')]",
+          "location": "[variables('location')]",
+          "kind": "Storage",
+          "sku": {
+              "name": "[parameters('storageSkuName')]"
+          }
+      },
+      {
+          "apiVersion": "[variables('iotHubApiVersion')]",
+          "type": "Microsoft.Devices/Iothubs",
+          "name": "[parameters('iotHubName')]",
+          "location": "[variables('location')]",
+          "sku": {
+              "name": "[parameters('iotHubSku')]",
+              "tier": "[parameters('iotHubTier')]",
+              "capacity": 1
+          },
+          "properties": {
+              "location": "[variables('location')]"
+          }
+      }
+    ],
+
+    "outputs" : {
+        "primaryKey" :{
+            "type": "string",
+            "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+        }
+    }
+}
