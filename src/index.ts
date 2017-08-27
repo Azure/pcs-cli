@@ -1,8 +1,12 @@
 #!/usr/bin/env node
+const adal = require('adal-node');
 
 import * as chalk from 'chalk';
-import * as inquirer from 'inquirer';
-import * as msRestAzure from 'ms-rest-azure';
+import * as fs from 'fs';
+import * as path from 'path';
+import { ChoiceType, prompt } from 'inquirer';
+import { AuthResponse, DeviceTokenCredentials, InteractiveLoginOptions, LinkedSubscription, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
+import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
 
 import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
@@ -28,11 +32,22 @@ const invalidPasswordMessage = 'The supplied password must be between 6-72 chara
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli#azure-iot-pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
+const fileName: string = process.cwd() + path.sep + 'creds';
+let deviceTokenCredentials: any = null;
+
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .usage('[options]')
     .option('-t, --type <type>', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
+    .action((type) => {
+        if (type === 'login') {
+            return login();
+        } else if (type === 'logout') {
+            return logout();
+        } else {
+            console.log(`${chalk.red('Invalid choice:', type)}`);
+        }
+    })
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -40,6 +55,17 @@ const program = new Command(packageJson.name)
         console.log(
             `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
             );
+        console.log();
+        console.log(
+            '  Commands:'
+            );
+        console.log();
+        console.log(
+            '    login:         Log in to access Azure subscriptions.'
+            );
+        console.log(
+            '    logout:        Log out to remove access to Azure subscriptions.'
+                );
         console.log();
         console.log(
             `    For further documentation, please visit:`
@@ -57,7 +83,9 @@ const program = new Command(packageJson.name)
     })
     .parse(process.argv);
 
-main();
+if (!program.args[0] || program.args[0] === '-t') {
+    main();
+}
 
 function main() {
     /** Pre-req
@@ -77,88 +105,140 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-    msRestAzure.interactiveLoginWithAuthResponse().then((authResponse: msRestAzure.AuthResponse) => {
-        solutionType = program.type;
-        let templateNamePrefix = solutionType;
-        let solution = templateNamePrefix + '.json';
-        let params = templateNamePrefix + 'Parameters.json';
+    let creds = '';
+    const subs: ChoiceType[] = [];
+    if (!fs.existsSync(fileName)) {
+        console.log('Please run %s', `${chalk.yellow('pcs login')}`);
+    } else {
+        creds = fs.readFileSync(fileName, 'UTF-8');
+        const options = JSON.parse(creds);
+        const tokenCache = new adal.MemoryCache();
+        tokenCache.add(options.tokenCache._entries, () => {
+            // empty function
+        });
+        options.tokenCache = tokenCache;
+        // const authorityUrl = options.environment.activeDirectoryEndpointUrl + options.domain;
+        // const context = new adal.AuthenticationContext(authorityUrl, options.environment.validateAuthority, options.tokenCache);
+        // context.acquireTokenWithRefreshToken(options.tokenCache._entries[0].refreshToken, options.clientId, null, (err: any, result: any) => {
+        //     if (err) {
+        //         console.log(err);
+        //     }
+        //     console.log(result);
+        // });
+        deviceTokenCredentials = new DeviceTokenCredentials(options) as any;
+        const client = new SubscriptionClient(deviceTokenCredentials);
+        client.subscriptions.list()
+        .then((values: SubscriptionModels.SubscriptionListResult) => {
+            values.map((subscription: SubscriptionModels.Subscription) => {
+                if (subscription.state === 'Enabled') {
+                    subs.push({name: subscription.displayName, value: subscription.subscriptionId});
+                }
+            });
+        })
+        .then(() => {
+            solutionType = program.type;
+            let templateNamePrefix = solutionType;
+            let solution = templateNamePrefix + '.json';
+            let params = templateNamePrefix + 'Parameters.json';
+        
+            if (!subs || !subs.length) {
+                console.log('Could not find any subscriptions in this account.\n \
+                Please login with an account that has at least one active subscription');
+            } else {
+                const questions: IQuestions = new Questions();
+                questions.insertQuestion(1, {
+                    choices: subs,
+                    message: 'Select a subscription:',
+                    name: 'subscriptionId',
+                    type: 'list',
+                });
+                
+                if (program.sku === solutionSku[solutionSku.basic]) {
+                    // Setting the ARM template that is meant to do demo deployment
+                    templateNamePrefix += 'WithSingleVM';
+                    solution = templateNamePrefix + '.json';
+                    params = templateNamePrefix + 'Parameters.json';
+                    addBasicDeploymentQuestions(questions);
+                }
 
-        const subs: inquirer.ChoiceType[] = [];
-        authResponse.subscriptions.map((subscription: msRestAzure.LinkedSubscription) => {
-            if (subscription.state === 'Enabled') {
-                subs.push({name: subscription.name, value: subscription.id});
+                try {
+                    template = require('../' + solutionType + '/templates/' + solution);
+                    parameters = require('../' + solutionType + '/templates/' + params);
+                } catch (ex) {
+                    console.log('Could not find template or parameters file, Exception:', ex);
+                    return;
+                }
+    
+                const deploymentManager: IDeploymentManager = new DeploymentManager(deviceTokenCredentials, solutionType, template, parameters);
+                prompt(questions.value)
+                .then((answers: Answers) => {
+                    return deploymentManager.submit(answers);
+                })
+                .catch((error: Error) => {
+                    console.log('Prompt error: ' + error);
+                });
+            }
+        })
+        .catch((error: any) => {
+            if (error.code === 'ExpiredAuthenticationToken') {
+                console.log('Please run %s', `${chalk.yellow('pcs login')}`);
+            } else {
+                console.log(error);
             }
         });
+    }
+}
 
-        if (!subs || !subs.length) {
-            console.log('Could not find any subscriptions in this account. /n \
-            Please login with an account that has at least one active subscription');
-        } else {
-            const questions: IQuestions = new Questions();
-            questions.insertQuestion(1, {
-                choices: subs,
-                message: 'Select a subscription:',
-                name: 'subscriptionId',
-                type: 'list',
+function login(): Promise<void> {
+    return interactiveLoginWithAuthResponse().then((authResponse: AuthResponse) => {
+        const credentials = authResponse.credentials as any;
+        fs.writeFileSync(fileName, JSON.stringify(credentials));
+        console.log(`${chalk.green('Successfully logged in')}`);
+    })
+    .catch((error: Error) => {
+        console.log(error);
+    });
+}
+
+function logout() {
+    if (fs.existsSync(fileName)) {
+        fs.unlinkSync(fileName);
+    }
+    console.log(`${chalk.green('Successfully logged out')}`);
+}
+
+function addBasicDeploymentQuestions(questions: IQuestions) {
+    questions.addQuestion({
+        message: 'Enter a user name for the virtual machine',
+        name: 'adminUsername',
+        type: 'input',
+        validate: (userName: string) => {
+            const pass: RegExpMatchArray | null = userName.match(Questions.userNameRegex);
+            const notAllowedUserNames = Questions.notAllowedUserNames.filter((u: string) => {
+                return u === userName;
             });
-
-            if (program.sku === solutionSku[solutionSku.basic]) {
-                // Setting the ARM template that is meant to do demo deployment
-                templateNamePrefix += 'WithSingleVM';
-                solution = templateNamePrefix + '.json';
-                params = templateNamePrefix + 'Parameters.json';
-
-                questions.addQuestion({
-                    message: 'Enter a user name for the virtual machine',
-                    name: 'adminUsername',
-                    type: 'input',
-                    validate: (userName: string) => {
-                        const pass: RegExpMatchArray | null = userName.match(Questions.userNameRegex);
-                        const notAllowedUserNames = Questions.notAllowedUserNames.filter((u: string) => {
-                            return u === userName;
-                        });
-                        if (pass && notAllowedUserNames.length === 0) {
-                            return true;
-                        }
-
-                        return invalidUsernameMessage;
-                    },
-                });
-                questions.addQuestion({
-                    mask: '*',
-                    message: 'Enter a password',
-                    name: 'adminPassword',
-                    type: 'password',
-                    validate: (password: string) => {
-                        const pass: RegExpMatchArray | null = password.match(Questions.passwordRegex);
-                        const notAllowedPasswords = Questions.notAllowedPasswords.filter((p: string) => {
-                            return p === password;
-                        });
-                        if (pass && notAllowedPasswords.length === 0) {
-                            return true;
-                        }
-
-                        return invalidPasswordMessage;
-                    },
-                });
+            if (pass && notAllowedUserNames.length === 0) {
+                return true;
             }
 
-            try {
-                template = require('../' + solutionType + '/templates/' + solution);
-                parameters = require('../' + solutionType + '/templates/' + params);
-            } catch (ex) {
-                console.log('Could not find template or parameters file, Exception:', ex);
-                return;
+            return invalidUsernameMessage;
+        },
+    });
+    questions.addQuestion({
+        mask: '*',
+        message: 'Enter a password',
+        name: 'adminPassword',
+        type: 'password',
+        validate: (password: string) => {
+            const pass: RegExpMatchArray | null = password.match(Questions.passwordRegex);
+            const notAllowedPasswords = Questions.notAllowedPasswords.filter((p: string) => {
+                return p === password;
+            });
+            if (pass && notAllowedPasswords.length === 0) {
+                return true;
             }
 
-            const deploymentManager: IDeploymentManager = new DeploymentManager(authResponse, solutionType, template, parameters);
-            inquirer.prompt(questions.value)
-            .then((answers: Answers) => {
-                return deploymentManager.submit(answers);
-            })
-            .catch((error: Error) => {
-                console.log('Prompt error: ' + error);
-            });
-        }
+            return invalidPasswordMessage;
+        },
     });
 }

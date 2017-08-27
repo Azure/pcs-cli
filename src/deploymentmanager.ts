@@ -1,32 +1,32 @@
 import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as ResourceManagement from 'azure-arm-resource';
-import * as msRestAzure from 'ms-rest-azure';
 
+import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
+import { DeviceTokenCredentials } from 'ms-rest-azure';
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 
-type ResourceGroup = ResourceManagement.ResourceModels.ResourceGroup;
-type Deployment = ResourceManagement.ResourceModels.Deployment;
-type DeploymentProperties = ResourceManagement.ResourceModels.DeploymentProperties;
-type DeploymentExtended = ResourceManagement.ResourceModels.DeploymentExtended;
-type DeploymentOperationsListResult = ResourceManagement.ResourceModels.DeploymentOperationsListResult;
-type DeploymentOperation = ResourceManagement.ResourceModels.DeploymentOperation;
-type DeploymentValidateResult = ResourceManagement.ResourceModels.DeploymentValidateResult;
+type ResourceGroup = ResourceModels.ResourceGroup;
+type Deployment = ResourceModels.Deployment;
+type DeploymentProperties = ResourceModels.DeploymentProperties;
+type DeploymentExtended = ResourceModels.DeploymentExtended;
+type DeploymentOperationsListResult = ResourceModels.DeploymentOperationsListResult;
+type DeploymentOperation = ResourceModels.DeploymentOperation;
+type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
 export interface IDeploymentManager {
     submit(params: Answers | undefined): Promise<any>;
 }
 
 export class DeploymentManager implements IDeploymentManager {
-    private _authReponse: msRestAzure.AuthResponse;
+    private _deviceTokenCredentials: DeviceTokenCredentials;
     private _solutionType: string;
     private _template: any;
     private _parameters: any;
 
-    constructor(authResonse: msRestAzure.AuthResponse, solutionType: string, template: any, parameters: any) {
-        this._authReponse = authResonse;
+    constructor(deviceTokenCredentials: DeviceTokenCredentials, solutionType: string, template: any, parameters: any) {
+        this._deviceTokenCredentials = deviceTokenCredentials;
         this._solutionType = solutionType;
         this._template = template;
         this._parameters = parameters;
@@ -37,7 +37,7 @@ export class DeploymentManager implements IDeploymentManager {
             return Promise.reject('Solution name, subscription id and location cannot be empty');
         }
 
-        const client = new ResourceManagement.ResourceManagementClient(this._authReponse.credentials, params.subscriptionId);
+        const client = new ResourceManagementClient(this._deviceTokenCredentials, params.subscriptionId);
         const location = params.location;
         const resourceGroup: ResourceGroup = {
             location,
