@@ -107,7 +107,6 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-    const subs: ChoiceType[] = [];
     if (!fs.existsSync(cacheFilePath)) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
@@ -130,13 +129,15 @@ function main() {
         const client = new SubscriptionClient(deviceTokenCredentials);
         client.subscriptions.list()
         .then((values: SubscriptionModels.SubscriptionListResult) => {
+            const subs: ChoiceType[] = [];
             values.map((subscription: SubscriptionModels.Subscription) => {
                 if (subscription.state === 'Enabled') {
                     subs.push({name: subscription.displayName, value: subscription.subscriptionId});
                 }
             });
+            return subs;
         })
-        .then(() => {
+        .then((subs: ChoiceType[]) => {
             solutionType = program.type;
             let templateNamePrefix = solutionType;
             let solution = templateNamePrefix + '.json';
@@ -181,11 +182,8 @@ function main() {
             }
         })
         .catch((error: any) => {
-            if (error.code === 'ExpiredAuthenticationToken') {
-                console.log('Please run %s', `${chalk.yellow('pcs login')}`);
-            } else {
-                console.log(error);
-            }
+            // In case of login error it is better to ask user to login again
+            console.log('Please run %s', `${chalk.yellow('pcs login')}`);
         });
     }
 }
