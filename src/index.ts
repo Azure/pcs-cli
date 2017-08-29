@@ -4,8 +4,9 @@ const adal = require('adal-node');
 import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { ChoiceType, prompt } from 'inquirer';
-import { AuthResponse, DeviceTokenCredentials, InteractiveLoginOptions, LinkedSubscription, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
+import { AuthResponse, DeviceTokenCredentials, InteractiveLoginOptions, LinkedSubscription, interactiveLogin } from 'ms-rest-azure';
 import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
 
 import { Answers, Question } from 'inquirer';
@@ -32,7 +33,8 @@ const invalidPasswordMessage = 'The supplied password must be between 6-72 chara
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli#azure-iot-pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
-const fileName: string = process.cwd() + path.sep + 'creds';
+const pcsTmpDir: string = os.tmpdir() + path.sep + '.pcs';
+const cacheFilePath: string = pcsTmpDir + path.sep + 'cache';
 let deviceTokenCredentials: any = null;
 
 const program = new Command(packageJson.name)
@@ -105,27 +107,26 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-    let creds = '';
     const subs: ChoiceType[] = [];
-    if (!fs.existsSync(fileName)) {
+    if (!fs.existsSync(cacheFilePath)) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
-        creds = fs.readFileSync(fileName, 'UTF-8');
-        const options = JSON.parse(creds);
+        const cache = fs.readFileSync(cacheFilePath, 'UTF-8');
         const tokenCache = new adal.MemoryCache();
-        tokenCache.add(options.tokenCache._entries, () => {
+        const tokens = JSON.parse(cache);
+        let username = '';
+        tokens.forEach((token: any) => {
+            token.expiresOn = new Date(token.expiresOn);
+            username = token.userId;
+        });
+        tokenCache.add(tokens, () => {
             // empty function
         });
-        options.tokenCache = tokenCache;
-        // const authorityUrl = options.environment.activeDirectoryEndpointUrl + options.domain;
-        // const context = new adal.AuthenticationContext(authorityUrl, options.environment.validateAuthority, options.tokenCache);
-        // context.acquireTokenWithRefreshToken(options.tokenCache._entries[0].refreshToken, options.clientId, null, (err: any, result: any) => {
-        //     if (err) {
-        //         console.log(err);
-        //     }
-        //     console.log(result);
-        // });
-        deviceTokenCredentials = new DeviceTokenCredentials(options) as any;
+        const options = {
+            tokenCache,
+            username
+        };
+        deviceTokenCredentials = new DeviceTokenCredentials(options);
         const client = new SubscriptionClient(deviceTokenCredentials);
         client.subscriptions.list()
         .then((values: SubscriptionModels.SubscriptionListResult) => {
@@ -190,9 +191,11 @@ function main() {
 }
 
 function login(): Promise<void> {
-    return interactiveLoginWithAuthResponse().then((authResponse: AuthResponse) => {
-        const credentials = authResponse.credentials as any;
-        fs.writeFileSync(fileName, JSON.stringify(credentials));
+    return interactiveLogin().then((credentials: any) => {
+        if (!fs.existsSync(pcsTmpDir)) {
+            fs.mkdir(pcsTmpDir);
+        }
+        fs.writeFileSync(cacheFilePath, JSON.stringify(credentials.context._cache._entries));
         console.log(`${chalk.green('Successfully logged in')}`);
     })
     .catch((error: Error) => {
@@ -201,8 +204,8 @@ function login(): Promise<void> {
 }
 
 function logout() {
-    if (fs.existsSync(fileName)) {
-        fs.unlinkSync(fileName);
+    if (fs.existsSync(cacheFilePath)) {
+        fs.unlinkSync(cacheFilePath);
     }
     console.log(`${chalk.green('Successfully logged out')}`);
 }
