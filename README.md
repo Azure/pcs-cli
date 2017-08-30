@@ -134,7 +134,6 @@ Please enter issues, bugs, or suggestions as GitHub Issues here: https://github.
 # Related
 
 * [Contributing and Development setup](CONTRIBUTING.md)
-* [Development setup, scripts and tools](DEVELOPMENT.md)
 
 [build-badge]: https://img.shields.io/travis/Azure/iot-pcs-cli.svg
 [build-url]: https://travis-ci.com/Azure/iot-pcs-cli
