@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
-import { DeviceTokenCredentials } from 'ms-rest-azure';
+import { DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 
@@ -20,13 +20,13 @@ export interface IDeploymentManager {
 }
 
 export class DeploymentManager implements IDeploymentManager {
-    private _deviceTokenCredentials: DeviceTokenCredentials;
+    private _options: DeviceTokenCredentialsOptions;
     private _solutionType: string;
     private _template: any;
     private _parameters: any;
 
-    constructor(deviceTokenCredentials: DeviceTokenCredentials, solutionType: string, template: any, parameters: any) {
-        this._deviceTokenCredentials = deviceTokenCredentials;
+    constructor(options: DeviceTokenCredentialsOptions, solutionType: string, template: any, parameters: any) {
+        this._options = options;
         this._solutionType = solutionType;
         this._template = template;
         this._parameters = parameters;
@@ -36,8 +36,7 @@ export class DeploymentManager implements IDeploymentManager {
         if (!!!params || !!!params.solutionName || !!!params.subscriptionId || !!!params.location) {
             return Promise.reject('Solution name, subscription id and location cannot be empty');
         }
-
-        const client = new ResourceManagementClient(this._deviceTokenCredentials, params.subscriptionId);
+        const client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), params.subscriptionId);
         const location = params.location;
         const resourceGroup: ResourceGroup = {
             location,

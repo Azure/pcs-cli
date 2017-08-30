@@ -6,7 +6,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { ChoiceType, prompt } from 'inquirer';
-import { AuthResponse, DeviceTokenCredentials, InteractiveLoginOptions, LinkedSubscription, interactiveLogin } from 'ms-rest-azure';
+import { AuthResponse, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
+         InteractiveLoginOptions, LinkedSubscription, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
 import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
 
 import { Answers, Question } from 'inquirer';
@@ -34,8 +35,7 @@ const gitHubUrl: string = 'https://github.com/Azure/pcs-cli#azure-iot-pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
 const pcsTmpDir: string = os.tmpdir() + path.sep + '.pcs';
-const cacheFilePath: string = pcsTmpDir + path.sep + 'cache';
-let deviceTokenCredentials: any = null;
+const cacheFilePath: string = pcsTmpDir + path.sep + 'cache.json';
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
@@ -110,9 +110,9 @@ function main() {
     if (!fs.existsSync(cacheFilePath)) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
-        const cache = fs.readFileSync(cacheFilePath, 'UTF-8');
+        const cache = JSON.parse(fs.readFileSync(cacheFilePath, 'UTF-8'));
         const tokenCache = new adal.MemoryCache();
-        const tokens = JSON.parse(cache);
+        const tokens = cache.tokens;
         let username = '';
         tokens.forEach((token: any) => {
             token.expiresOn = new Date(token.expiresOn);
@@ -121,38 +121,35 @@ function main() {
         tokenCache.add(tokens, () => {
             // empty function
         });
-        const options = {
+        const options: DeviceTokenCredentialsOptions = {
             tokenCache,
             username
         };
-        deviceTokenCredentials = new DeviceTokenCredentials(options);
+        const deviceTokenCredentials = new DeviceTokenCredentials(options);
         const client = new SubscriptionClient(deviceTokenCredentials);
         client.subscriptions.list()
-        .then((values: SubscriptionModels.SubscriptionListResult) => {
+        .then(() => {
             const subs: ChoiceType[] = [];
-            values.map((subscription: SubscriptionModels.Subscription) => {
+            cache.linkedSubscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
-                    subs.push({name: subscription.displayName, value: subscription.subscriptionId});
+                    subs.push({name: subscription.name, value: subscription.id});
                 }
             });
-            return subs;
-        })
-        .then((subs: ChoiceType[]) => {
             solutionType = program.type;
             let templateNamePrefix = solutionType;
             let solution = templateNamePrefix + '.json';
             let params = templateNamePrefix + 'Parameters.json';
         
             if (!subs || !subs.length) {
-                console.log('Could not find any subscriptions in this account.\n \
-                Please login with an account that has at least one active subscription');
+                console.log('Could not find any subscriptions in this account.');
+                console.log('Please login with an account that has at least one active subscription');
             } else {
                 const questions: IQuestions = new Questions();
                 questions.insertQuestion(1, {
                     choices: subs,
                     message: 'Select a subscription:',
                     name: 'subscriptionId',
-                    type: 'list',
+                    type: 'list'
                 });
                 
                 if (program.sku === solutionSku[solutionSku.basic]) {
@@ -171,9 +168,13 @@ function main() {
                     return;
                 }
     
-                const deploymentManager: IDeploymentManager = new DeploymentManager(deviceTokenCredentials, solutionType, template, parameters);
                 prompt(questions.value)
                 .then((answers: Answers) => {
+                    const index = cache.linkedSubscriptions.findIndex((x: LinkedSubscription) => x.id === answers.subscriptionId);
+                    if (index !== -1) {
+                        options.domain = cache.linkedSubscriptions[index].tenantId;
+                    }
+                    const deploymentManager: IDeploymentManager = new DeploymentManager(options, solutionType, template, parameters);
                     return deploymentManager.submit(answers);
                 })
                 .catch((error: Error) => {
@@ -189,11 +190,16 @@ function main() {
 }
 
 function login(): Promise<void> {
-    return interactiveLogin().then((credentials: any) => {
+    return interactiveLoginWithAuthResponse().then((response: AuthResponse) => {
+        const credentials = response.credentials as any;
         if (!fs.existsSync(pcsTmpDir)) {
             fs.mkdir(pcsTmpDir);
         }
-        fs.writeFileSync(cacheFilePath, JSON.stringify(credentials.context._cache._entries));
+        const data = {
+            linkedSubscriptions: response.subscriptions,
+            tokens: credentials.context._cache._entries
+        };
+        fs.writeFileSync(cacheFilePath, JSON.stringify(data));
         console.log(`${chalk.green('Successfully logged in')}`);
     })
     .catch((error: Error) => {
