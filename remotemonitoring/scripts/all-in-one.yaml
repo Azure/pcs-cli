@@ -881,7 +881,7 @@ metadata:
     # ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: "devdaily.westus.cloudapp.azure.com"
+  - host: "{DNS}"
     http:
       paths:
       - path: /
