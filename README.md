@@ -32,7 +32,7 @@ are ready for demo pursposes.
 
 The Enterprise deployment offers a production ready deployment that can be
 scaled up or down as needed. It uses
-[Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)\
+[Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)
 and [Kubernetes](https://kubernetes.io/) for orchestration. It also requires
 some manual steps in running commands through different CLIs like
 [az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) and
@@ -79,6 +79,7 @@ the Remote Monitoring WebApp
 - [Install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 > **Important** \
+\
 Make sure the path of az and kubectl are set in environment variables.
 You should be able to type 'az' or 'kubectl' in console window and see
 the help content.
@@ -111,6 +112,7 @@ the help content.
 ```
 
 > **Important** \
+\
 To create a service principal, you must have permissions to register an \
 application with your Azure Active Directory(AAD) tenant, and to assign \
 the application to a role in your subscription. To see if you have the \
@@ -145,6 +147,7 @@ To verify access test with `kubectl get nodes`
 4. `kubectl create -f .\scripts\all-in-one.yaml`
 
 > **Important** \
+\
 If your account doesn't have the Azure Active Directory (AAD) and subscription
 permissions to create a service principal, then the command generates an error
 similar to **Insufficient privileges to complete the operation**. \
