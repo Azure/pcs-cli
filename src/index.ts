@@ -216,7 +216,7 @@ function logout() {
 
 function addBasicDeploymentQuestions(questions: IQuestions) {
     questions.addQuestion({
-        message: 'Enter a user name for the virtual machine',
+        message: 'Enter a user name for the virtual machine:',
         name: 'adminUsername',
         type: 'input',
         validate: (userName: string) => {
@@ -233,7 +233,7 @@ function addBasicDeploymentQuestions(questions: IQuestions) {
     });
     questions.addQuestion({
         mask: '*',
-        message: 'Enter a password',
+        message: 'Enter a password:',
         name: 'adminPassword',
         type: 'password',
         validate: (password: string) => {
