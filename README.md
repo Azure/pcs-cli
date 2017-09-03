@@ -88,7 +88,7 @@ the help content.
 
 1. `pcs -t remotemonitoring -s enterprise`
 2. Follow the on-screen prompts
-3. The results of the deployment will be saved to a file named output.json
+3. The results of the deployment will be saved to a file named {deployment-name}-output.json 
 
 **Sample output format:**
 ```json
@@ -131,7 +131,8 @@ required permissions, [check in the Portal](https://docs.microsoft.com/en-us/azu
 ### Deploy Docker images through Kubernetes
 
 To verify access test with `kubectl get nodes`
-1. `kubectl create -f .\scripts\nginx-ingress-controller.yaml`
+
+1. `kubectl create -f .\remotemonitoring\scripts\nginx-ingress-controller.yaml`
 2. Go to your resource group on [portal.azure.com](http://portal.azure.com)
    and set up friendly DNS name for Public IP address that got created in
    step 3 of
@@ -139,12 +140,14 @@ To verify access test with `kubectl get nodes`
    It will start with **{myClusterName}**. To confirm match the IP address
    with "LoadBalancer Ingress" by running `kubectl describe svc nginx-ingress`
 3. Add actual values in the ConfigMap section in file
-   [all-in-one.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/all-in-one.yaml) and [deployment-configmap.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/individual/deployment-configmap.yaml).
+   [all-in-one.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/all-in-one.yaml)
+   and
+   [deployment-configmap.yaml](https://github.com/Azure/pcs-cli/blob/master/remotemonitoring/scripts/individual/deployment-configmap.yaml).
    Values to replace will be of format **"{...}"**. Some examples below.
     * **{DNS}** with value from step 2
     * **{IoT Hub connection string}**
     * **{DocumentDB connection string}**
-4. `kubectl create -f .\scripts\all-in-one.yaml`
+4. `kubectl create -f .\remotemonitoring\scripts\all-in-one.yaml`
 
 > **Important** \
 \
