@@ -17,7 +17,7 @@
         },
         "docDBSku": {
             "type": "string",
-            "defaultValue": "Standard",
+            "defaultValue": "Strong",
             "metadata": {
                 "description": "The DocumentDB SKU"
             }
