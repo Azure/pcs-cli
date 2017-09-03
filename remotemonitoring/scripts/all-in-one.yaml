@@ -7,6 +7,9 @@ metadata:
 data:
   # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
 
+  # Base service URL, where all our microservices are hosted
+  webservice.url: "{Base Service URL}"
+  
   # The connection string will be of format
   # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
   # Policy Type can have following values: iothubowner, service, device, registryRead, registryReadWrite
@@ -447,17 +450,17 @@ spec:
         image: azureiotpcs/device-simulation-dotnet:latest
         ports:
         - containerPort: 9003
-      env:
-      - name: PCS_IOTHUB_CONNSTRING
-        valueFrom:
-          configMapKeyRef:
-            name: deployment-configmap
-            key: iothub.connstring
-      - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
-        valueFrom:
-          configMapKeyRef:
-            name: deployment-configmap
-            key: storageadapter.webservice.url
+        env:
+        - name: PCS_IOTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothub.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
 ---
 apiVersion: v1
 kind: Service
@@ -761,6 +764,64 @@ spec:
 
 ---
 
+# Auth - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth-pod
+        image: azureiotpcs/pcs-auth-dotnet:latest
+        ports:
+        - containerPort: 9001
+        env:
+        - name: PCS_AUTH_WEBSERVICE_PORT
+          value: "9001"
+        - name: PCS_AUTH_AAD_GLOBAL_LOGINURI
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.aad.global.loginuri
+        - name: PCS_AUTH_AAD_GLOBAL_TENANTID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.aad.global.tenantid
+        - name: PCS_AUTH_AAD_GLOBAL_CLIENTID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.aad.global.clientid
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-svc
+  labels:
+    app: auth
+spec:
+  type: NodePort
+  ports:
+  - port: 9001
+  selector:
+    app: auth
+# Auth - End
+
+---
+
 # Remote Monitoring WebUI - Start
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -844,60 +905,3 @@ spec:
           serviceName: ui-config-svc
           servicePort: 9005
 # Ingress - End
-
----
-# Auth - Start
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: auth
-spec:
-  replicas: 3
-  minReadySeconds: 10
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
-  template:
-    metadata:
-      labels:
-        app: auth
-    spec:
-      containers:
-      - name: auth-pod
-        image: azureiotpcs/pcs-auth-dotnet:latest
-        ports:
-        - containerPort: 9001
-        env:
-        - name: PCS_AUTH_WEBSERVICE_PORT
-          value: "9001"
-        - name: PCS_AUTH_AAD_GLOBAL_LOGINURI
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.aad.global.loginuri
-        - name: PCS_AUTH_AAD_GLOBAL_TENANTID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.aad.global.tenantid
-        - name: PCS_AUTH_AAD_GLOBAL_CLIENTID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.aad.global.clientid
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: auth-svc
-  labels:
-    app: auth
-spec:
-  type: NodePort
-  ports:
-  - port: 9001
-  selector:
-    app: auth
-# Auth - End

@@ -74,7 +74,7 @@ export class DeploymentManager implements IDeploymentManager {
                         client.deployments.createOrUpdate(result.name as string, deploymentName, deployment)
                         .then((res: DeploymentExtended) => {
                             const deployProperties: any = res.properties;
-                            const fileName: string = process.cwd() + path.sep + 'output.json';
+                            const fileName: string = process.cwd() + path.sep + deploymentName + '-output.json';
                             fs.writeFileSync(fileName, JSON.stringify(deployProperties.outputs, null, 2));
                             deployUI.stop();
                             if (deployProperties.outputs.vmFQDN) {
