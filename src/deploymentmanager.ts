@@ -54,6 +54,12 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.adminPassword) {
             this._parameters.adminPassword.value = params.adminPassword;
         }
+        if (this._parameters.servicePrincipalClientId) {
+            this._parameters.servicePrincipalClientId.value = params.appId;
+        }
+        if (this._parameters.sshRSAPublicKey) {
+            this._parameters.sshRSAPublicKey.value = fs.readFileSync(params.sshFilePath, 'UTF-8');
+        }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
             parameters: this._parameters,
@@ -71,7 +77,8 @@ export class DeploymentManager implements IDeploymentManager {
                     if (validationResult.error) {
                         deployUI.stop('Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2));
                     } else {
-                        client.deployments.createOrUpdate(result.name as string, deploymentName, deployment)
+                        deployUI.start(client, params.solutionName, deploymentName, properties.template.resources.length as number);
+                        return client.deployments.createOrUpdate(result.name as string, deploymentName, deployment)
                         .then((res: DeploymentExtended) => {
                             const deployProperties: any = res.properties;
                             const fileName: string = process.cwd() + path.sep + deploymentName + '-output.json';
@@ -87,7 +94,6 @@ export class DeploymentManager implements IDeploymentManager {
                                         'to manage your deployed resources');
                             console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
                         });
-                        deployUI.start(client, params.solutionName, deploymentName, properties.template.resources.length as number);
                     }
                 });
             }).catch((err: Error) => {

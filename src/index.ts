@@ -7,8 +7,14 @@ import * as path from 'path';
 import * as os from 'os';
 import { ChoiceType, prompt } from 'inquirer';
 import { AuthResponse, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
-         InteractiveLoginOptions, LinkedSubscription, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
+    LinkedSubscription, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
 import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
+import GraphRbacManagementClient = require('azure-graph');
+import AuthorizationManagementClient = require('azure-arm-authorization');
+import ComputeManagementClient = require('azure-arm-compute');
+import * as util from 'util';
+import momemt = require('moment');
+import * as uuid from 'uuid';
 
 import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
@@ -36,6 +42,8 @@ const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitorin
 
 const pcsTmpDir: string = os.tmpdir() + path.sep + '.pcs';
 const cacheFilePath: string = pcsTmpDir + path.sep + 'cache.json';
+
+const MAX_RETRYCOUNT = 36;
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
@@ -107,37 +115,31 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-    if (!fs.existsSync(cacheFilePath)) {
+
+    const cachedAuthResponse = getCachedAuthResponse();
+    if (!cachedAuthResponse) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
-        const cache = JSON.parse(fs.readFileSync(cacheFilePath, 'UTF-8'));
-        const tokenCache = new adal.MemoryCache();
-        const tokens = cache.tokens;
-        let username = '';
-        tokens.forEach((token: any) => {
-            token.expiresOn = new Date(token.expiresOn);
-            username = token.userId;
-        });
-        tokenCache.add(tokens, () => {
-            // empty function
-        });
-        const options: DeviceTokenCredentialsOptions = {
-            tokenCache,
-            username
-        };
-        const deviceTokenCredentials = new DeviceTokenCredentials(options);
-        const client = new SubscriptionClient(deviceTokenCredentials);
-        client.subscriptions.list()
-        .then(() => {
+        const client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options));
+        return client.subscriptions.list()
+        .then((subscriptions: SubscriptionModels.SubscriptionListResult) => {
+            if (!subscriptions || !subscriptions.length) {
+                console.log('Could not find any subscriptions in this account.');
+                return;
+            }
+
             const subs: ChoiceType[] = [];
-            cache.linkedSubscriptions.map((subscription: LinkedSubscription) => {
+            subscriptions.map((subscription: SubscriptionModels.Subscription) => {
                 if (subscription.state === 'Enabled') {
-                    subs.push({name: subscription.name, value: subscription.id});
+                    subs.push({name: subscription.displayName, value: subscription.subscriptionId});
                 }
             });
             solutionType = program.type;
+            // tslint:disable-next-line:prefer-const
             let templateNamePrefix = solutionType;
+            // tslint:disable-next-line:prefer-const
             let solution = templateNamePrefix + '.json';
+            // tslint:disable-next-line:prefer-const
             let params = templateNamePrefix + 'Parameters.json';
         
             if (!subs || !subs.length) {
@@ -157,8 +159,8 @@ function main() {
                     templateNamePrefix += 'WithSingleVM';
                     solution = templateNamePrefix + '.json';
                     params = templateNamePrefix + 'Parameters.json';
-                    addBasicDeploymentQuestions(questions);
                 }
+                addMoreDeploymentQuestions(questions);
 
                 try {
                     template = require('../' + solutionType + '/templates/' + solution);
@@ -167,15 +169,31 @@ function main() {
                     console.log('Could not find template or parameters file, Exception:', ex);
                     return;
                 }
-    
-                prompt(questions.value)
-                .then((answers: Answers) => {
-                    const index = cache.linkedSubscriptions.findIndex((x: LinkedSubscription) => x.id === answers.subscriptionId);
-                    if (index !== -1) {
-                        options.domain = cache.linkedSubscriptions[index].tenantId;
+                let answers: Answers = {};
+                return prompt(questions.value)
+                .then((ans: Answers) => {
+                    answers = ans;
+                    const index = cachedAuthResponse.subscriptions.findIndex((x: LinkedSubscription) => x.id === answers.subscriptionId);
+                    if (index === -1) {
+                        const errorMessage = 'Selected subscriptionId was not found in cache';
+                        console.log(errorMessage);
+                        throw new Error(errorMessage);
                     }
-                    const deploymentManager: IDeploymentManager = new DeploymentManager(options, solutionType, template, parameters);
-                    return deploymentManager.submit(answers);
+                    return cachedAuthResponse.subscriptions[index];
+                })
+                .then((subscription: LinkedSubscription) => {
+                    cachedAuthResponse.options.domain = subscription.tenantId;
+                    return createServicePrincipal(answers.solutionName,
+                                                  subscription.id, answers.adminPassword, cachedAuthResponse.options);
+                })
+                .then((appId: string) => {
+                    if (appId) {
+                        cachedAuthResponse.options.tokenAudience = null;
+                        const deploymentManager: IDeploymentManager = 
+                        new DeploymentManager(cachedAuthResponse.options, solutionType, template, parameters);
+                        answers.appId = appId;
+                        return deploymentManager.submit(answers);
+                    }
                 })
                 .catch((error: Error) => {
                     console.log('Prompt error: ' + error);
@@ -214,7 +232,116 @@ function logout() {
     console.log(`${chalk.green('Successfully logged out')}`);
 }
 
-function addBasicDeploymentQuestions(questions: IQuestions) {
+function getCachedAuthResponse(): any {
+    if (!fs.existsSync(cacheFilePath)) {
+        return null;
+    } else {
+        const cache = JSON.parse(fs.readFileSync(cacheFilePath, 'UTF-8'));
+        const tokenCache = new adal.MemoryCache();
+        const tokens = cache.tokens;
+        let username = '';
+        tokens.forEach((token: any) => {
+            token.expiresOn = new Date(token.expiresOn);
+            username = token.userId;
+        });
+        tokenCache.add(tokens, () => {
+            // empty function
+        });
+        const options: DeviceTokenCredentialsOptions = {
+            tokenCache,
+            username
+        };
+        return {
+            options,
+            subscriptions: cache.linkedSubscriptions
+        };
+    }
+}
+
+function createServicePrincipal(solutionName: string, subscriptionId: string,
+                                passwordForSp: string, options: DeviceTokenCredentialsOptions): Promise<any> {
+    const graphOptions = options;
+    graphOptions.tokenAudience = 'graph';
+    const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '' );
+    const startDate = new Date(Date.now());
+    let endDate = new Date(startDate.toISOString());
+    const m = momemt(endDate);
+    m.add(1, 'years');
+    endDate = new Date(m.toISOString());
+    const homepage = solutionName;
+    const identifierUris = [ homepage ];
+    const applicationCreateParameters = {
+        availableToOtherTenants: false,
+        displayName: solutionName,
+        homepage,
+        identifierUris,
+        passwordCredentials: [{
+        endDate,
+        keyId: uuid.v1(),
+        startDate,
+        value: passwordForSp
+        }]
+    };
+    return graphClient.applications.create(applicationCreateParameters)
+    .then((result: any) => {
+        const servicePrincipalCreateParameters = {
+            accountEnabled: true,
+            appId: result.appId
+            };
+        return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
+    })
+    .then((sp: any) => {
+        return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
+    })
+    .catch((error: Error) => {
+        console.log(error);
+        console.log('Please run %s', `${chalk.yellow('pcs login')}`);
+    });
+}
+
+// After creating the new application the propogation takes sometime and hence we need to try
+// multiple times until the role assignment is successful or it fails after max try.
+function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
+                                       appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
+    const roleId = '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'; // that of a owner
+    const scope = '/subscriptions/' + subscriptionId; // we shall be assigning the sp, a 'contributor' role at the subscription level
+    const roleDefinitionId = scope + '/providers/Microsoft.Authorization/roleDefinitions/' + roleId;
+    // clearing the token audience
+    options.tokenAudience = undefined;
+    const authzClient = new AuthorizationManagementClient(new DeviceTokenCredentials(options), subscriptionId);
+    const assignmentGuid = uuid.v1();
+    const roleCreateParams = {
+      properties: {
+        principalId: objectId,
+        // have taken this from the comments made above
+        roleDefinitionId,
+        scope
+      }
+    };
+    let retryCount = 0;
+    const promise = new Promise<any>((resolve, reject) => {
+        const timer: NodeJS.Timer = setInterval(() => {
+            retryCount++;
+            return authzClient.roleAssignments.create(scope, assignmentGuid, roleCreateParams)
+            .then((roleResult: any) => {
+                clearInterval(timer);
+                resolve(appId);
+            })
+            .catch ((error: Error) => {
+                if (retryCount >= MAX_RETRYCOUNT) {
+                    clearInterval(timer);
+                    console.log(error);
+                    reject(error);
+                } else {
+                    console.log(`${chalk.yellow('Retrying role assignment creation:', retryCount.toString(), 'of', MAX_RETRYCOUNT.toString())}`);
+                }
+            });
+        },                                      5000);
+    });
+    return promise;
+}
+
+function addMoreDeploymentQuestions(questions: IQuestions) {
     questions.addQuestion({
         message: 'Enter a user name for the virtual machine',
         name: 'adminUsername',
@@ -246,6 +373,15 @@ function addBasicDeploymentQuestions(questions: IQuestions) {
             }
 
             return invalidPasswordMessage;
+        },
+    });
+    questions.addQuestion({
+        message: 'Enter path to SSH key file path:',
+        name: 'sshFilePath',
+        type: 'input',
+        validate: (sshFilePath: string) => {
+            // TODO Add ssh key validation
+            return true;
         },
     });
 }
