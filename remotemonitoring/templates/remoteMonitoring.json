@@ -288,6 +288,10 @@
             "type": "string",
             "value": "[reference(concat('Microsoft.ContainerService/containerServices/', 'containerservice-', resourceGroup().name)).masterProfile.fqdn]"
         },
+        "adminUsername": {
+            "type": "string",
+            "value": "[variables('adminUsername')]"
+        },
         "sshMaster0": {
             "type": "string",
             "value": "[concat('ssh ', variables('adminUsername'), '@', reference(concat('Microsoft.ContainerService/containerServices/', 'containerservice-', resourceGroup().name)).masterProfile.fqdn, ' -A -p 22')]"
