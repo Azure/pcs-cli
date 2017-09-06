@@ -58,7 +58,7 @@ export class Questions implements Questions {
         {
             // TODO: List the locations based on selected subscription
             choices: this.locations,
-            message: 'Select a location',
+            message: 'Select a location:',
             name: 'location',
             type: 'list',
         }

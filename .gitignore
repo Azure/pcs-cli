@@ -1,6 +1,7 @@
 # Customize gitignore
 *_.sh
 *WITHSECRETS*
+*.iml
 
 # Create-React-App build output
 build
