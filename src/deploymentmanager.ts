@@ -90,6 +90,10 @@ export class DeploymentManager implements IDeploymentManager {
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
                 deploymentProperties = res.properties;
+                console.log('Downloading the kubeconfig file');
+                return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
+            })
+            .then(() => {
                 const fileName: string = process.cwd() + path.sep + deploymentName + '-output.json';
                 fs.writeFileSync(fileName, JSON.stringify(deploymentProperties.outputs, null, 2));
                 if (deploymentProperties.outputs.vmFQDN) {
@@ -101,11 +105,6 @@ export class DeploymentManager implements IDeploymentManager {
                 console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
                             'to manage your deployed resources');
                 console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
-                console.log('Downloading the kubeconfig file');
-                return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
-            })
-            .then(() => {
-                deployUI.stop();
             })
             .catch((err: Error) => {
                 deployUI.stop(JSON.stringify(err));

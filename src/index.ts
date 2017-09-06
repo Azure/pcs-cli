@@ -294,8 +294,8 @@ function createServicePrincipal(solutionName: string, subscriptionId: string,
     .then((sp: any) => {
         return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
     })
-    .catch((error: Error) => {
-        console.log(`${chalk.red(error.message)}`);
+    .catch((error: any) => {
+        console.log(`${chalk.red('Error while creating applciaiton:', solutionName, error.body.message)}`);
     });
 }
 
@@ -375,14 +375,17 @@ function addMoreDeploymentQuestions(questions: IQuestions) {
             return invalidPasswordMessage;
         },
     });
-    questions.addQuestion({
-        default: defaultSshPublicKeyPath,
-        message: 'Enter path to SSH key file path:',
-        name: 'sshFilePath',
-        type: 'input',
-        validate: (sshFilePath: string) => {
-            // TODO Add ssh key validation
-            return true;
-        },
-    });
+    // Only add ssh key file option for enterprise deployment
+    if (program.sku === solutionSku[solutionSku.enterprise]) {
+        questions.addQuestion({
+            default: defaultSshPublicKeyPath,
+            message: 'Enter path to SSH key file path:',
+            name: 'sshFilePath',
+            type: 'input',
+            validate: (sshFilePath: string) => {
+                // TODO Add ssh key validation
+                return true;
+            },
+        });
+    }
 }
