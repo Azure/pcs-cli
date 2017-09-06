@@ -1,5 +1,17 @@
 {
     "solutionName": {
-      "value": "{Added through cli}"
+      "value": "{Added through command line interface}"
+    },
+    "adminUsername": {
+      "value": "{Added through command line interface}"
+    },
+    "adminPassword": {
+      "value": "{Added through command line interface}"
+    },
+    "sshRSAPublicKey": {
+      "value": "{Added through command line interface}"
+    },
+    "servicePrincipalClientId": {
+      "value": "{Added through command line interface}"
     }
 }

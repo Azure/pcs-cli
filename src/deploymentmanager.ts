@@ -1,11 +1,13 @@
 import * as chalk from 'chalk';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
+import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -14,6 +16,8 @@ type DeploymentExtended = ResourceModels.DeploymentExtended;
 type DeploymentOperationsListResult = ResourceModels.DeploymentOperationsListResult;
 type DeploymentOperation = ResourceModels.DeploymentOperation;
 type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
+
+const MAX_RETRY = 36;
 
 export interface IDeploymentManager {
     submit(params: Answers | undefined): Promise<any>;
@@ -38,7 +42,7 @@ export class DeploymentManager implements IDeploymentManager {
         }
         const client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), params.subscriptionId);
         const location = params.location;
-        const resourceGroup: ResourceGroup = {
+        let resourceGroup: ResourceGroup = {
             location,
             // TODO: Explore if it makes sense to add more tags, e.g. Language(Java/.Net), version etc
             tags: { IotSolutionType: this._solutionType },
@@ -54,6 +58,12 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.adminPassword) {
             this._parameters.adminPassword.value = params.adminPassword;
         }
+        if (this._parameters.servicePrincipalClientId) {
+            this._parameters.servicePrincipalClientId.value = params.appId;
+        }
+        if (this._parameters.sshRSAPublicKey) {
+            this._parameters.sshRSAPublicKey.value = fs.readFileSync(params.sshFilePath, 'UTF-8');
+        }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
             parameters: this._parameters,
@@ -61,38 +71,114 @@ export class DeploymentManager implements IDeploymentManager {
         };
 
         const deployment: Deployment = { properties };
-        const deployUI = new DeployUI();
+        const deployUI = DeployUI.instance;
         const deploymentName = 'deployment-' + params.solutionName;
+        let deploymentProperties: any = null;
         return client.resourceGroups.createOrUpdate(params.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
-                client.deployments
-                .validate(params.solutionName, deploymentName, deployment)
-                .then((validationResult: DeploymentValidateResult) => {
-                    if (validationResult.error) {
-                        deployUI.stop('Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2));
-                    } else {
-                        client.deployments.createOrUpdate(result.name as string, deploymentName, deployment)
-                        .then((res: DeploymentExtended) => {
-                            const deployProperties: any = res.properties;
-                            const fileName: string = process.cwd() + path.sep + deploymentName + '-output.json';
-                            fs.writeFileSync(fileName, JSON.stringify(deployProperties.outputs, null, 2));
-                            deployUI.stop();
-                            if (deployProperties.outputs.vmFQDN) {
-                                const webUrl = 'http://' + deployProperties.outputs.vmFQDN.value;
-                                console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
-                                            'to deployed solution:', `${chalk.green(params.solutionName)}`);
-                            }
-                            const resourceGroupUrl = 'https://portal.azure.com/#resource' + result.id;
-                            console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
-                                        'to manage your deployed resources');
-                            console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
-                        });
-                        deployUI.start(client, params.solutionName, deploymentName, properties.template.resources.length as number);
-                    }
-                });
-            }).catch((err: Error) => {
+                resourceGroup = result;
+                return client.deployments.validate(params.solutionName, deploymentName, deployment);
+            })
+            .then((validationResult: DeploymentValidateResult) => {
+                if (validationResult.error) {
+                    deployUI.stop('Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2));
+                    throw new Error(JSON.stringify(validationResult.error));
+                }
+
+                deployUI.start(client, params.solutionName, deploymentName, properties.template.resources.length as number);
+                return client.deployments.createOrUpdate(params.solutionName as string, deploymentName, deployment);
+            })
+            .then((res: DeploymentExtended) => {
                 deployUI.stop();
+                deploymentProperties = res.properties;
+                console.log('Downloading the kubeconfig file');
+                return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
+            })
+            .then(() => {
+                const fileName: string = process.cwd() + path.sep + deploymentName + '-output.json';
+                fs.writeFileSync(fileName, JSON.stringify(deploymentProperties.outputs, null, 2));
+                if (deploymentProperties.outputs.vmFQDN) {
+                    const webUrl = 'http://' + deploymentProperties.outputs.vmFQDN.value;
+                    console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
+                                'to deployed solution:', `${chalk.green(params.solutionName)}`);
+                }
+                const resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
+                console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
+                            'to manage your deployed resources');
+                console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
+            })
+            .catch((err: Error) => {
+                deployUI.stop(JSON.stringify(err));
             });
+    }
+
+    private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<any> {
+        const kubeDir = os.homedir() + path.sep + '.kube';
+        if (!fs.existsSync) {
+            fs.mkdirSync(kubeDir);
+        }
+        const localKubeCofigPath: string = kubeDir + path.sep + 'config';
+        const remoteKubeConfig: string = '.kube/config';
+        const sshDir = sshFilePath.substring(0, sshFilePath.lastIndexOf(path.sep));
+        const sshPrivateKeyPath: string = sshDir + path.sep + 'id_rsa';
+        const pk: string = fs.readFileSync(sshPrivateKeyPath, 'UTF-8');
+        const sshClient = new Client();
+        const config: ConnectConfig = {
+            host: outputs.masterFQDN.value,
+            port: 22,
+            privateKey: pk,
+            username: outputs.adminUsername.value
+        };
+        return new Promise<any>((resolve, reject) => {
+            let retryCount = 0;
+            const timer = setInterval(
+                () => {
+                    // First remove all listeteners so that we don't have duplicates
+                    sshClient.removeAllListeners();
+
+                    sshClient
+                    .on('ready', (message: any) => {
+                        sshClient.sftp( (error: Error, sftp: SFTPWrapper) => {
+                            if (error) {
+                                sshClient.end();
+                                reject(error);
+                                clearInterval(timer); 
+                                return;
+                            }
+                            sftp.fastGet(remoteKubeConfig, localKubeCofigPath, (err: Error) => {
+                                sshClient.end();
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeCofigPath)}`);
+                                clearInterval(timer);
+                                resolve();
+                            });
+                        });
+                    })
+                    .on('error', (err: Error) => {
+                        if (retryCount++ > MAX_RETRY) {
+                            clearInterval(timer);
+                            reject(err);
+                        } else {
+                            console.log(`${chalk.yellow('Retrying connection to: ' +
+                            outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
+                        }
+                    })
+                    .on('timeout', () => {
+                        if (retryCount++ > MAX_RETRY) {
+                            clearInterval(timer);
+                            reject(new Error('Failed after maximum number of tries'));
+                        } else {
+                            console.log(`${chalk.yellow('Retrying connection to: ' +
+                            outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
+                        }
+                    })
+                    .connect(config);
+                },
+                5000);
+        });
     }
 }
 
