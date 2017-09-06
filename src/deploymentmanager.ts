@@ -17,6 +17,8 @@ type DeploymentOperationsListResult = ResourceModels.DeploymentOperationsListRes
 type DeploymentOperation = ResourceModels.DeploymentOperation;
 type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
+const MAX_RETRY = 36;
+
 export interface IDeploymentManager {
     submit(params: Answers | undefined): Promise<any>;
 }
@@ -75,8 +77,7 @@ export class DeploymentManager implements IDeploymentManager {
         return client.resourceGroups.createOrUpdate(params.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
-                return client.deployments
-                .validate(params.solutionName, deploymentName, deployment);
+                return client.deployments.validate(params.solutionName, deploymentName, deployment);
             })
             .then((validationResult: DeploymentValidateResult) => {
                 if (validationResult.error) {
@@ -112,7 +113,6 @@ export class DeploymentManager implements IDeploymentManager {
     }
 
     private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<any> {
-        const MAX_RETRY = 36;
         const kubeDir = os.homedir() + path.sep + '.kube';
         if (!fs.existsSync) {
             fs.mkdirSync(kubeDir);
@@ -177,7 +177,7 @@ export class DeploymentManager implements IDeploymentManager {
                     })
                     .connect(config);
                 },
-                10000);
+                5000);
         });
     }
 }

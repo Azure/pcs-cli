@@ -136,11 +136,8 @@ function main() {
                 }
             });
             solutionType = program.type;
-            // tslint:disable-next-line:prefer-const
             let templateNamePrefix = solutionType;
-            // tslint:disable-next-line:prefer-const
             let solution = templateNamePrefix + '.json';
-            // tslint:disable-next-line:prefer-const
             let params = templateNamePrefix + 'Parameters.json';
         
             if (!subs || !subs.length) {
