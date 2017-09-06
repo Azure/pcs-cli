@@ -340,7 +340,7 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
 
 function addMoreDeploymentQuestions(questions: IQuestions) {
     questions.addQuestion({
-        message: 'Enter a user name for the virtual machine',
+        message: 'Enter a user name for the virtual machine:',
         name: 'adminUsername',
         type: 'input',
         validate: (userName: string) => {
