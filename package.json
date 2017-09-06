@@ -21,7 +21,8 @@
       "^.+\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testMatch": [
-      "**/__tests__/**/*.ts?(x)", "**/?(*.)(spec|test).ts?(x)"
+      "**/__tests__/**/*.ts?(x)",
+      "**/?(*.)(spec|test).ts?(x)"
     ]
   },
   "bin": {
@@ -51,13 +52,15 @@
     "typescript": "^2.3.4"
   },
   "dependencies": {
+    "@types/ssh2": "^0.5.35",
     "azure": "^2.0.0-preview",
     "azure-arm-resource": "^2.0.0-preview",
     "commander": "^2.9.0",
     "inquirer": "^3.1.0",
     "json-loader": "^0.5.4",
     "ms-rest": "^2.2.0",
-    "ms-rest-azure": "^2.1.2"
+    "ms-rest-azure": "^2.1.2",
+    "ssh2": "^0.5.5"
   },
   "repository": {
     "type": "git",

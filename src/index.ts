@@ -40,8 +40,9 @@ const invalidPasswordMessage = 'The supplied password must be between 6-72 chara
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli#azure-iot-pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
-const pcsTmpDir: string = os.tmpdir() + path.sep + '.pcs';
+const pcsTmpDir: string = os.homedir() + path.sep + '.pcs';
 const cacheFilePath: string = pcsTmpDir + path.sep + 'cache.json';
+const defaultSshPublicKeyPath = os.homedir() + path.sep + '.ssh' + path.sep + 'id_rsa.pub';
 
 const MAX_RETRYCOUNT = 36;
 
@@ -294,8 +295,7 @@ function createServicePrincipal(solutionName: string, subscriptionId: string,
         return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
     })
     .catch((error: Error) => {
-        console.log(error);
-        console.log('Please run %s', `${chalk.yellow('pcs login')}`);
+        console.log(`${chalk.red(error.message)}`);
     });
 }
 
@@ -360,7 +360,7 @@ function addMoreDeploymentQuestions(questions: IQuestions) {
     });
     questions.addQuestion({
         mask: '*',
-        message: 'Enter a password',
+        message: 'Enter a password, this will be used for both virtual machine and service principal secret:',
         name: 'adminPassword',
         type: 'password',
         validate: (password: string) => {
@@ -376,6 +376,7 @@ function addMoreDeploymentQuestions(questions: IQuestions) {
         },
     });
     questions.addQuestion({
+        default: defaultSshPublicKeyPath,
         message: 'Enter path to SSH key file path:',
         name: 'sshFilePath',
         type: 'input',

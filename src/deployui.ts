@@ -1,4 +1,6 @@
 import * as chalk from 'chalk';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as inquirer from 'inquirer';
 import * as ResourceManagement from 'azure-arm-resource';
 import * as msRestAzure from 'ms-rest-azure';
@@ -10,7 +12,9 @@ type TargetResource = ResourceManagement.ResourceModels.TargetResource;
 type ResourceManagementClient = ResourceManagement.ResourceManagementClient;
 
 class DeployUI {
+    private static _instance: DeployUI;
     private deploying = 'Deploying...';
+    private deployedResources = 'Deployed resources ';
     private deployed = 'Deployed successfully';
     private loader = [
         '/ ' ,
@@ -26,12 +30,26 @@ class DeployUI {
     private resourcesStatusAvailable: number;
     private combinedStatus: string;
     private errorMessages: Map<string, string>;
+    private totalResourceCount: number = 0;
+    private completedResourceCount: number = 0;
     private checkMark = `${chalk.green('\u2713 ')}`;
     private crossMark = `${chalk.red('\u2715 ')}`;
 
     constructor()  {
+        if (DeployUI._instance) {
+            throw new Error('Error - use DeployUI.instance');
+        }
         this.resourcesStatusAvailable = 0;
         this.ui = new inquirer.ui.BottomBar();
+        DeployUI._instance = this;
+    }
+
+    public static get instance() {
+        if (!this._instance) {
+            return new DeployUI();
+        }
+
+        return this._instance;
     }
 
     public start(client: ResourceManagementClient, resourceGroupName: string, deploymentName: string, totalResources: number): void {
@@ -54,7 +72,8 @@ class DeployUI {
                                 }
                             }
                         }
-                        operationsStatus += loader + this.deploying;
+                        operationsStatus += loader + this.deployedResources +
+                        `${chalk.cyan(this.completedResourceCount.toString(), 'of', this.totalResourceCount.toString())}`;
                         this.ui.updateBottomBar(operationsStatus);
                     } else {
                         this.ui.updateBottomBar(loader + this.deploying);
@@ -92,16 +111,20 @@ class DeployUI {
     private operationsStatusFormatter(operations: DeploymentOperationsListResult, loader: string): string {
         const operationsStatus: string[] = [];
         this.combinedStatus = '';
+        this.totalResourceCount = 0;
+        this.completedResourceCount = 0;
         operations.forEach((operation: DeploymentOperation) => {
             const props: DeploymentOperationProperties = operation.properties as DeploymentOperationProperties;
             const targetResource: TargetResource = props.targetResource as TargetResource;
             if (targetResource && targetResource.resourceType && targetResource.resourceName) {
                 const key: string = targetResource.id as string;
                 if (!this.operationSet.has(key)) {
+                    this.totalResourceCount++;
                     this.operationSet.add(key);
                     let iconState = loader;
                     if (props.provisioningState === 'Succeeded') {
                         iconState = this.checkMark;
+                        this.completedResourceCount++;
                     } else if (props.provisioningState === 'Failed') {
                         iconState = this.crossMark;
                         const message = props.statusMessage.error.message;

@@ -69,7 +69,7 @@ export class DeploymentManager implements IDeploymentManager {
         };
 
         const deployment: Deployment = { properties };
-        const deployUI = new DeployUI();
+        const deployUI = DeployUI.instance;
         const deploymentName = 'deployment-' + params.solutionName;
         let deploymentProperties: any = null;
         return client.resourceGroups.createOrUpdate(params.solutionName, resourceGroup)
@@ -108,13 +108,12 @@ export class DeploymentManager implements IDeploymentManager {
                 deployUI.stop();
             })
             .catch((err: Error) => {
-                console.log(err);
                 deployUI.stop(JSON.stringify(err));
             });
     }
 
     private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<any> {
-        const MAX_RETRY = 5;
+        const MAX_RETRY = 36;
         const kubeDir = os.homedir() + path.sep + '.kube';
         if (!fs.existsSync) {
             fs.mkdirSync(kubeDir);
@@ -123,11 +122,8 @@ export class DeploymentManager implements IDeploymentManager {
         const remoteKubeConfig: string = '.kube/config';
         const sshDir = sshFilePath.substring(0, sshFilePath.lastIndexOf(path.sep));
         const sshPrivateKeyPath: string = sshDir + path.sep + 'id_rsa';
-        console.log('Private key path: ', sshPrivateKeyPath);
         const pk: string = fs.readFileSync(sshPrivateKeyPath, 'UTF-8');
         const sshClient = new Client();
-        console.log('MasterFQDN', outputs.masterFQDN.value);
-        console.log('Username: ', outputs.adminUsername.value);
         const config: ConnectConfig = {
             host: outputs.masterFQDN.value,
             port: 22,
@@ -138,9 +134,11 @@ export class DeploymentManager implements IDeploymentManager {
             let retryCount = 0;
             const timer = setInterval(
                 () => {
+                    // First remove all listeteners so that we don't have duplicates
+                    sshClient.removeAllListeners();
+
                     sshClient
                     .on('ready', (message: any) => {
-                        console.log('sshclient ready');
                         sshClient.sftp( (error: Error, sftp: SFTPWrapper) => {
                             if (error) {
                                 sshClient.end();
@@ -148,14 +146,13 @@ export class DeploymentManager implements IDeploymentManager {
                                 clearInterval(timer); 
                                 return;
                             }
-                            console.log('SFTP ready');
                             sftp.fastGet(remoteKubeConfig, localKubeCofigPath, (err: Error) => {
                                 sshClient.end();
                                 if (err) {
                                     reject(err);
                                     return;
                                 }
-                                console.log('File downloaded from: %s to: %s', remoteKubeConfig, localKubeCofigPath);
+                                console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeCofigPath)}`);
                                 clearInterval(timer);
                                 resolve();
                             });
@@ -163,25 +160,25 @@ export class DeploymentManager implements IDeploymentManager {
                     })
                     .on('error', (err: Error) => {
                         if (retryCount++ > MAX_RETRY) {
-                            console.log('Max retry limit reached');
                             clearInterval(timer);
                             reject(err);
                         } else {
-                            console.log('Retrying connection');
+                            console.log(`${chalk.yellow('Retrying connection to: ' +
+                            outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
                         }
                     })
                     .on('timeout', () => {
                         if (retryCount++ > MAX_RETRY) {
-                            console.log('Max retry limit reached');
                             clearInterval(timer);
-                            reject(new Error('timeout'));
+                            reject(new Error('Failed after maximum number of tries'));
                         } else {
-                            console.log('Retrying connection');
+                            console.log(`${chalk.yellow('Retrying connection to: ' +
+                            outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
                         }
                     })
                     .connect(config);
                 },
-                5000);
+                10000);
         });
     }
 }
