@@ -64,6 +64,9 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.sshRSAPublicKey) {
             this._parameters.sshRSAPublicKey.value = fs.readFileSync(params.sshFilePath, 'UTF-8');
         }
+        if (this._parameters.siteName) {
+            this._parameters.siteName.value = params.siteName;
+        }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
             parameters: this._parameters,
@@ -91,14 +94,16 @@ export class DeploymentManager implements IDeploymentManager {
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
                 deploymentProperties = res.properties;
-                console.log('Downloading the kubeconfig file');
-                return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
+                if (params.deploymentSku === 'enterprise') {
+                    console.log('Downloading the kubeconfig file');
+                    return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
+                }
             })
             .then(() => {
                 const fileName: string = process.cwd() + path.sep + deploymentName + '-output.json';
                 fs.writeFileSync(fileName, JSON.stringify(deploymentProperties.outputs, null, 2));
                 if (deploymentProperties.outputs.vmFQDN) {
-                    const webUrl = 'http://' + deploymentProperties.outputs.vmFQDN.value;
+                    const webUrl = deploymentProperties.outputs.azureWebsite.value;
                     console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
                                 'to deployed solution:', `${chalk.green(params.solutionName)}`);
                 }
@@ -117,7 +122,7 @@ export class DeploymentManager implements IDeploymentManager {
         if (!fs.existsSync) {
             fs.mkdirSync(kubeDir);
         }
-        const localKubeCofigPath: string = kubeDir + path.sep + 'config';
+        const localKubeCofigPath: string = kubeDir + path.sep + 'config' + '-' + outputs.resourceGroup.value;
         const remoteKubeConfig: string = '.kube/config';
         const sshDir = sshFilePath.substring(0, sshFilePath.lastIndexOf(path.sep));
         const sshPrivateKeyPath: string = sshDir + path.sep + 'id_rsa';

@@ -222,6 +222,19 @@
                 "cloudapp.chinacloudapi.cn",
                 "cloudapp.azure.de"
             ]
+        },
+        "siteName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the web app that you wish to create."
+            }
+        },
+        "selfSignedThumbprint": {
+            "type": "securestring",
+            "metadata": {
+                "description": "This is the thumbprint of the self-signed certificate"
+            },
+            "defaultValue": "secretkey"
         }
     },
     "variables": {
@@ -249,10 +262,67 @@
         "subnetPrefix": "10.0.0.0/24",
         "subnetResourceId": "[concat(variables('vnetResourceId'),'/subnets/',variables('subnetName'))]",
         "publicIpName": "[concat(parameters('solutionName'), '-public-ip')]",
-        "nicName": "[concat(parameters('solutionName'), '-nic')]"
+        "nicName": "[concat(parameters('solutionName'), '-nic')]",
+        "sku": "S1",
+        "workerSize": "0",
+        "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
+        "branch": "master",
+        "hostingPlanName": "[parameters('siteName')]"
     },
     "resources": [
-          {
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "sku": {
+                "name": "[variables('sku')]",
+                "capacity": "[variables('workerSize')]"
+            },
+            "name": "[variables('hostingPlanName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('hostingPlanName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('siteName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "serverFarmId": "[variables('hostingPlanName')]"
+            },
+            "resources": [
+                {
+                    "type": "sourcecontrols",
+                    "name": "web",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "[variables('branch')]",
+                        "IsManualIntegration": true
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ]
+                },
+                {
+                    "type": "config",
+                    "name": "appsettings",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "REMOTE_ENDPOINT": "[concat('http://', variables('vmFQDN'))]",
+                        "THUMBPRINT": "[parameters('selfSignedThumbprint')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+            ]
+        },
+        {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[parameters('storageName')]",
             "apiVersion": "[variables('storageApiVersion')]",
@@ -568,6 +638,10 @@
         "documentDBConnectionString" : {
             "type": "string",
             "value": "[concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';')]"
+        },
+        "azureWebsite": {
+            "type": "string",
+            "value": "[concat('https://', parameters('siteName'), '.azurewebsites.net')]"
         },
         "vmFQDN": {
             "type": "string",

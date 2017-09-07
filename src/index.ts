@@ -190,6 +190,7 @@ function main() {
                         const deploymentManager: IDeploymentManager = 
                         new DeploymentManager(cachedAuthResponse.options, solutionType, template, parameters);
                         answers.appId = appId;
+                        answers.deploymentSku = program.sku;
                         return deploymentManager.submit(answers);
                     }
                 })
@@ -381,6 +382,7 @@ function addMoreDeploymentQuestions(questions: IQuestions) {
             type: 'input',
             validate: (sshFilePath: string) => {
                 // TODO Add ssh key validation
+                // Issue: https://github.com/Azure/pcs-cli/issues/83
                 return true;
             },
         });

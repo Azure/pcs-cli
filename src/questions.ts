@@ -53,10 +53,21 @@ export class Questions implements Questions {
                 }
 
                 return 'Please enter a valid solution name';
+            }
+        },
+        {
+            // TODO: parvezp - Add availability check for the URL
+            // Issue: https://github.com/Azure/pcs-cli/issues/81
+            default: (answers: Answers): any => {
+                return answers.solutionName;
             },
+            message: 'Enter prefix for .azurewebsites.net:',
+            name: 'siteName',
+            type: 'input'
         },
         {
             // TODO: List the locations based on selected subscription
+            // Issue: https://github.com/Azure/pcs-cli/issues/82
             choices: this.locations,
             message: 'Select a location:',
             name: 'location',

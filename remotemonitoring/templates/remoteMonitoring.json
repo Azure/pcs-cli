@@ -84,7 +84,7 @@
         },
         "agentCount": {
             "type": "int",
-            "defaultValue": 1,
+            "defaultValue": 3,
             "metadata": {
                 "description": "The number of agents for the cluster.  This value can be from 1 to 100 (note, for Kubernetes clusters you will also get 1 or 2 public agents in addition to these seleted masters)"
             },
@@ -146,6 +146,19 @@
             },
             "type": "securestring",
             "defaultValue": "n/a"
+        },
+        "siteName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the web app that you wish to create."
+            }
+        },
+        "selfSignedThumbprint": {
+            "type": "securestring",
+            "metadata": {
+                "description": "This is the thumbprint of the self-signed certificate"
+            },
+            "defaultValue": "secretkey"
         }
     },
     "variables": {
@@ -181,9 +194,66 @@
                 "ClientId": "[parameters('servicePrincipalClientId')]",
                 "Secret": "[parameters('adminPassword')]"
             }
-        ]
+        ],
+        "sku": "S1",
+        "workerSize": "0",
+        "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
+        "branch": "master",
+        "hostingPlanName": "[parameters('siteName')]"
     },
     "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "sku": {
+                "name": "[variables('sku')]",
+                "capacity": "[variables('workerSize')]"
+            },
+            "name": "[variables('hostingPlanName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('hostingPlanName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('siteName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "serverFarmId": "[variables('hostingPlanName')]"
+            },
+            "resources": [
+                {
+                    "type": "sourcecontrols",
+                    "name": "web",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "[variables('branch')]",
+                        "IsManualIntegration": true
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ]
+                },
+                {
+                    "type": "config",
+                    "name": "appsettings",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
+                        "THUMBPRINT": "[parameters('selfSignedThumbprint')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+            ]
+        },
         {
             "apiVersion": "[variables('docDBVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
