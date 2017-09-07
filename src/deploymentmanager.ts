@@ -64,8 +64,8 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.sshRSAPublicKey) {
             this._parameters.sshRSAPublicKey.value = fs.readFileSync(params.sshFilePath, 'UTF-8');
         }
-        if (this._parameters.siteName) {
-            this._parameters.siteName.value = params.siteName;
+        if (this._parameters.azureWebsiteName) {
+            this._parameters.azureWebsiteName.value = params.azureWebsiteName;
         }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
@@ -95,15 +95,22 @@ export class DeploymentManager implements IDeploymentManager {
                 deployUI.stop();
                 deploymentProperties = res.properties;
                 if (params.deploymentSku === 'enterprise') {
-                    console.log('Downloading the kubeconfig file');
+                    console.log('Downloading the kubeconfig file from:', `${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
                     return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
                 }
             })
             .then(() => {
-                const fileName: string = process.cwd() + path.sep + deploymentName + '-output.json';
+                const directoryPath = process.cwd() + path.sep + 'deployments';
+                if (!fs.existsSync(directoryPath)) {
+                    fs.mkdirSync(directoryPath);
+                }
+                const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
                 fs.writeFileSync(fileName, JSON.stringify(deploymentProperties.outputs, null, 2));
-                if (deploymentProperties.outputs.vmFQDN) {
+                if (deploymentProperties.outputs.azureWebsite) {
                     const webUrl = deploymentProperties.outputs.azureWebsite.value;
+                    if (params.deploymentSku === 'enterprise') {
+                        console.log('The app will be available on following url after kubernetes setup is done:');
+                    }
                     console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
                                 'to deployed solution:', `${chalk.green(params.solutionName)}`);
                 }

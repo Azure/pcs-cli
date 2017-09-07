@@ -223,16 +223,16 @@
                 "cloudapp.azure.de"
             ]
         },
-        "siteName": {
+        "azureWebsiteName": {
             "type": "string",
             "metadata": {
-                "description": "The name of the web app that you wish to create."
+                "description": "The name of the azure website that you want to create. It will be of format {azureWebsiteName}.azurewebsites.net"
             }
         },
-        "selfSignedThumbprint": {
+        "remoteEndpointSSLThumbprint": {
             "type": "securestring",
             "metadata": {
-                "description": "This is the thumbprint of the self-signed certificate"
+                "description": "This is the thumbprint of the HTTPS SSL Certificate"
             },
             "defaultValue": "secretkey"
         }
@@ -261,13 +261,13 @@
         "subnetName": "default",
         "subnetPrefix": "10.0.0.0/24",
         "subnetResourceId": "[concat(variables('vnetResourceId'),'/subnets/',variables('subnetName'))]",
-        "publicIpName": "[concat(parameters('solutionName'), '-public-ip')]",
+        "publicIPName": "[concat(parameters('solutionName'), '-public-ip')]",
         "nicName": "[concat(parameters('solutionName'), '-nic')]",
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
         "branch": "master",
-        "hostingPlanName": "[parameters('siteName')]"
+        "hostingPlanName": "[parameters('azureWebsiteName')]"
     },
     "resources": [
         {
@@ -285,7 +285,7 @@
         },
         {
             "type": "Microsoft.Web/sites",
-            "name": "[parameters('siteName')]",
+            "name": "[parameters('azureWebsiteName')]",
             "apiVersion": "2015-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -302,7 +302,7 @@
                         "IsManualIntegration": true
                     },
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
                     ]
                 },
                 {
@@ -310,11 +310,11 @@
                     "name": "appsettings",
                     "apiVersion": "2015-08-01",
                     "properties": {
-                        "REMOTE_ENDPOINT": "[concat('http://', variables('vmFQDN'))]",
-                        "THUMBPRINT": "[parameters('selfSignedThumbprint')]"
+                        "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
+                        "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
                     },
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
                     ]
                 }
             ],
@@ -405,7 +405,7 @@
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('publicIpName')]",
+            "name": "[variables('publicIPName')]",
             "apiVersion": "2016-03-30",
             "location": "[variables('location')]",
             "tags": {
@@ -559,11 +559,11 @@
         },
         "azureWebsite": {
             "type": "string",
-            "value": "[concat('https://', parameters('siteName'), '.azurewebsites.net')]"
+            "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
         },
         "vmFQDN": {
             "type": "string",
-            "value": "[variables('vmFQDN')]"
+            "value": "[reference(variables('publicIPName')).dnsSettings.fqdn]"
         },
         "adminUsername": {
             "type": "string",

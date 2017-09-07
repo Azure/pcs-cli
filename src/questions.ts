@@ -62,7 +62,7 @@ export class Questions implements Questions {
                 return answers.solutionName;
             },
             message: 'Enter prefix for .azurewebsites.net:',
-            name: 'siteName',
+            name: 'azureWebsiteName',
             type: 'input'
         },
         {

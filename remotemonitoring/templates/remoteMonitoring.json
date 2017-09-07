@@ -147,16 +147,16 @@
             "type": "securestring",
             "defaultValue": "n/a"
         },
-        "siteName": {
+        "azureWebsiteName": {
             "type": "string",
             "metadata": {
-                "description": "The name of the web app that you wish to create."
+                "description": "The name of the azure website that you want to create. It will be of format {azureWebsiteName}.azurewebsites.net"
             }
         },
-        "selfSignedThumbprint": {
+        "remoteEndpointSSLThumbprint": {
             "type": "securestring",
             "metadata": {
-                "description": "This is the thumbprint of the self-signed certificate"
+                "description": "This is the thumbprint of the HTTPS SSL Certificate"
             },
             "defaultValue": "secretkey"
         }
@@ -199,9 +199,22 @@
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
         "branch": "master",
-        "hostingPlanName": "[parameters('siteName')]"
+        "hostingPlanName": "[parameters('azureWebsiteName')]"
     },
     "resources": [
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPName')]",
+            "apiVersion": "2016-11-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(variables('domainNameLabel'))]"
+                }
+            }
+        },
         {
             "type": "Microsoft.Web/serverfarms",
             "sku": {
@@ -217,7 +230,7 @@
         },
         {
             "type": "Microsoft.Web/sites",
-            "name": "[parameters('siteName')]",
+            "name": "[parameters('azureWebsiteName')]",
             "apiVersion": "2015-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -234,7 +247,7 @@
                         "IsManualIntegration": true
                     },
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
                     ]
                 },
                 {
@@ -243,10 +256,11 @@
                     "apiVersion": "2015-08-01",
                     "properties": {
                         "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
-                        "THUMBPRINT": "[parameters('selfSignedThumbprint')]"
+                        "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
                     },
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]",
+                        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
                     ]
                 }
             ],
@@ -322,19 +336,6 @@
                 },
                 "servicePrincipalProfile": "[variables('servicePrincipalFields')[variables('useServicePrincipal')]]"
             }
-        },
-        {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('publicIPName')]",
-            "apiVersion": "2016-11-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "publicIPAllocationMethod": "Static",
-                "idleTimeoutInMinutes": 4,
-                "dnsSettings": {
-                    "domainNameLabel": "[toLower(variables('domainNameLabel'))]"
-                }
-            }
         }
     ],
     "outputs": {
@@ -370,9 +371,13 @@
             "type": "string",
             "value": "[reference(variables('publicIPName')).ipAddress]"
         },
-        "fqdn": {
+        "agentFQDN": {
             "type": "string",
             "value": "[reference(variables('publicIPName')).dnsSettings.fqdn]"
+        },
+        "azureWebsite": {
+            "type": "string",
+            "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
         }
     }
 }
