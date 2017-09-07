@@ -130,9 +130,9 @@ function main() {
             }
 
             const subs: ChoiceType[] = [];
-            subscriptions.map((subscription: SubscriptionModels.Subscription) => {
+            cachedAuthResponse.subscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
-                    subs.push({name: subscription.displayName, value: subscription.subscriptionId});
+                    subs.push({name: subscription.name, value: subscription.id});
                 }
             });
             solutionType = program.type;
