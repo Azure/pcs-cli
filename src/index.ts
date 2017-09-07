@@ -123,12 +123,7 @@ function main() {
     } else {
         const client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options));
         return client.subscriptions.list()
-        .then((subscriptions: SubscriptionModels.SubscriptionListResult) => {
-            if (!subscriptions || !subscriptions.length) {
-                console.log('Could not find any subscriptions in this account.');
-                return;
-            }
-
+        .then(() => {
             const subs: ChoiceType[] = [];
             cachedAuthResponse.subscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
