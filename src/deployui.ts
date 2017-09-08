@@ -26,6 +26,7 @@ class DeployUI {
     private i = 4;
     private ui: inquirer.ui.BottomBar;
     private timer: NodeJS.Timer;
+    private startTime: number;
     private operationSet: Set<string>;
     private resourcesStatusAvailable: number;
     private combinedStatus: string;
@@ -53,6 +54,7 @@ class DeployUI {
     }
 
     public start(client: ResourceManagementClient, resourceGroupName: string, deploymentName: string, totalResources: number): void {
+        this.startTime = Date.now();
         this.timer = setInterval(
             () => {
                 client.deploymentOperations.list(resourceGroupName, deploymentName)
@@ -97,7 +99,13 @@ class DeployUI {
         } else if (err) {
             message = this.crossMark + `${chalk.red(err)}` + '\n';
         } else {
-            message += this.combinedStatus + this.checkMark + `${chalk.green(this.deployed)}` + '\n';
+            const totalTime: Date = new Date(Date.now() - this.startTime);
+            message += this.combinedStatus +
+                       this.checkMark + `${chalk.green(this.deployed)}` +
+                       `${chalk.green(', time taken:',
+                                      totalTime.getMinutes().toString(), 'minutes &',
+                                      totalTime.getSeconds().toString(), 'seconds')}` +
+                        '\n';
         }
 
         this.ui.updateBottomBar(message);

@@ -222,6 +222,19 @@
                 "cloudapp.chinacloudapi.cn",
                 "cloudapp.azure.de"
             ]
+        },
+        "azureWebsiteName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the azure website that you want to create. It will be of format {azureWebsiteName}.azurewebsites.net"
+            }
+        },
+        "remoteEndpointSSLThumbprint": {
+            "type": "securestring",
+            "metadata": {
+                "description": "This is the thumbprint of the HTTPS SSL Certificate"
+            },
+            "defaultValue": "secretkey"
         }
     },
     "variables": {
@@ -248,11 +261,68 @@
         "subnetName": "default",
         "subnetPrefix": "10.0.0.0/24",
         "subnetResourceId": "[concat(variables('vnetResourceId'),'/subnets/',variables('subnetName'))]",
-        "publicIpName": "[concat(parameters('solutionName'), '-public-ip')]",
-        "nicName": "[concat(parameters('solutionName'), '-nic')]"
+        "publicIPName": "[concat(parameters('solutionName'), '-public-ip')]",
+        "nicName": "[concat(parameters('solutionName'), '-nic')]",
+        "sku": "S1",
+        "workerSize": "0",
+        "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
+        "branch": "master",
+        "hostingPlanName": "[parameters('azureWebsiteName')]"
     },
     "resources": [
-          {
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "sku": {
+                "name": "[variables('sku')]",
+                "capacity": "[variables('workerSize')]"
+            },
+            "name": "[variables('hostingPlanName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('hostingPlanName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('azureWebsiteName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "serverFarmId": "[variables('hostingPlanName')]"
+            },
+            "resources": [
+                {
+                    "type": "sourcecontrols",
+                    "name": "web",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "[variables('branch')]",
+                        "IsManualIntegration": true
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
+                    ]
+                },
+                {
+                    "type": "config",
+                    "name": "appsettings",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
+                        "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+            ]
+        },
+        {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[parameters('storageName')]",
             "apiVersion": "[variables('storageApiVersion')]",
@@ -307,88 +377,6 @@
             "location": "[variables('location')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
-            },
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "WebHttpIn",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "80",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 100,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "AuthHttpIn",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "9001",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 110,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "HubManagerHttpIn",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "9002",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 120,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "DeviceSimulationHttpIn",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "9003",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 130,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "TelemetryHttpIn",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "9004",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 140,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "UIConfigHttpIn",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "9005",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 150,
-                            "direction": "Inbound"
-                        }
-                    }
-                ]
             }
         },
         {
@@ -417,7 +405,7 @@
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('publicIpName')]",
+            "name": "[variables('publicIPName')]",
             "apiVersion": "2016-03-30",
             "location": "[variables('location')]",
             "tags": {
@@ -569,9 +557,13 @@
             "type": "string",
             "value": "[concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';')]"
         },
+        "azureWebsite": {
+            "type": "string",
+            "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
+        },
         "vmFQDN": {
             "type": "string",
-            "value": "[variables('vmFQDN')]"
+            "value": "[reference(variables('publicIPName')).dnsSettings.fqdn]"
         },
         "adminUsername": {
             "type": "string",

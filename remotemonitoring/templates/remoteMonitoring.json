@@ -84,7 +84,7 @@
         },
         "agentCount": {
             "type": "int",
-            "defaultValue": 1,
+            "defaultValue": 3,
             "metadata": {
                 "description": "The number of agents for the cluster.  This value can be from 1 to 100 (note, for Kubernetes clusters you will also get 1 or 2 public agents in addition to these seleted masters)"
             },
@@ -146,6 +146,19 @@
             },
             "type": "securestring",
             "defaultValue": "n/a"
+        },
+        "azureWebsiteName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the azure website that you want to create. It will be of format {azureWebsiteName}.azurewebsites.net"
+            }
+        },
+        "remoteEndpointSSLThumbprint": {
+            "type": "securestring",
+            "metadata": {
+                "description": "This is the thumbprint of the HTTPS SSL Certificate"
+            },
+            "defaultValue": "secretkey"
         }
     },
     "variables": {
@@ -181,9 +194,80 @@
                 "ClientId": "[parameters('servicePrincipalClientId')]",
                 "Secret": "[parameters('adminPassword')]"
             }
-        ]
+        ],
+        "sku": "S1",
+        "workerSize": "0",
+        "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
+        "branch": "master",
+        "hostingPlanName": "[parameters('azureWebsiteName')]"
     },
     "resources": [
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPName')]",
+            "apiVersion": "2016-11-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(variables('domainNameLabel'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "sku": {
+                "name": "[variables('sku')]",
+                "capacity": "[variables('workerSize')]"
+            },
+            "name": "[variables('hostingPlanName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('hostingPlanName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('azureWebsiteName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "serverFarmId": "[variables('hostingPlanName')]"
+            },
+            "resources": [
+                {
+                    "type": "sourcecontrols",
+                    "name": "web",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "[variables('branch')]",
+                        "IsManualIntegration": true
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
+                    ]
+                },
+                {
+                    "type": "config",
+                    "name": "appsettings",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
+                        "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]",
+                        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+            ]
+        },
         {
             "apiVersion": "[variables('docDBVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
@@ -252,19 +336,6 @@
                 },
                 "servicePrincipalProfile": "[variables('servicePrincipalFields')[variables('useServicePrincipal')]]"
             }
-        },
-        {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('publicIPName')]",
-            "apiVersion": "2016-11-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "publicIPAllocationMethod": "Static",
-                "idleTimeoutInMinutes": 4,
-                "dnsSettings": {
-                    "domainNameLabel": "[toLower(variables('domainNameLabel'))]"
-                }
-            }
         }
     ],
     "outputs": {
@@ -300,9 +371,13 @@
             "type": "string",
             "value": "[reference(variables('publicIPName')).ipAddress]"
         },
-        "fqdn": {
+        "agentFQDN": {
             "type": "string",
             "value": "[reference(variables('publicIPName')).dnsSettings.fqdn]"
+        },
+        "azureWebsite": {
+            "type": "string",
+            "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
         }
     }
 }
