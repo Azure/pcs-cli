@@ -209,7 +209,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/azure-iot-pcs-tools/master/remote-monitoring/single-vm-setup.sh",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/azure-iot-pcs-tools/tls/remote-monitoring/single-vm-setup.sh",
             "metadata": {
                 "description": "The Uri of the script to setup a single VM deployment"
             }
@@ -235,6 +235,18 @@
                 "description": "This is the thumbprint of the HTTPS SSL Certificate"
             },
             "defaultValue": "secretkey"
+        },
+        "remoteEndpointCertificate": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The certficate that needs to be updated to the VM"
+            }
+        },
+        "remoteEndpointCertificateKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The certficate key that needs to be updated to the VM"
+            }
         }
     },
     "variables": {
@@ -266,7 +278,7 @@
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "branch": "master",
+        "branch": "bug-fix",
         "hostingPlanName": "[parameters('azureWebsiteName')]"
     },
     "resources": [
@@ -310,7 +322,7 @@
                     "name": "appsettings",
                     "apiVersion": "2015-08-01",
                     "properties": {
-                        "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
+                        "REMOTE_ENDPOINT": "[concat('https://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
                         "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
                     },
                     "dependsOn": [
@@ -319,7 +331,8 @@
                 }
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
             ]
         },
         {
@@ -539,7 +552,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh single-vm-setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenant'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', parameters('iotHubName'), ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+                    "commandToExecute": "[concat('sh single-vm-setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenant'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', parameters('iotHubName'), ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\"')]"
                 }
             }
         }

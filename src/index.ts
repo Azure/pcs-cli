@@ -5,6 +5,13 @@ import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import * as util from 'util';
+import * as uuid from 'uuid';
+import * as forge from 'node-forge';
+
+import momemt = require('moment');
+const openssl = require('openssl');
+
 import { ChoiceType, prompt } from 'inquirer';
 import { AuthResponse, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
     LinkedSubscription, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
@@ -12,9 +19,6 @@ import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
 import GraphRbacManagementClient = require('azure-graph');
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
-import * as util from 'util';
-import momemt = require('moment');
-import * as uuid from 'uuid';
 
 import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
@@ -116,7 +120,9 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-
+    const certData = createCertificate();
+    console.log(certData.cert);
+    console.log(certData.privateKey);
     const cachedAuthResponse = getCachedAuthResponse();
     if (!cachedAuthResponse) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
@@ -186,6 +192,9 @@ function main() {
                         new DeploymentManager(cachedAuthResponse.options, solutionType, template, parameters);
                         answers.appId = appId;
                         answers.deploymentSku = program.sku;
+                        answers.certData = createCertificate();
+                        console.log(answers.certData.cert);
+                        console.log(answers.certData.privateKey);
                         return deploymentManager.submit(answers);
                     }
                 })
@@ -332,6 +341,26 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
         },                                      5000);
     });
     return promise;
+}
+
+function createCertificate(): any {
+    const pki: any = forge.pki;
+    // generate a keypair and create an X.509v3 certificate
+    const keys = pki.rsa.generateKeyPair(2048);
+    const cert = pki.createCertificate();
+    cert.publicKey = keys.publicKey;
+    cert.serialNumber = '01';
+    cert.validity.notBefore = new Date(Date.now());
+    cert.validity.notAfter = new Date(Date.now());
+    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+    // self-sign certificate
+    cert.sign(keys.privateKey);
+    const fingerprint = pki.getPublicKeyFingerprint(keys.publicKey, {encoding: 'hex', delimiter: ':'});
+    return {
+        cert: forge.pki.certificateToPem(cert).replace(/\r\n/g, '\r'),
+        fingerprint,
+        privateKey: forge.pki.privateKeyToPem(keys.privateKey).replace(/\r\n/g, '\r')
+    };
 }
 
 function addMoreDeploymentQuestions(questions: IQuestions) {
