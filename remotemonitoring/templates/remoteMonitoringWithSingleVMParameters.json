@@ -10,5 +10,14 @@
     },
     "adminPassword": {
       "value": "{Added through command line interface}"
+    },
+    "remoteEndpointSSLThumbprint": {
+      "value": "{Added through command line interface}"
+    },
+    "remoteEndpointCertificate": {
+      "value": "{Added through command line interface}"
+    },
+    "remoteEndpointCertificateKey": {
+      "value": "{Added through command line interface}"
     }
 }

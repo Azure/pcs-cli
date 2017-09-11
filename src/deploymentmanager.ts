@@ -67,6 +67,15 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.azureWebsiteName) {
             this._parameters.azureWebsiteName.value = params.azureWebsiteName;
         }
+        if (this._parameters.remoteEndpointSSLThumbprint) {
+            this._parameters.remoteEndpointSSLThumbprint.value = params.certData.fingerprint;
+        }
+        if (this._parameters.remoteEndpointCertificate) {
+            this._parameters.remoteEndpointCertificate.value = params.certData.cert;
+        }
+        if (this._parameters.remoteEndpointCertificateKey) {
+            this._parameters.remoteEndpointCertificateKey.value = params.certData.privateKey;
+        }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
             parameters: this._parameters,
