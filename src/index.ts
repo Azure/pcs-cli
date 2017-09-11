@@ -350,12 +350,11 @@ function createCertificate(): any {
     // self-sign certificate
     cert.sign(keys.privateKey);
     const fingerprint = pki.getPublicKeyFingerprint(keys.publicKey, {encoding: 'hex', delimiter: ':'});
-    const data = {
+    return {
         cert: forge.pki.certificateToPem(cert),
         fingerprint,
         privateKey: forge.pki.privateKeyToPem(keys.privateKey)
     };
-    return data;
 }
 
 function addMoreDeploymentQuestions(questions: IQuestions) {
