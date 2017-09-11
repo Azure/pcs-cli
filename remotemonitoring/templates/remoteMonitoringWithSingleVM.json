@@ -209,7 +209,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/azure-iot-pcs-tools/tls/remote-monitoring/single-vm-setup.sh",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/azure-iot-pcs-tools/master/remote-monitoring/single-vm-setup.sh",
             "metadata": {
                 "description": "The Uri of the script to setup a single VM deployment"
             }
@@ -278,7 +278,7 @@
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "branch": "bug-fix",
+        "branch": "master",
         "hostingPlanName": "[parameters('azureWebsiteName')]"
     },
     "resources": [

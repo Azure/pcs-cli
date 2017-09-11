@@ -8,10 +8,9 @@ import * as os from 'os';
 import * as util from 'util';
 import * as uuid from 'uuid';
 import * as forge from 'node-forge';
+import * as momemt from 'moment';
+
 import { exec } from 'child_process';
-
-import momemt = require('moment');
-
 import { ChoiceType, prompt } from 'inquirer';
 import { AuthResponse, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
     LinkedSubscription, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
