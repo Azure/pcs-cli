@@ -8,9 +8,9 @@ import * as os from 'os';
 import * as util from 'util';
 import * as uuid from 'uuid';
 import * as forge from 'node-forge';
+import { exec } from 'child_process';
 
 import momemt = require('moment');
-const openssl = require('openssl');
 
 import { ChoiceType, prompt } from 'inquirer';
 import { AuthResponse, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
@@ -120,9 +120,12 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-    const certData = createCertificate();
-    console.log(certData.cert);
-    console.log(certData.privateKey);
+    // const data = createCertificate();
+    // exec('/Users/parvezp/Documents/GitHub/azure-iot-pcs-tools/remote-monitoring/download-cert.sh ' +
+    //      '\'' + data.cert + '\' \'' + data.privateKey + '\'',
+    //      ((error: Error, stdout: string, stderr: string) => {
+    //          console.log(error);
+    //      }) );
     const cachedAuthResponse = getCachedAuthResponse();
     if (!cachedAuthResponse) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
@@ -193,8 +196,6 @@ function main() {
                         answers.appId = appId;
                         answers.deploymentSku = program.sku;
                         answers.certData = createCertificate();
-                        console.log(answers.certData.cert);
-                        console.log(answers.certData.privateKey);
                         return deploymentManager.submit(answers);
                     }
                 })
@@ -356,11 +357,37 @@ function createCertificate(): any {
     // self-sign certificate
     cert.sign(keys.privateKey);
     const fingerprint = pki.getPublicKeyFingerprint(keys.publicKey, {encoding: 'hex', delimiter: ':'});
-    return {
-        cert: forge.pki.certificateToPem(cert).replace(/\r\n/g, '\r'),
+    const certSplits = forge.pki.certificateToPem(cert).split('\r\n');
+    let certValue = '';
+    certSplits.forEach((value: string) => {
+        if (value.length) {
+            certValue += value.trim() + '\r';
+        }
+    });
+
+    const pkSplits = forge.pki.privateKeyToPem(keys.privateKey).split('\r\n');
+    let keyValue = '';
+    pkSplits.forEach((value: string) => {
+        if (value.length) {
+            keyValue += value.trim() + '\r';
+        }
+    });
+    const data = {
+        cert: certValue, // forge.pki.certificateToPem(cert), // .replace(/\s+/g, ''), // .replace(/\r\n/g, '\r')
         fingerprint,
-        privateKey: forge.pki.privateKeyToPem(keys.privateKey).replace(/\r\n/g, '\r')
+        privateKey: keyValue // .replace(/\s+/g, ''), // .replace(/\r\n/g, '\r')
     };
+    // const configPath = os.tmpdir() + path.sep + 'config';
+    // if (!fs.existsSync(configPath)) {
+    //     fs.mkdir(configPath);
+    // }
+    // const certPath = configPath + path.sep  + 'tls.crt';
+    // const keyPath = configPath + path.sep  + 'tls.key';
+    // fs.writeFileSync(certPath, forge.pki.certificateToPem(cert, 10000).replace(/\r\n/g, '\r'));
+    // fs.writeFileSync(keyPath, forge.pki.privateKeyToPem(keys.privateKey, 1000).replace(/\r\n/g, '\r'));
+    // data.cert = fs.readFileSync(certPath, 'UTF-8');
+    // data.privateKey = fs.readFileSync(keyPath, 'UTF-8');
+    return data;
 }
 
 function addMoreDeploymentQuestions(questions: IQuestions) {
