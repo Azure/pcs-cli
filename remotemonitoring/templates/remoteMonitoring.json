@@ -172,12 +172,13 @@
         "solutionType": "RemoteMonitoring",
         "adminUsername": "[parameters('adminUsername')]",
         "agentCount": "[parameters('agentCount')]",
-        "publicIPName": "[concat('publicip-', resourceGroup().name)]",
-        "agentsEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'agents')]",
+        "publicIPName": "[concat(resourceGroup().name, '-public-ip')]",
+        "clusterName": "[concat(resourceGroup().name, '-cluster')]",
+        "agentsEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'-agents')]",
         "domainNameLabel": "[concat('agent-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
         "agentVMSize":"[parameters('agentVMSize')]",
         "masterCount":"[parameters('masterCount')]",
-        "mastersEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'mgmt')]",
+        "mastersEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'-mgmt')]",
         "orchestratorType":"Kubernetes",
         "sshRSAPublicKey":"[parameters('sshRSAPublicKey')]",
         "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
@@ -259,13 +260,13 @@
                         "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
                     },
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]",
-                        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
                     ]
                 }
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
             ]
         },
         {
@@ -307,7 +308,7 @@
             "apiVersion": "2016-09-30",
             "type": "Microsoft.ContainerService/containerServices",
             "location": "[resourceGroup().location]",
-            "name":"[concat('containerservice-',resourceGroup().name)]",
+            "name":"[variables('clusterName')]",
             "properties": {
                 "orchestratorProfile": {
                     "orchestratorType": "[variables('orchestratorType')]"
@@ -355,9 +356,13 @@
             "type": "string",
             "value": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey, ';')]"
         },
+        "containerServiceName": {
+            "type": "string",
+            "value": "[variables('clusterName')]"
+        },
         "masterFQDN": {
             "type": "string",
-            "value": "[reference(concat('Microsoft.ContainerService/containerServices/', 'containerservice-', resourceGroup().name)).masterProfile.fqdn]"
+            "value": "[reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn]"
         },
         "adminUsername": {
             "type": "string",
@@ -365,7 +370,7 @@
         },
         "sshMaster0": {
             "type": "string",
-            "value": "[concat('ssh ', variables('adminUsername'), '@', reference(concat('Microsoft.ContainerService/containerServices/', 'containerservice-', resourceGroup().name)).masterProfile.fqdn, ' -A -p 22')]"
+            "value": "[concat('ssh ', variables('adminUsername'), '@', reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn, ' -A -p 22')]"
         },
         "loadBalancerIp": {
             "type": "string",
