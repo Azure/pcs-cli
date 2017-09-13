@@ -8,6 +8,7 @@ import { DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-a
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
+import { IK8sManager, K8sManager } from './k8smanager';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -18,6 +19,7 @@ type DeploymentOperation = ResourceModels.DeploymentOperation;
 type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
 const MAX_RETRY = 36;
+const KUBEDIR = os.homedir() + path.sep + '.kube';
 
 export interface IDeploymentManager {
     submit(params: Answers | undefined): Promise<any>;
@@ -103,12 +105,6 @@ export class DeploymentManager implements IDeploymentManager {
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
                 deploymentProperties = res.properties;
-                if (params.deploymentSku === 'enterprise') {
-                    console.log('Downloading the kubeconfig file from:', `${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
-                    return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
-                }
-            })
-            .then(() => {
                 const directoryPath = process.cwd() + path.sep + 'deployments';
                 if (!fs.existsSync(directoryPath)) {
                     fs.mkdirSync(directoryPath);
@@ -127,18 +123,34 @@ export class DeploymentManager implements IDeploymentManager {
                 console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
                             'to manage your deployed resources');
                 console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
+
+                if (params.deploymentSku === 'enterprise') {
+                    console.log('Downloading the kubeconfig file from:', `${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
+                    return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
+                }
+                return Promise.resolve('');
+            })
+            .then((configPath: string) => {
+                if (params.deploymentSku === 'enterprise') {
+                    const k8sMananger: IK8sManager = new K8sManager(configPath);
+                    console.log('Setting up kubernetes');
+                    return k8sMananger.setupCertificate(params.certData);
+                }
+                return Promise.resolve();
+            })
+            .then(() => {
+                console.log('Setup done sucessfully, the website will be ready in 30-45 seconds');
             })
             .catch((err: Error) => {
-                deployUI.stop(JSON.stringify(err));
+                deployUI.stop(err.toString());
             });
     }
 
-    private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<any> {
-        const kubeDir = os.homedir() + path.sep + '.kube';
+    private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<string> {
         if (!fs.existsSync) {
-            fs.mkdirSync(kubeDir);
+            fs.mkdirSync(KUBEDIR);
         }
-        const localKubeCofigPath: string = kubeDir + path.sep + 'config' + '-' + outputs.resourceGroup.value;
+        const localKubeCofigPath: string = KUBEDIR + path.sep + 'config' + '-' + outputs.containerServiceName.value;
         const remoteKubeConfig: string = '.kube/config';
         const sshDir = sshFilePath.substring(0, sshFilePath.lastIndexOf(path.sep));
         const sshPrivateKeyPath: string = sshDir + path.sep + 'id_rsa';
@@ -174,7 +186,7 @@ export class DeploymentManager implements IDeploymentManager {
                                 }
                                 console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeCofigPath)}`);
                                 clearInterval(timer);
-                                resolve();
+                                resolve(localKubeCofigPath);
                             });
                         });
                     })

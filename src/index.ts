@@ -18,11 +18,11 @@ import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
 import GraphRbacManagementClient = require('azure-graph');
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
+import { Command } from 'commander';
 
 import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
 import { Questions, IQuestions } from './questions';
-import { Command } from 'commander';
 
 const packageJson = require('../package.json');
 
