@@ -9,6 +9,7 @@ import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 import { IK8sManager, K8sManager } from './k8smanager';
+import { Config } from './config';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -130,9 +131,21 @@ export class DeploymentManager implements IDeploymentManager {
                 }
                 return Promise.resolve('');
             })
-            .then((configPath: string) => {
+            .then((kubeCconfigPath: string) => {
                 if (params.deploymentSku === 'enterprise') {
-                    const k8sMananger: IK8sManager = new K8sManager(configPath);
+                    const outputs = deploymentProperties.outputs;
+                    const config = new Config();
+                    config.AzureStorageAccountKey = outputs.storageAccountKey.value;
+                    config.AzureStorageAccountName = outputs.storageAccountName.value;
+                    config.DNS = outputs.agentFQDN.value;
+                    config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                    config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
+                    config.IoTHubReactConnectionString = outputs.iotHubConnectionString.value;
+                    config.IotHubReactEndpoint = outputs.iotHubEndpoint.value;
+                    config.IotHubReactName = outputs.iotHubHostName.value;
+                    config.IotHubReactPartitions = outputs.iotHubReactPartitions.value;
+                    config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                    const k8sMananger: IK8sManager = new K8sManager(params.solutionName, kubeCconfigPath, config);
                     console.log('Setting up kubernetes');
                     return k8sMananger.setupCertificate(params.certData);
                 }

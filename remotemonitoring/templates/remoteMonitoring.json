@@ -84,7 +84,7 @@
         },
         "agentCount": {
             "type": "int",
-            "defaultValue": 3,
+            "defaultValue": 1,
             "metadata": {
                 "description": "The number of agents for the cluster.  This value can be from 1 to 100 (note, for Kubernetes clusters you will also get 1 or 2 public agents in addition to these seleted masters)"
             },
@@ -159,6 +159,23 @@
                 "description": "This is the thumbprint of the HTTPS SSL Certificate"
             },
             "defaultValue": "secretkey"
+        },
+        "storageName": {
+            "type": "string",
+            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "The name of the storageAccount"
+            }
+        },
+        "storageSkuName": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS", "Standard_GRS", "Standard_RAGRS", "Standard_ZRS", "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage SKU name"
+            }
         }
     },
     "variables": {
@@ -200,7 +217,9 @@
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
         "branch": "master",
-        "hostingPlanName": "[parameters('azureWebsiteName')]"
+        "hostingPlanName": "[parameters('azureWebsiteName')]",
+        "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
+        "storageApiVersion": "2017-06-01"
     },
     "resources": [
         {
@@ -337,6 +356,19 @@
                 },
                 "servicePrincipalProfile": "[variables('servicePrincipalFields')[variables('useServicePrincipal')]]"
             }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageName')]",
+            "apiVersion": "[variables('storageApiVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[variables('solutionType')]"
+            },
+            "kind": "Storage",
+            "sku": {
+                "name": "[parameters('storageSkuName')]"
+            }
         }
     ],
     "outputs": {
@@ -383,6 +415,22 @@
         "azureWebsite": {
             "type": "string",
             "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
+        },
+        "iotHubEndpoint": {
+            "type": "string",
+            "value": "reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint"
+        },
+        "iotHubReactPartitions": {
+            "type": "string",
+            "value": "reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount"
+        },
+        "storageAccountName": {
+            "type": "string",
+            "value": "parameters('storageName')"
+        },
+        "storageAccountKey": {
+            "type": "string",
+            "value": "listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value"
         }
     }
-}
+} 

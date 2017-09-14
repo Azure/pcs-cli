@@ -52,7 +52,7 @@ metadata:
   name: nginx-ingress
 spec:
   type: LoadBalancer
-  loadBalancerIP: {LoadBalancerIP}
+  loadBalancerIP: {loadBalancerIP}
   ports:
     - port: 80
       name: http
@@ -93,7 +93,7 @@ spec:
           args:
             - /nginx-ingress-controller
             - --default-backend-service=$(POD_NAMESPACE)/default-http-backend
-            # - --default-ssl-certificate=$(POD_NAMESPACE)/tls-certificate
+            - --default-ssl-certificate=$(POD_NAMESPACE)/tls-certificate
           # Use downward API
           env:
             - name: POD_NAME
