@@ -8,8 +8,12 @@ metadata:
     ingress.kubernetes.io/rewrite-target: /
     # ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  tls:
+  - hosts:
+    - "{DNS}"
+    secretName: tls-certificate
   rules:
-  - host: "pcs-rm-v2.westus.cloudapp.azure.com"
+  - host: "{DNS}"
     http:
       paths:
       - path: /

@@ -64,16 +64,6 @@ class DeployUI {
                     const loader = this.loader[this.i++ % 4];
                     let operationsStatus = this.operationsStatusFormatter(value, loader);
                     if (operationsStatus) {
-                        // Leaving empty lines to show status message as they appear
-                        if (totalResources > this.resourcesStatusAvailable) {
-                            while (value.length > this.resourcesStatusAvailable) {
-                                console.log('');
-                                this.resourcesStatusAvailable++;
-                                if (totalResources === this.resourcesStatusAvailable) {
-                                    break;
-                                }
-                            }
-                        }
                         operationsStatus += loader + this.deployedResources +
                         `${chalk.cyan(this.completedResourceCount.toString(), 'of', this.totalResourceCount.toString())}`;
                         this.ui.updateBottomBar(operationsStatus);

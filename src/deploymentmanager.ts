@@ -71,13 +71,19 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.azureWebsiteName.value = params.azureWebsiteName;
         }
         if (this._parameters.remoteEndpointSSLThumbprint) {
-            this._parameters.remoteEndpointSSLThumbprint.value = params.certData.fingerprint;
+            this._parameters.remoteEndpointSSLThumbprint.value = params.certData.fingerPrint;
         }
         if (this._parameters.remoteEndpointCertificate) {
             this._parameters.remoteEndpointCertificate.value = params.certData.cert;
         }
         if (this._parameters.remoteEndpointCertificateKey) {
-            this._parameters.remoteEndpointCertificateKey.value = params.certData.privateKey;
+            this._parameters.remoteEndpointCertificateKey.value = params.certData.key;
+        }
+        if (this._parameters.aadTenantId) {
+            this._parameters.aadTenantId.value = params.aadTenantId;
+        }
+        if (this._parameters.aadClientId) {
+            this._parameters.aadClientId.value = params.appId;
         }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
@@ -135,19 +141,24 @@ export class DeploymentManager implements IDeploymentManager {
                 if (params.deploymentSku === 'enterprise') {
                     const outputs = deploymentProperties.outputs;
                     const config = new Config();
+                    config.AADTenantId = params.aadTenantId;
+                    config.ApplicationId = params.appId;
                     config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                     config.AzureStorageAccountName = outputs.storageAccountName.value;
                     config.DNS = outputs.agentFQDN.value;
                     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                    config.EventHubEndpoint = outputs.eventHubEndpoint.value;
+                    config.EventHubName = outputs.eventHubName.value;
+                    config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
                     config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
-                    config.IoTHubReactConnectionString = outputs.iotHubConnectionString.value;
-                    config.IotHubReactEndpoint = outputs.iotHubEndpoint.value;
-                    config.IotHubReactName = outputs.iotHubHostName.value;
-                    config.IotHubReactPartitions = outputs.iotHubReactPartitions.value;
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
-                    const k8sMananger: IK8sManager = new K8sManager(params.solutionName, kubeCconfigPath, config);
-                    console.log('Setting up kubernetes');
-                    return k8sMananger.setupCertificate(params.certData);
+                    config.TLS = params.certData;
+                    const k8sMananger: IK8sManager = new K8sManager('default', kubeCconfigPath, config);
+                    console.log(`${chalk.cyan('Setting up kubernetes')}`);
+                    return k8sMananger.setupAll()
+                    .catch((err: any) => {
+                        console.log(err);
+                    });
                 }
                 return Promise.resolve();
             })

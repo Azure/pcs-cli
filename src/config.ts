@@ -1,17 +1,14 @@
 export class Config {
+    public AADTenantId: string;
+    public ApplicationId: string;
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
-    public DNS: string;
     public DocumentDBConnectionString: string;
-
-    // They both have same value, just keeping them separate
-    // since they are consumed by different environment variables
-    // within the containers
-    public IoTHubConnectionString: string;
-    public IoTHubReactConnectionString: string;
-
-    public IotHubReactEndpoint: string;
-    public IotHubReactName: string;
-    public IotHubReactPartitions: string;
+    public DNS: string;
+    public EventHubEndpoint: string;
+    public EventHubName: string;
+    public EventHubPartitions: string;
     public LoadBalancerIP: string;
+    public IoTHubConnectionString: string;
+    public TLS: {cert: string, key: string, fingerPrint: string};
 }

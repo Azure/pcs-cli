@@ -275,7 +275,7 @@
                     "name": "appsettings",
                     "apiVersion": "2015-08-01",
                     "properties": {
-                        "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
+                        "REMOTE_ENDPOINT": "[concat('https://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
                         "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
                     },
                     "dependsOn": [
@@ -378,7 +378,7 @@
         },
         "iotHubHostName": {
             "type": "string",
-            "value": "[reference(variables('iotHubResourceId')).hostName]"
+            "value": "[parameters('iotHubName')]"
         },
         "iotHubConnectionString": {
             "type": "string",
@@ -416,21 +416,25 @@
             "type": "string",
             "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
         },
-        "iotHubEndpoint": {
-            "type": "string",
-            "value": "reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint"
+        "eventHubPartitions": {
+            "type": "int",
+            "value": "[reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount]"
         },
-        "iotHubReactPartitions": {
+        "eventHubName": {
             "type": "string",
-            "value": "reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount"
+            "value": "[parameters('iotHubName')]"
+        },
+        "eventHubEndpoint": {
+            "type": "string",
+            "value": "[reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint]"
         },
         "storageAccountName": {
             "type": "string",
-            "value": "parameters('storageName')"
+            "value": "[parameters('storageName')]"
         },
         "storageAccountKey": {
             "type": "string",
-            "value": "listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value"
+            "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
         }
     }
 } 
