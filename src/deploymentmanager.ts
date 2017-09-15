@@ -174,7 +174,7 @@ export class DeploymentManager implements IDeploymentManager {
         if (!fs.existsSync) {
             fs.mkdirSync(KUBEDIR);
         }
-        const localKubeCofigPath: string = KUBEDIR + path.sep + 'config' + '-' + outputs.containerServiceName.value;
+        const localKubeConfigPath: string = KUBEDIR + path.sep + 'config' + '-' + outputs.containerServiceName.value;
         const remoteKubeConfig: string = '.kube/config';
         const sshDir = sshFilePath.substring(0, sshFilePath.lastIndexOf(path.sep));
         const sshPrivateKeyPath: string = sshDir + path.sep + 'id_rsa';
@@ -202,15 +202,15 @@ export class DeploymentManager implements IDeploymentManager {
                                 clearInterval(timer); 
                                 return;
                             }
-                            sftp.fastGet(remoteKubeConfig, localKubeCofigPath, (err: Error) => {
+                            sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {
                                 sshClient.end();
                                 if (err) {
                                     reject(err);
                                     return;
                                 }
-                                console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeCofigPath)}`);
+                                console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeConfigPath)}`);
                                 clearInterval(timer);
-                                resolve(localKubeCofigPath);
+                                resolve(localKubeConfigPath);
                             });
                         });
                     })
