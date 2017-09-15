@@ -44,6 +44,7 @@
     "@types/jest": "^19.2.4",
     "@types/node": "^7.0.29",
     "@types/node-forge": "^0.6.10",
+    "@types/ssh2": "^0.5.35",
     "import-sort": "^2.4.0",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0",
@@ -61,7 +62,8 @@
     "json-loader": "^0.5.4",
     "ms-rest": "^2.2.0",
     "ms-rest-azure": "^2.1.2",
-    "node-forge": "^0.7.1"
+    "node-forge": "^0.7.1",
+    "ssh2": "^0.5.5"
   },
   "repository": {
     "type": "git",
