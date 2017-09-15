@@ -53,7 +53,7 @@ export class Questions implements Questions {
                 }
 
                 return 'Please enter a valid solution name.\n' +
-                       'Valid characters: Alphanumeric, underscore, parentheses, hyphen, an period (except at end)';
+                       'Valid characters for the name: alphanumeric (A-Z, a-z), underscore (_), parentheses, hyphen(-), and period (.) except at the end of the solution name.)';
             }
         },
         {
