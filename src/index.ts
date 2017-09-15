@@ -18,11 +18,13 @@ import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
 import GraphRbacManagementClient = require('azure-graph');
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
+import { Command } from 'commander';
 
 import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
 import { Questions, IQuestions } from './questions';
-import { Command } from 'commander';
+import { IK8sManager, K8sManager } from './k8smanager';
+import { Config } from './config';
 
 const packageJson = require('../package.json');
 
@@ -119,6 +121,7 @@ function main() {
      * Create resource group
      * Submit deployment
      */
+    
     const cachedAuthResponse = getCachedAuthResponse();
     if (!cachedAuthResponse) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
@@ -189,6 +192,7 @@ function main() {
                         answers.appId = appId;
                         answers.deploymentSku = program.sku;
                         answers.certData = createCertificate();
+                        answers.aadTenantId = cachedAuthResponse.options.domain;
                         return deploymentManager.submit(answers);
                     }
                 })
@@ -349,11 +353,11 @@ function createCertificate(): any {
     cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
     // self-sign certificate
     cert.sign(keys.privateKey);
-    const fingerprint = pki.getPublicKeyFingerprint(keys.publicKey, {encoding: 'hex', delimiter: ':'});
+    const fingerPrint = pki.getPublicKeyFingerprint(keys.publicKey, {encoding: 'hex', delimiter: ':'});
     return {
         cert: forge.pki.certificateToPem(cert),
-        fingerprint,
-        privateKey: forge.pki.privateKeyToPem(keys.privateKey)
+        fingerPrint,
+        key: forge.pki.privateKeyToPem(keys.privateKey)
     };
 }
 
@@ -401,7 +405,7 @@ function addMoreDeploymentQuestions(questions: IQuestions) {
             validate: (sshFilePath: string) => {
                 // TODO Add ssh key validation
                 // Issue: https://github.com/Azure/pcs-cli/issues/83
-                return true;
+                return fs.existsSync(sshFilePath);
             },
         });
     }

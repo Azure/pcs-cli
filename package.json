@@ -42,6 +42,7 @@
     "@types/commander": "^2.9.1",
     "@types/inquirer": "0.0.35",
     "@types/jest": "^19.2.4",
+    "@types/js-yaml": "^3.9.1",
     "@types/node": "^7.0.29",
     "@types/node-forge": "^0.6.10",
     "@types/ssh2": "^0.5.35",
@@ -51,14 +52,16 @@
     "ts-jest": "^20.0.6",
     "ts-node": "^3.0.6",
     "tslint": "^5.4.3",
-    "typescript": "^2.3.4"
+    "typescript": "^2.5.2"
   },
   "dependencies": {
-    "@types/ssh2": "^0.5.35",
+    "@kubernetes/typescript-node": "^0.1.1",
     "azure": "^2.0.0-preview",
     "azure-arm-resource": "^2.0.0-preview",
+    "btoa": "^1.1.2",
     "commander": "^2.9.0",
     "inquirer": "^3.1.0",
+    "js-yaml": "^3.10.0",
     "json-loader": "^0.5.4",
     "ms-rest": "^2.2.0",
     "ms-rest-azure": "^2.1.2",
