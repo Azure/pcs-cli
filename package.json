@@ -45,6 +45,7 @@
     "@types/js-yaml": "^3.9.1",
     "@types/node": "^7.0.29",
     "@types/node-forge": "^0.6.10",
+    "@types/ssh2": "^0.5.35",
     "import-sort": "^2.4.0",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0",
