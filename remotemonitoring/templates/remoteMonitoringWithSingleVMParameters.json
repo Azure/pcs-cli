@@ -19,5 +19,11 @@
     },
     "remoteEndpointCertificateKey": {
       "value": "{Added through command line interface}"
+    },
+    "aadTenantId": {
+      "value": "{Added through command line interface}"
+    },
+    "aadClientId": {
+      "value": "{Added through command line interface}"
     }
 }

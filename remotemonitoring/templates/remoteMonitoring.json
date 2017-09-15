@@ -159,6 +159,23 @@
                 "description": "This is the thumbprint of the HTTPS SSL Certificate"
             },
             "defaultValue": "secretkey"
+        },
+        "storageName": {
+            "type": "string",
+            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "The name of the storageAccount"
+            }
+        },
+        "storageSkuName": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS", "Standard_GRS", "Standard_RAGRS", "Standard_ZRS", "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage SKU name"
+            }
         }
     },
     "variables": {
@@ -172,12 +189,13 @@
         "solutionType": "RemoteMonitoring",
         "adminUsername": "[parameters('adminUsername')]",
         "agentCount": "[parameters('agentCount')]",
-        "publicIPName": "[concat('publicip-', resourceGroup().name)]",
-        "agentsEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'agents')]",
+        "publicIPName": "[concat(resourceGroup().name, '-public-ip')]",
+        "clusterName": "[concat(resourceGroup().name, '-cluster')]",
+        "agentsEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'-agents')]",
         "domainNameLabel": "[concat('agent-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
         "agentVMSize":"[parameters('agentVMSize')]",
         "masterCount":"[parameters('masterCount')]",
-        "mastersEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'mgmt')]",
+        "mastersEndpointDNSNamePrefix":"[concat(parameters('solutionName'),'-mgmt')]",
         "orchestratorType":"Kubernetes",
         "sshRSAPublicKey":"[parameters('sshRSAPublicKey')]",
         "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
@@ -199,7 +217,9 @@
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
         "branch": "master",
-        "hostingPlanName": "[parameters('azureWebsiteName')]"
+        "hostingPlanName": "[parameters('azureWebsiteName')]",
+        "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
+        "storageApiVersion": "2017-06-01"
     },
     "resources": [
         {
@@ -255,17 +275,17 @@
                     "name": "appsettings",
                     "apiVersion": "2015-08-01",
                     "properties": {
-                        "REMOTE_ENDPOINT": "[concat('http://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
+                        "REMOTE_ENDPOINT": "[concat('https://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
                         "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
                     },
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]",
-                        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
                     ]
                 }
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
             ]
         },
         {
@@ -307,7 +327,7 @@
             "apiVersion": "2016-09-30",
             "type": "Microsoft.ContainerService/containerServices",
             "location": "[resourceGroup().location]",
-            "name":"[concat('containerservice-',resourceGroup().name)]",
+            "name":"[variables('clusterName')]",
             "properties": {
                 "orchestratorProfile": {
                     "orchestratorType": "[variables('orchestratorType')]"
@@ -336,6 +356,19 @@
                 },
                 "servicePrincipalProfile": "[variables('servicePrincipalFields')[variables('useServicePrincipal')]]"
             }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageName')]",
+            "apiVersion": "[variables('storageApiVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[variables('solutionType')]"
+            },
+            "kind": "Storage",
+            "sku": {
+                "name": "[parameters('storageSkuName')]"
+            }
         }
     ],
     "outputs": {
@@ -345,19 +378,23 @@
         },
         "iotHubHostName": {
             "type": "string",
-            "value": "[reference(variables('iotHubResourceId')).hostName]"
+            "value": "[parameters('iotHubName')]"
         },
         "iotHubConnectionString": {
             "type": "string",
-            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey, ';')]"
+            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
         },
         "documentDBConnectionString" : {
             "type": "string",
             "value": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey, ';')]"
         },
+        "containerServiceName": {
+            "type": "string",
+            "value": "[variables('clusterName')]"
+        },
         "masterFQDN": {
             "type": "string",
-            "value": "[reference(concat('Microsoft.ContainerService/containerServices/', 'containerservice-', resourceGroup().name)).masterProfile.fqdn]"
+            "value": "[reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn]"
         },
         "adminUsername": {
             "type": "string",
@@ -365,7 +402,7 @@
         },
         "sshMaster0": {
             "type": "string",
-            "value": "[concat('ssh ', variables('adminUsername'), '@', reference(concat('Microsoft.ContainerService/containerServices/', 'containerservice-', resourceGroup().name)).masterProfile.fqdn, ' -A -p 22')]"
+            "value": "[concat('ssh ', variables('adminUsername'), '@', reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn, ' -A -p 22')]"
         },
         "loadBalancerIp": {
             "type": "string",
@@ -378,6 +415,26 @@
         "azureWebsite": {
             "type": "string",
             "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
+        },
+        "eventHubPartitions": {
+            "type": "int",
+            "value": "[reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount]"
+        },
+        "eventHubName": {
+            "type": "string",
+            "value": "[parameters('iotHubName')]"
+        },
+        "eventHubEndpoint": {
+            "type": "string",
+            "value": "[reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint]"
+        },
+        "storageAccountName": {
+            "type": "string",
+            "value": "[parameters('storageName')]"
+        },
+        "storageAccountKey": {
+            "type": "string",
+            "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
         }
     }
-}
+} 
