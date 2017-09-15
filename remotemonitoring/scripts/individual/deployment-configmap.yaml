@@ -6,9 +6,6 @@ metadata:
 data:
   # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
 
-  # Base service URL, where all our microservices are hosted
-  webservice.url: "{Base Service URL}"
-
   # The connection string will be of format
   # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
   # Policy Type can have following values: iothubowner, service, device, registryRead, registryReadWrite
@@ -16,6 +13,7 @@ data:
   # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName}
   # and resource type "Iot Hub" then "Shared access policies" menu.
   iothub.connstring: "{IoT Hub connection string}"
+
 
   # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
   # The key will be shown in CLI window as output when remote-cli command has finished running.
@@ -48,6 +46,7 @@ data:
   auth.aad.global.tenantid: "{AAD Tenant Id}"
   auth.aad.global.clientid: "{AAD Client Id}"
   auth.aad.global.loginuri: "https://login.microsoftonline.com/"
+  auth.aad.global.issuer: "{Issuer}"
 
   # Nginx Template
   nginx.tmpl: |
@@ -111,7 +110,7 @@ data:
 
                   types_hash_max_size 2048;
                   server_names_hash_max_size {{ $cfg.serverNameHashMaxSize }};
-                  server_names_hash_bucket_size {{ $cfg.serverNameHashBucketSize }};
+                  server_names_hash_bucket_size 128;
 
                   include /etc/nginx/mime.types;
                   default_type text/html;
@@ -236,16 +235,12 @@ data:
                   server {
                       server_name {{ $server.Name }};
                       listen 80{{ if $cfg.useProxyProtocol }} proxy_protocol{{ end }};
-                      {{ if $server.SSL }}listen 443 {{ if $cfg.useProxyProtocol }}proxy_protocol{{ end }} ssl {{ if $cfg.enableSpdy }}spdy{{ end }} {{ if $cfg.useHttp2 }}http2{{ end }};
-                      {{/* comment PEM sha is required to detect changes in the generated configuration and force a reload */}}
+                      listen 443  ssl spdy http2;
                       # PEM sha: {{ $server.SSLPemChecksum }}
-                      ssl_certificate {{ $server.SSLCertificate }};
-                      ssl_certificate_key {{ $server.SSLCertificateKey }};
-                      {{- end }}
+                      ssl_certificate /etc/nginx-ssl/default-tls-certificate.pem;
+                      ssl_certificate_key /etc/nginx-ssl/default-tls-certificate.pem;
 
-                      {{ if (and $server.SSL $cfg.hsts) -}}
-                      more_set_headers                            "Strict-Transport-Security: max-age={{ $cfg.hstsMaxAge }}{{ if $cfg.hstsIncludeSubdomains }}; includeSubDomains{{ end }}; preload";
-                      {{- end }}
+                      more_set_headers                            "Strict-Transport-Security: max-age=15724800; includeSubDomains; preload";
 
                       {{ if $cfg.enableVtsStatus }}vhost_traffic_status_filter_by_set_key $geoip_country_code country::$server_name;{{ end }}
 
@@ -302,6 +297,10 @@ data:
                           # mitigate HTTPoxy Vulnerability
                           # https://www.nginx.com/blog/mitigating-the-httpoxy-vulnerability-with-nginx/
                           proxy_set_header Proxy                  "";
+
+                          # TODO ~devis: remove - https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/issues/11
+                          # Public preview only: used to distinguish internal/external traffic
+                          proxy_set_header     X-Source external;
 
                           proxy_connect_timeout                   {{ $cfg.proxyConnectTimeout }}s;
                           proxy_send_timeout                      {{ $cfg.proxySendTimeout }}s;
