@@ -30,7 +30,7 @@ spec:
           args:
             - /nginx-ingress-controller
             - --default-backend-service=$(POD_NAMESPACE)/default-http-backend
-            # - --default-ssl-certificate=$(POD_NAMESPACE)/tls-certificate
+            - --default-ssl-certificate=$(POD_NAMESPACE)/tls-certificate
           # Use downward API
           env:
             - name: POD_NAME
@@ -45,8 +45,6 @@ spec:
             - containerPort: 80
             - containerPort: 443
           volumeMounts:
-            # - name: tls-dhparam-vol
-            #   mountPath: /etc/nginx-ssl/dhparam
             - name: nginx-template-volume
               mountPath: /etc/nginx/template
               readOnly: true
@@ -57,6 +55,3 @@ spec:
             items:
             - key: nginx.tmpl
               path: nginx.tmpl
-        # - name: tls-dhparam-vol
-        #   secret:
-        #     secretName: tls-dhparam

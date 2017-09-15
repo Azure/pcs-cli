@@ -8,6 +8,8 @@ import { DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-a
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
+import { IK8sManager, K8sManager } from './k8smanager';
+import { Config } from './config';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -18,6 +20,7 @@ type DeploymentOperation = ResourceModels.DeploymentOperation;
 type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
 const MAX_RETRY = 36;
+const KUBEDIR = os.homedir() + path.sep + '.kube';
 
 export interface IDeploymentManager {
     submit(params: Answers | undefined): Promise<any>;
@@ -68,13 +71,19 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.azureWebsiteName.value = params.azureWebsiteName;
         }
         if (this._parameters.remoteEndpointSSLThumbprint) {
-            this._parameters.remoteEndpointSSLThumbprint.value = params.certData.fingerprint;
+            this._parameters.remoteEndpointSSLThumbprint.value = params.certData.fingerPrint;
         }
         if (this._parameters.remoteEndpointCertificate) {
             this._parameters.remoteEndpointCertificate.value = params.certData.cert;
         }
         if (this._parameters.remoteEndpointCertificateKey) {
-            this._parameters.remoteEndpointCertificateKey.value = params.certData.privateKey;
+            this._parameters.remoteEndpointCertificateKey.value = params.certData.key;
+        }
+        if (this._parameters.aadTenantId) {
+            this._parameters.aadTenantId.value = params.aadTenantId;
+        }
+        if (this._parameters.aadClientId) {
+            this._parameters.aadClientId.value = params.appId;
         }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
@@ -103,12 +112,6 @@ export class DeploymentManager implements IDeploymentManager {
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
                 deploymentProperties = res.properties;
-                if (params.deploymentSku === 'enterprise') {
-                    console.log('Downloading the kubeconfig file from:', `${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
-                    return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
-                }
-            })
-            .then(() => {
                 const directoryPath = process.cwd() + path.sep + 'deployments';
                 if (!fs.existsSync(directoryPath)) {
                     fs.mkdirSync(directoryPath);
@@ -127,18 +130,51 @@ export class DeploymentManager implements IDeploymentManager {
                 console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
                             'to manage your deployed resources');
                 console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
+
+                if (params.deploymentSku === 'enterprise') {
+                    console.log('Downloading the kubeconfig file from:', `${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
+                    return this.downloadKubeConfig(deploymentProperties.outputs, params.sshFilePath);
+                }
+                return Promise.resolve('');
+            })
+            .then((kubeCconfigPath: string) => {
+                if (params.deploymentSku === 'enterprise') {
+                    const outputs = deploymentProperties.outputs;
+                    const config = new Config();
+                    config.AADTenantId = params.aadTenantId;
+                    config.ApplicationId = params.appId;
+                    config.AzureStorageAccountKey = outputs.storageAccountKey.value;
+                    config.AzureStorageAccountName = outputs.storageAccountName.value;
+                    config.DNS = outputs.agentFQDN.value;
+                    config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                    config.EventHubEndpoint = outputs.eventHubEndpoint.value;
+                    config.EventHubName = outputs.eventHubName.value;
+                    config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
+                    config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
+                    config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                    config.TLS = params.certData;
+                    const k8sMananger: IK8sManager = new K8sManager('default', kubeCconfigPath, config);
+                    console.log(`${chalk.cyan('Setting up kubernetes')}`);
+                    return k8sMananger.setupAll()
+                    .catch((err: any) => {
+                        console.log(err);
+                    });
+                }
+                return Promise.resolve();
+            })
+            .then(() => {
+                console.log('Setup done sucessfully, the website will be ready in 30-45 seconds');
             })
             .catch((err: Error) => {
-                deployUI.stop(JSON.stringify(err));
+                deployUI.stop(err.toString());
             });
     }
 
-    private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<any> {
-        const kubeDir = os.homedir() + path.sep + '.kube';
+    private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<string> {
         if (!fs.existsSync) {
-            fs.mkdirSync(kubeDir);
+            fs.mkdirSync(KUBEDIR);
         }
-        const localKubeCofigPath: string = kubeDir + path.sep + 'config' + '-' + outputs.resourceGroup.value;
+        const localKubeConfigPath: string = KUBEDIR + path.sep + 'config' + '-' + outputs.containerServiceName.value;
         const remoteKubeConfig: string = '.kube/config';
         const sshDir = sshFilePath.substring(0, sshFilePath.lastIndexOf(path.sep));
         const sshPrivateKeyPath: string = sshDir + path.sep + 'id_rsa';
@@ -166,15 +202,15 @@ export class DeploymentManager implements IDeploymentManager {
                                 clearInterval(timer); 
                                 return;
                             }
-                            sftp.fastGet(remoteKubeConfig, localKubeCofigPath, (err: Error) => {
+                            sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {
                                 sshClient.end();
                                 if (err) {
                                     reject(err);
                                     return;
                                 }
-                                console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeCofigPath)}`);
+                                console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeConfigPath)}`);
                                 clearInterval(timer);
-                                resolve();
+                                resolve(localKubeConfigPath);
                             });
                         });
                     })
