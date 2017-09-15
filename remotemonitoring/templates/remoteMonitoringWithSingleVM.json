@@ -528,7 +528,9 @@
                 "type": "DockerExtension",
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
-                "settings": {}
+                "settings": {
+                    "azure-environment": "[if(endsWith(parameters('vmFQDNSuffix'), '.cn'), 'AzureChinaCloud', '')]"
+                }
             }
         },
         {
