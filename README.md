@@ -8,15 +8,15 @@ Azure IoT PCS CLI Overview
 Command Line Interface for deploying an IoT pre-configured solution into a
 user's subscription.
 
-This CLI has two SKUs available:
+This CLI has the ability to deploy two configurations of PCS solutions:
 
-1. Basic
-2. Enterprise
+1. Basic - deploys all resources to a single VM.
+2. Enterprise - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
 
 ## Basic
 
 The purpose of the basic deployment is to demo the capabilities of the system
-and requires minimal setup.
+and requires minimal setup, deploying all resources to a single VM.
 
 Basic deployment provisions following resources:
 
@@ -54,17 +54,19 @@ How to use the CLI
 ## CLI setup
 
 1. Clone the project
-2. `npm install`
-3. `npm start`
-4. `npm link`
+1. From a command prompt run: 
+    - `npm install` 
+    - `npm start`
+    - `npm link`
 
 ## Basic Deployment
 
 ### Deploy Azure Resources
 
-1. `pcs` or `pcs -t remotemonitoring -s basic`
-2. Follow the on-screen prompts
-3. The results of the deployment will be saved to a file named `output.json`
+1. If you haven't logged in with your Azure account from the command prompt run `pcs login`.
+1. Run either `pcs` or `pcs -t remotemonitoring -s basic`.  These are equivalent in that they will both deploy a basic deployment (i.e. a deployment to a single VM).
+1. Follow the on-screen prompts
+1. The results of the deployment will be saved to a file named `output.json`
 
 ### Verify the Web UI and Microservices are deployed
 
