@@ -51,6 +51,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothubreact.azureblob.key
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.endpointsuffix
         - name: PCS_IOTHUBREACT_HUB_NAME
           valueFrom:
             configMapKeyRef:
