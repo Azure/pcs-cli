@@ -293,7 +293,7 @@ spec:
     spec:
       containers:
       - name: device-telemetry-pod
-        image: azureiotpcs/device-telemetry-java:latest
+        image: azureiotpcs/device-telemetry-dotnet:latest
         ports:
         - containerPort: 9004
         env:
