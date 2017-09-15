@@ -31,6 +31,7 @@ data:
   iothubreact.access.connstring: "{Iot Hub React connection string}"
   iothubreact.azureblob.account: "{Azure Blob account name}"
   iothubreact.azureblob.key: "{Azure Blob account key}"
+  iothubreact.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
 
   # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
