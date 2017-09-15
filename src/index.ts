@@ -51,8 +51,8 @@ const MAX_RETRYCOUNT = 36;
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .option('-t, --type <type>', 'Soltuion Type', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type', /^(basic|enterprise|test)$/i, 'basic')
+    .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
+    .option('-s, --sku <sku>', 'SKU Type: basic, enterprise, or test', /^(basic|enterprise|test)$/i, 'basic')
     .action((type) => {
         if (type === 'login') {
             return login();
@@ -68,6 +68,12 @@ const program = new Command(packageJson.name)
             );
         console.log(
             `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
+            );
+        console.log(
+            `    Example for executing a basic deployment:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
+            );
+        console.log(
+            `    Example for executing an enterprise deployment:  ${chalk.green('pcs -t remotemonitoring -s enterprise')}.`
             );
         console.log();
         console.log(
@@ -88,7 +94,7 @@ const program = new Command(packageJson.name)
             `    ${chalk.cyan(gitHubUrl)}`
             );
         console.log(
-            `    If you have any problems, do not hesitate to file an issue:`
+            `    If you have any problems please file an issue:`
             );
         console.log(
             `    ${chalk.cyan(gitHubIssuesUrl)}`
