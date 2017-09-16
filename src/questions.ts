@@ -35,7 +35,7 @@ export class Questions implements Questions {
 // tslint:enable
     public static notAllowedPasswords = ['abc@123', 'P@$$w0rd', '@ssw0rd', 'P@ssword123', 'Pa$$word',
                                         'pass@word1', 'Password!', 'Password1', 'Password22', 'iloveyou!'];
-    public solutionNameRegex: RegExp = /^[a-z0-9]{1,17}$/;
+    public solutionNameRegex: RegExp = /^[-\w\._\(\)]{1,64}[^\.]$/;
     public locations: string[] = ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia',
                      'Japan East', 'Japan West', 'Australia East', 'Australia Southeast'];  
 
@@ -52,7 +52,12 @@ export class Questions implements Questions {
                     return true;
                 }
 
-                return 'Please enter a valid solution name';
+                return 'Please enter a valid solution name.\n' +
+                       'Valid characters for the name: \
+                        alphanumeric (A-Z, a-z), \
+                        underscore (_), parentheses, \
+                        hyphen(-), \
+                        and period (.) except at the end of the solution name.)';
             }
         },
         {
