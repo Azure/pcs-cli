@@ -13,6 +13,12 @@ This CLI has the ability to deploy two configurations of PCS solutions:
 1. Basic - deploys all resources to a single VM.
 2. Enterprise - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
 
+Dependencies
+============
+The command line interface depends on:
+
+* [nodejs](https://nodejs.org/en/) used as the runtime for the CLI.  Please install node before attempting a deployment.
+
 ## Basic
 
 The purpose of the basic deployment is to demo the capabilities of the system
