@@ -245,7 +245,7 @@ spec:
     spec:
       containers:
       - name: iothub-manager-pod
-        image: azureiotpcs/iothub-manager-dotnet:latest
+        image: azureiotpcs/iothub-manager-{runtime}:latest
         ports:
         - containerPort: 9002
         env:
@@ -293,7 +293,7 @@ spec:
     spec:
       containers:
       - name: device-telemetry-pod
-        image: azureiotpcs/device-telemetry-dotnet:latest
+        image: azureiotpcs/device-telemetry-{runtime}:latest
         ports:
         - containerPort: 9004
         env:
@@ -344,7 +344,7 @@ spec:
     spec:
       containers:
       - name: storage-adapter-pod
-        image: azureiotpcs/pcs-storage-adapter-dotnet:latest
+        image: azureiotpcs/pcs-storage-adapter-{runtime}:latest
         ports:
         - containerPort: 9022
         env:
@@ -392,7 +392,7 @@ spec:
     spec:
       containers:
       - name: stream-analytics-pod
-        image: azureiotpcs/iot-stream-analytics-java:latest
+        image: azureiotpcs/iot-stream-analytics-{runtime}:latest
         ports:
         - containerPort: 9023
         env:
@@ -488,7 +488,7 @@ spec:
     spec:
       containers:
       - name: ui-config-pod
-        image: azureiotpcs/pcs-ui-config-dotnet:latest
+        image: azureiotpcs/pcs-ui-config-{runtime}:latest
         ports:
         - containerPort: 9005
         env:

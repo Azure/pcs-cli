@@ -212,6 +212,10 @@ export class K8sManager implements IK8sManager {
                     promises.push(this._api.createNamespacedReplicationController(this._namespace, doc));
                     break;
                 case 'Deployment':
+                    const imageName: string = doc.spec.template.spec.containers[0].image;
+                    if (imageName.includes('{runtime}')) {
+                        doc.spec.template.spec.containers[0].image = imageName.replace('{runtime}', this._config.Runtime);
+                    }
                     promises.push(this._betaApi.createNamespacedDeployment(this._namespace, doc));
                     break;
                 case 'Ingress':

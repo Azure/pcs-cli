@@ -64,7 +64,8 @@ const program = new Command(packageJson.name)
     .option('-s, --sku <sku>', 'SKU Type: basic, enterprise, or test', /^(basic|enterprise|test)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: Azure, China, Germany or USGovernment',
-            /^(Azure|China|USGovernment|Germany)$/i, 'Azure')
+            /^(Azure|China)$/i, 'Azure')
+    .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -226,9 +227,15 @@ function main() {
                         answers.deploymentSku = program.sku;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
+                        answers.runtime = program.runtime;
                         return deploymentManager.submit(answers);
                     } else {
-                        console.log('Service principal secret not found');
+                        const message = 'To create a service principal, you must have permissions to register an ' +
+                        'application with your Azure Active Directory(AAD) tenant, and to assign ' +
+                        'the application to a role in your subscription. To see if you have the ' +
+                        'required permissions, check here https://docs.microsoft.com/en-us/azure/azure-resource-manager/' +
+                        'resource-group-create-service-principal-portal#required-permissions.';
+                        console.log(`${chalk.red(message)}`);
                     }
                 })
                 .catch((error: Error) => {
