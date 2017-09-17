@@ -1,11 +1,12 @@
 import * as inquirer from 'inquirer';
 import { Answers, Question } from 'inquirer';
+import * as fetch from 'node-fetch';
 
 export interface IQuestions {
-    value: Question[];
-    addQuestion(question: Question): void;
-    addQuestions(questions: Question[]): void;
-    insertQuestion(index: number, question: Question): void;
+    value: any[];
+    addQuestion(question: any): void;
+    addQuestions(questions: any[]): void;
+    insertQuestion(index: number, question: any): void;
 }
 
 export class Questions implements Questions {
@@ -36,12 +37,25 @@ export class Questions implements Questions {
     public static notAllowedPasswords = ['abc@123', 'P@$$w0rd', '@ssw0rd', 'P@ssword123', 'Pa$$word',
                                         'pass@word1', 'Password!', 'Password1', 'Password22', 'iloveyou!'];
     public solutionNameRegex: RegExp = /^[-\w\._\(\)]{1,64}[^\.]$/;
-    public locations: string[] = ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia',
-                     'Japan East', 'Japan West', 'Australia East', 'Australia Southeast'];  
 
-    private _questions: Question[] ;
+    private _questions: any[] ;
+    private domain: string = '.net';
 
-    constructor() {
+    constructor(environment: string) {
+        switch (environment) {
+            case 'AzureCloud':
+                this.domain = '.net';
+                break;
+            case 'AzureChina':
+                this.domain = '.cn';
+                break;
+            case 'GermanCloud':
+                this.domain = '.de';
+                break;
+            default:
+                this.domain = '.net';
+                break;
+        }
         this._questions = [{
             message: 'Enter a solution name:',
             name: 'solutionName',
@@ -66,17 +80,12 @@ export class Questions implements Questions {
             default: (answers: Answers): any => {
                 return answers.solutionName;
             },
-            message: 'Enter prefix for .azurewebsites.net:',
+            message: 'Enter prefix for .azurewebsites' + this.domain + ':',
             name: 'azureWebsiteName',
-            type: 'input'
-        },
-        {
-            // TODO: List the locations based on selected subscription
-            // Issue: https://github.com/Azure/pcs-cli/issues/82
-            choices: this.locations,
-            message: 'Select a location:',
-            name: 'location',
-            type: 'list',
+            type: 'input',
+            validate: (value: string) => {
+                return this.checkUrlExists(value);
+            }
         }
         ];
     }
@@ -97,6 +106,18 @@ export class Questions implements Questions {
 
     public insertQuestion(index: number, question: Question): void {
         this._questions.splice(index, 0, question);
+    }
+
+    private  checkUrlExists(hostname: string): Promise<boolean | string> {
+        const host = 'http://' + hostname + '.azurewebsites' + this.domain;
+        const req = new fetch.Request(host, { method: 'HEAD' });
+        return fetch.default(req)
+        .then((value: fetch.Response) => {
+            return 'The app with name ' + hostname + ' is not available';
+        })
+        .catch((error: any) => {
+            return true;
+        });
     }
 }
 

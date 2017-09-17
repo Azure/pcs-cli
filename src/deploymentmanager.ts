@@ -95,9 +95,11 @@ export class DeploymentManager implements IDeploymentManager {
         const deployUI = DeployUI.instance;
         const deploymentName = 'deployment-' + params.solutionName;
         let deploymentProperties: any = null;
+        let resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
         return client.resourceGroups.createOrUpdate(params.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
+                resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
                 return client.deployments.validate(params.solutionName, deploymentName, deployment);
             })
             .then((validationResult: DeploymentValidateResult) => {
@@ -126,7 +128,6 @@ export class DeploymentManager implements IDeploymentManager {
                     console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
                                 'to deployed solution:', `${chalk.green(params.solutionName)}`);
                 }
-                const resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
                 console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
                             'to manage your deployed resources');
                 console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
@@ -166,7 +167,12 @@ export class DeploymentManager implements IDeploymentManager {
                 console.log('Setup done sucessfully, the website will be ready in 30-45 seconds');
             })
             .catch((err: Error) => {
-                deployUI.stop(err.toString());
+                let errorMessage = err.toString();
+                if (err.toString().includes('Entry not found in cache.')) {
+                    errorMessage = 'Session expired, Please run pcs login. \n\
+                    Resources are being deployed at ' + resourceGroupUrl;
+                }
+                deployUI.stop(errorMessage);
             });
     }
 
