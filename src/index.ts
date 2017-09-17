@@ -56,7 +56,7 @@ const program = new Command(packageJson.name)
     .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type: basic, enterprise, or test', /^(basic|enterprise|test)$/i, 'basic')
     .option('-e, --environment <environment>',
-            'Azure environment: AzureCloud, AzureChina, USGovernment or GermanCloud',
+            'Azure environments: AzureCloud, AzureChina, USGovernment or GermanCloud',
             /^(AzureCloud|AzureChina|USGovernment|GermanCloud)$/i, 'AzureCloud')
     .on('--help', () => {
         console.log(
