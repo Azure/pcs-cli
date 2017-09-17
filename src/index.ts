@@ -37,6 +37,13 @@ enum solutionSku {
     test
 }
 
+enum environments {
+    azure,
+    china,
+    germany,
+    usgovernment
+}
+
 const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
 /* tslint:disable */
 const invalidPasswordMessage = 'The supplied password must be between 6-72 characters long and must satisfy at least 3 of password complexity requirements from the following: 1) Contains an uppercase character\n2) Contains a lowercase character\n3) Contains a numeric digit\n4) Contains a special character\n5) Control characters are not allowed';
@@ -56,8 +63,8 @@ const program = new Command(packageJson.name)
     .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type: basic, enterprise, or test', /^(basic|enterprise|test)$/i, 'basic')
     .option('-e, --environment <environment>',
-            'Azure environments: AzureCloud, AzureChina, USGovernment or GermanCloud',
-            /^(AzureCloud|AzureChina|USGovernment|GermanCloud)$/i, 'AzureCloud')
+            'Azure environments: Azure, China, Germany or USGovernment',
+            /^(Azure|China|USGovernment|Germany)$/i, 'Azure')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -157,7 +164,7 @@ function main() {
                     type: 'list'
                 });
                 
-                if (program.sku === solutionSku[solutionSku.basic]) {
+                if (program.sku.toLowerCase() === solutionSku[solutionSku.basic]) {
                     // Setting the ARM template that is meant to do demo deployment
                     templateNamePrefix += 'WithSingleVM';
                     solution = templateNamePrefix + '.json';
@@ -238,15 +245,19 @@ function main() {
 
 function login(): Promise<void> {
     let environment: any;
-    switch (program.environment) {
-        case 'AzureCloud':
+    const lowerCaseEnv = program.environment.toLowerCase();
+    switch (lowerCaseEnv) {
+        case environments[environments.azure]:
             environment = AzureEnvironment.Azure;
             break;
-        case 'AzureChina':
+        case environments[environments.china]:
             environment = AzureEnvironment.AzureChina;
             break;
-        case 'GermanCloud':
+        case environments[environments.germany]:
             environment = AzureEnvironment.AzureGermanCloud;
+            break;
+        case environments[environments.usgovernment]:
+            environment = AzureEnvironment.AzureUSGovernment;
             break;
         default:
             environment = AzureEnvironment.Azure;
@@ -434,7 +445,7 @@ function getDeploymentQuestions(locations: string[]) {
     });
 
         // Only add ssh key file option for enterprise deployment
-    if (program.sku === solutionSku[solutionSku.enterprise]) {
+    if (program.sku.toLowerCase() === solutionSku[solutionSku.enterprise]) {
         questions.push({
             default: defaultSshPublicKeyPath,
             message: 'Enter path to SSH key file path:',

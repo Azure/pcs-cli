@@ -1,6 +1,8 @@
 import * as inquirer from 'inquirer';
-import { Answers, Question } from 'inquirer';
 import * as fetch from 'node-fetch';
+
+import { Answers, Question } from 'inquirer';
+import { AzureEnvironment } from 'ms-rest-azure';
 
 export interface IQuestions {
     value: any[];
@@ -43,14 +45,17 @@ export class Questions implements Questions {
 
     constructor(environment: string) {
         switch (environment) {
-            case 'AzureCloud':
+            case AzureEnvironment.Azure.name:
                 this.domain = '.net';
                 break;
-            case 'AzureChina':
+            case AzureEnvironment.AzureChina.name:
                 this.domain = '.cn';
                 break;
-            case 'GermanCloud':
+            case AzureEnvironment.AzureGermanCloud.name:
                 this.domain = '.de';
+                break;
+            case AzureEnvironment.AzureUSGovernment.name:
+                this.domain = '.us';
                 break;
             default:
                 this.domain = '.net';
