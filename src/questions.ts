@@ -38,7 +38,8 @@ export class Questions implements Questions {
 // tslint:enable
     public static notAllowedPasswords = ['abc@123', 'P@$$w0rd', '@ssw0rd', 'P@ssword123', 'Pa$$word',
                                         'pass@word1', 'Password!', 'Password1', 'Password22', 'iloveyou!'];
-    public solutionNameRegex: RegExp = /^[-\w\._\(\)]{1,64}[^\.]$/;
+    public solutionNameRegex: RegExp = /^[-\a-zA-Z0-9\._\(\)]{1,64}[^\.]$/;
+    public websiteHostNameRegex: RegExp = /^[-\a-zA-Z0-9]{1,60}$/;
 
     private _questions: any[] ;
     private domain: string = '.net';
@@ -72,11 +73,11 @@ export class Questions implements Questions {
                 }
 
                 return 'Please enter a valid solution name.\n' +
-                       'Valid characters for the name: \
-                        alphanumeric (A-Z, a-z), \
-                        underscore (_), parentheses, \
-                        hyphen(-), \
-                        and period (.) except at the end of the solution name.)';
+                       'Valid characters are: ' +
+                       'alphanumeric (A-Z, a-z, 0-9), ' +
+                       'underscore (_), parentheses, ' +
+                       'hyphen(-), ' +
+                       'and period (.) except at the end of the solution name.';
             }
         },
         {
@@ -89,6 +90,12 @@ export class Questions implements Questions {
             name: 'azureWebsiteName',
             type: 'input',
             validate: (value: string) => {
+                if (!value.match(this.websiteHostNameRegex)) {
+                    return 'Please enter a valid prefix for azure website.\n' +
+                           'Valid characters are: ' +
+                           'alphanumeric (A-Z, a-z, 0-9), ' +
+                           'and hyphen(-)';
+                }
                 return this.checkUrlExists(value);
             }
         }
