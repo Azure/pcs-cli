@@ -231,7 +231,7 @@ function main() {
                         return deploymentManager.submit(answers);
                     } else {
                         const message = 'To create a service principal, you must have permissions to register an ' +
-                        'application with your Azure Active Directory(AAD) tenant, and to assign ' +
+                        'application with your Azure Active Directory (AAD) tenant, and to assign ' +
                         'the application to a role in your subscription. To see if you have the ' +
                         'required permissions, check here https://docs.microsoft.com/en-us/azure/azure-resource-manager/' +
                         'resource-group-create-service-principal-portal#required-permissions.';
@@ -245,7 +245,7 @@ function main() {
         })
         .catch((error: any) => {
             // In case of login error it is better to ask user to login again
-            console.log('Please run %s', `${chalk.yellow('pcs login')}`);
+            console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
         });
     }
 }
@@ -484,9 +484,6 @@ function pwdQuestion(name: string, message?: string): Question {
         name,
         type: 'password',
         validate: (password: string, answers: Answers) => {
-            // if (answers.pwdFirstAttempt && password !== answers.pwdFirstAttempt) {
-            //     return 'Password did not match, please enter again';
-            // } else {
             const pass: RegExpMatchArray | null = password.match(Questions.passwordRegex);
             const notAllowedPasswords = Questions.notAllowedPasswords.filter((p: string) => {
                 return p === password;

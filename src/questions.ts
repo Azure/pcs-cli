@@ -42,15 +42,15 @@ export class Questions implements Questions {
     public websiteHostNameRegex: RegExp = /^[-\a-zA-Z0-9]{1,60}$/;
 
     private _questions: any[] ;
-    private domain: string = '.azurewbsites.net';
+    private domain: string = '.azurewebsites.net';
 
     constructor(environment: string) {
         switch (environment) {
             case AzureEnvironment.Azure.name:
-                this.domain = '.azurewbsites.net';
+                this.domain = '.azurewebsites.net';
                 break;
             case AzureEnvironment.AzureChina.name:
-                this.domain = '.chinacloudsites.cn.cn';
+                this.domain = '.chinacloudsites.cn';
                 break;
             case AzureEnvironment.AzureGermanCloud.name:
                 this.domain = '.azurewebsites.de';
