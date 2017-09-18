@@ -504,6 +504,21 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: storageadapter.webservice.url
+        - name: PCS_DEVICESIMULATION_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: devicesimulation.webservice.url
+        - name: PCS_DEVICETELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: devicetelemetry.webservice.url
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
 ---
 apiVersion: v1
 kind: Service
