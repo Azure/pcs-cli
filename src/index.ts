@@ -217,7 +217,7 @@ function main() {
                     answers.sshFilePath = ans.sshFilePath;
                     return createServicePrincipal(answers.solutionName, answers.subscriptionId, cachedAuthResponse.options);
                 })
-                .then(({ appId, servicePrincipalSecret}) => {
+                .then(({appId, servicePrincipalSecret}) => {
                     if (appId && servicePrincipalSecret) {
                         cachedAuthResponse.options.tokenAudience = null;
                         const deploymentManager: IDeploymentManager = 
@@ -238,7 +238,7 @@ function main() {
                         console.log(`${chalk.red(message)}`);
                     }
                 })
-                .catch((error: Error) => {
+                .catch((error: any) => {
                     console.log('Prompt error: ' + error);
                 });
             }
@@ -360,6 +360,9 @@ function createServicePrincipal(solutionName: string, subscriptionId: string,
             appId,
             servicePrincipalSecret
         };
+    })
+    .catch((error: Error) => {
+        throw error;
     });
 }
 
@@ -480,7 +483,10 @@ function pwdQuestion(name: string, message?: string): Question {
         message,
         name,
         type: 'password',
-        validate: (password: string) => {
+        validate: (password: string, answers: Answers) => {
+            // if (answers.pwdFirstAttempt && password !== answers.pwdFirstAttempt) {
+            //     return 'Password did not match, please enter again';
+            // } else {
             const pass: RegExpMatchArray | null = password.match(Questions.passwordRegex);
             const notAllowedPasswords = Questions.notAllowedPasswords.filter((p: string) => {
                 return p === password;
@@ -495,7 +501,7 @@ function pwdQuestion(name: string, message?: string): Question {
 
 function askPwdAgain(): Promise<Answers> {
     const questions: Question[] = [
-        pwdQuestion('pwdFirstAttempt', 'Passwords did not match, please enter again:'),
+        pwdQuestion('pwdFirstAttempt', 'Password did not match, please enter again:'),
         pwdQuestion('pwdSecondAttempt', 'Confirm your password:')
     ];
     return prompt(questions)

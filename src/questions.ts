@@ -42,24 +42,24 @@ export class Questions implements Questions {
     public websiteHostNameRegex: RegExp = /^[-\a-zA-Z0-9]{1,60}$/;
 
     private _questions: any[] ;
-    private domain: string = '.net';
+    private domain: string = '.azurewbsites.net';
 
     constructor(environment: string) {
         switch (environment) {
             case AzureEnvironment.Azure.name:
-                this.domain = '.net';
+                this.domain = '.azurewbsites.net';
                 break;
             case AzureEnvironment.AzureChina.name:
-                this.domain = '.cn';
+                this.domain = '.chinacloudsites.cn.cn';
                 break;
             case AzureEnvironment.AzureGermanCloud.name:
-                this.domain = '.de';
+                this.domain = '.azurewebsites.de';
                 break;
             case AzureEnvironment.AzureUSGovernment.name:
-                this.domain = '.us';
+                this.domain = '.azurewebsites.us';
                 break;
             default:
-                this.domain = '.net';
+                this.domain = '.azurewebsites.net';
                 break;
         }
         this._questions = [{
@@ -86,7 +86,7 @@ export class Questions implements Questions {
             default: (answers: Answers): any => {
                 return answers.solutionName;
             },
-            message: 'Enter prefix for .azurewebsites' + this.domain + ':',
+            message: 'Enter prefix for ' + this.domain + ':',
             name: 'azureWebsiteName',
             type: 'input',
             validate: (value: string) => {
@@ -121,7 +121,7 @@ export class Questions implements Questions {
     }
 
     private  checkUrlExists(hostname: string): Promise<boolean | string> {
-        const host = 'http://' + hostname + '.azurewebsites' + this.domain;
+        const host = 'http://' + hostname + this.domain;
         const req = new fetch.Request(host, { method: 'HEAD' });
         return fetch.default(req)
         .then((value: fetch.Response) => {
