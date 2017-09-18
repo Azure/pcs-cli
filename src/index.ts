@@ -75,7 +75,7 @@ const program = new Command(packageJson.name)
             `    Example for executing a basic deployment:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
             );
         console.log(
-            `    Example for executing an standard deployment:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
+            `    Example for executing a standard deployment:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
             );
         console.log();
         console.log(
