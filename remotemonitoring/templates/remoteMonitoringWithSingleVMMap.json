@@ -310,7 +310,19 @@
             "apiVersion": "2015-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
-                "serverFarmId": "[variables('hostingPlanName')]"
+                "serverFarmId": "[variables('hostingPlanName')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "REMOTE_ENDPOINT",
+                            "value": "[concat('https://', reference(variables('publicIPName')).dnsSettings.fqdn)]"
+                        },
+                        {
+                            "name": "REMOTE_ENDPOINT_SSL_THUMBPRINT",
+                            "value": "[parameters('remoteEndpointSSLThumbprint')]"
+                        }
+                    ]
+                }
             },
             "resources": [
                 {
@@ -321,18 +333,6 @@
                         "RepoUrl": "[variables('repoURL')]",
                         "branch": "[variables('branch')]",
                         "IsManualIntegration": true
-                    },
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
-                    ]
-                },
-                {
-                    "type": "config",
-                    "name": "appsettings",
-                    "apiVersion": "2015-08-01",
-                    "properties": {
-                        "REMOTE_ENDPOINT": "[concat('https://', reference(variables('publicIPName')).dnsSettings.fqdn)]",
-                        "REMOTE_ENDPOINT_SSL_THUMBPRINT": "[parameters('remoteEndpointSSLThumbprint')]"
                     },
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
@@ -554,7 +554,7 @@
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "azure-environment": "[if(endsWith(parameters('vmFQDNSuffix'), '.cn'), 'AzureChinaCloud', '')]"
+                    "azure-environment": "[if(endsWith(reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0], '.cn'), 'AzureChinaCloud', '')]"
                 }
             }
         },
@@ -613,10 +613,6 @@
         "adminUsername": {
             "type": "string",
             "value": "[parameters('adminUsername')]"
-        },
-        "adminPassword": {
-            "type": "string",
-            "value": "[parameters('adminPassword')]"
         }
     }
 }

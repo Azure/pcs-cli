@@ -471,7 +471,7 @@
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
             },
-            "dependsOn": [ 
+            "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
                 "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
             ],
@@ -529,7 +529,7 @@
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "azure-environment": "[if(endsWith(parameters('vmFQDNSuffix'), '.cn'), 'AzureChinaCloud', '')]"
+                    "azure-environment": "[if(endsWith(reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0], '.cn'), 'AzureChinaCloud', '')]"
                 }
             }
         },
