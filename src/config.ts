@@ -8,7 +8,8 @@ export class Config {
     public EventHubEndpoint: string;
     public EventHubName: string;
     public EventHubPartitions: string;
-    public LoadBalancerIP: string;
     public IoTHubConnectionString: string;
+    public LoadBalancerIP: string;
+    public Runtime: string;
     public TLS: {cert: string, key: string, fingerPrint: string};
 }

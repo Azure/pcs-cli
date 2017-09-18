@@ -85,6 +85,9 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.aadClientId) {
             this._parameters.aadClientId.value = params.appId;
         }
+        if (this._parameters.microServiceRuntime) {
+            this._parameters.microServiceRuntime.value = params.runtime;
+        }
         const properties: DeploymentProperties = {
             mode: 'Incremental',
             parameters: this._parameters,
@@ -95,9 +98,11 @@ export class DeploymentManager implements IDeploymentManager {
         const deployUI = DeployUI.instance;
         const deploymentName = 'deployment-' + params.solutionName;
         let deploymentProperties: any = null;
+        let resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
         return client.resourceGroups.createOrUpdate(params.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
+                resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
                 return client.deployments.validate(params.solutionName, deploymentName, deployment);
             })
             .then((validationResult: DeploymentValidateResult) => {
@@ -126,7 +131,6 @@ export class DeploymentManager implements IDeploymentManager {
                     console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
                                 'to deployed solution:', `${chalk.green(params.solutionName)}`);
                 }
-                const resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
                 console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
                             'to manage your deployed resources');
                 console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
@@ -152,6 +156,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
                     config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                    config.Runtime = params.runtime;
                     config.TLS = params.certData;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeCconfigPath, config);
                     console.log(`${chalk.cyan('Setting up kubernetes')}`);
@@ -166,7 +171,12 @@ export class DeploymentManager implements IDeploymentManager {
                 console.log('Setup done sucessfully, the website will be ready in 30-45 seconds');
             })
             .catch((err: Error) => {
-                deployUI.stop(err.toString());
+                let errorMessage = err.toString();
+                if (err.toString().includes('Entry not found in cache.')) {
+                    errorMessage = 'Session expired, Please run pcs login again. \n\
+                    Resources are being deployed at ' + resourceGroupUrl;
+                }
+                deployUI.stop(errorMessage);
             });
     }
 

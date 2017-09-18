@@ -8,20 +8,6 @@
                 "description": "The name of the solution"
             }
         },
-        "docDBName": {
-            "type": "string",
-            "defaultValue": "[concat('docdb-', uniqueString(parameters('solutionName')))]",
-            "metadata": {
-                "description": "The name of the documentDB"
-            }
-        },
-        "docDBSku": {
-            "type": "string",
-            "defaultValue": "Strong",
-            "metadata": {
-                "description": "The DocumentDB SKU"
-            }
-        },
         "documentDBName": {
             "type": "string",
             "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
@@ -181,7 +167,7 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "docDBVersion": "2015-04-08",
-        "docDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('docDBName'))]",
+        "docDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
         "iotHubVersion": "2016-02-03",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
@@ -291,13 +277,13 @@
         {
             "apiVersion": "[variables('docDBVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
-            "name": "[parameters('docDBName')]",
+            "name": "[parameters('documentDBName')]",
             "location": "[variables('location')]",
             "tags": {
                 "IotSolutionType": "[variables('solutionType')]"
             },
             "properties": {
-                "name": "[parameters('docDBName')]",
+                "name": "[parameters('documentDBName')]",
                 "databaseAccountOfferType": "standard",
                 "consistencyPolicy": {
                     "defaultConsistencyLevel": "[parameters('docDBConsistencyLevel')]",
