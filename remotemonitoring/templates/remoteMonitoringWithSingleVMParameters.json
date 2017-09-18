@@ -25,5 +25,8 @@
     },
     "aadClientId": {
       "value": "{Added through command line interface}"
+    },
+    "microServiceRuntime": {
+      "value": "{Added through command line interface}"
     }
 }

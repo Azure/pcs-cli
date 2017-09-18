@@ -36,6 +36,9 @@ data:
   # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
 
+  # Device Simulation
+  devicesimulation.webservice.url: "http://device-simulation-svc:9003/v1"
+
   # Device Telemetry
   devicetelemetry.webservice.url: "http://device-telemetry-svc:9004/v1"
 

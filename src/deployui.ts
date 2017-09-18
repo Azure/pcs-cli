@@ -125,12 +125,12 @@ class DeployUI {
                         this.completedResourceCount++;
                     } else if (props.provisioningState === 'Failed') {
                         iconState = this.crossMark;
-                        const message = props.statusMessage.error.message;
+                        const message = JSON.stringify(props.statusMessage, null, 2);
                         if (!this.errorMessages.has(key)) {
                             // Add the error messages to the map so that we can show it at the end
                             // of deployment, we don't want to cancel it because you can run it again
                             // to do incremental deployment that will save time.
-                            this.errorMessages.set(key, props.statusMessage.error.message);
+                            this.errorMessages.set(key, message);
                         }
                     }
                     operationsStatus.push(iconState + 'Provisioning State: ' + props.provisioningState +

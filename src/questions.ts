@@ -1,11 +1,14 @@
 import * as inquirer from 'inquirer';
+import * as fetch from 'node-fetch';
+
 import { Answers, Question } from 'inquirer';
+import { AzureEnvironment } from 'ms-rest-azure';
 
 export interface IQuestions {
-    value: Question[];
-    addQuestion(question: Question): void;
-    addQuestions(questions: Question[]): void;
-    insertQuestion(index: number, question: Question): void;
+    value: any[];
+    addQuestion(question: any): void;
+    addQuestions(questions: any[]): void;
+    insertQuestion(index: number, question: any): void;
 }
 
 export class Questions implements Questions {
@@ -35,13 +38,30 @@ export class Questions implements Questions {
 // tslint:enable
     public static notAllowedPasswords = ['abc@123', 'P@$$w0rd', '@ssw0rd', 'P@ssword123', 'Pa$$word',
                                         'pass@word1', 'Password!', 'Password1', 'Password22', 'iloveyou!'];
-    public solutionNameRegex: RegExp = /^[-\w\._\(\)]{1,64}[^\.]$/;
-    public locations: string[] = ['East US', 'North Europe', 'East Asia', 'West US', 'West Europe', 'Southeast Asia',
-                     'Japan East', 'Japan West', 'Australia East', 'Australia Southeast'];  
+    public solutionNameRegex: RegExp = /^[-\a-zA-Z0-9\._\(\)]{1,64}[^\.]$/;
+    public websiteHostNameRegex: RegExp = /^[-\a-zA-Z0-9]{1,60}$/;
 
-    private _questions: Question[] ;
+    private _questions: any[] ;
+    private domain: string = '.azurewebsites.net';
 
-    constructor() {
+    constructor(environment: string) {
+        switch (environment) {
+            case AzureEnvironment.Azure.name:
+                this.domain = '.azurewebsites.net';
+                break;
+            case AzureEnvironment.AzureChina.name:
+                this.domain = '.chinacloudsites.cn';
+                break;
+            case AzureEnvironment.AzureGermanCloud.name:
+                this.domain = '.azurewebsites.de';
+                break;
+            case AzureEnvironment.AzureUSGovernment.name:
+                this.domain = '.azurewebsites.us';
+                break;
+            default:
+                this.domain = '.azurewebsites.net';
+                break;
+        }
         this._questions = [{
             message: 'Enter a solution name:',
             name: 'solutionName',
@@ -53,11 +73,11 @@ export class Questions implements Questions {
                 }
 
                 return 'Please enter a valid solution name.\n' +
-                       'Valid characters for the name: \
-                        alphanumeric (A-Z, a-z), \
-                        underscore (_), parentheses, \
-                        hyphen(-), \
-                        and period (.) except at the end of the solution name.)';
+                       'Valid characters are: ' +
+                       'alphanumeric (A-Z, a-z, 0-9), ' +
+                       'underscore (_), parentheses, ' +
+                       'hyphen(-), ' +
+                       'and period (.) except at the end of the solution name.';
             }
         },
         {
@@ -66,17 +86,18 @@ export class Questions implements Questions {
             default: (answers: Answers): any => {
                 return answers.solutionName;
             },
-            message: 'Enter prefix for .azurewebsites.net:',
+            message: 'Enter prefix for ' + this.domain + ':',
             name: 'azureWebsiteName',
-            type: 'input'
-        },
-        {
-            // TODO: List the locations based on selected subscription
-            // Issue: https://github.com/Azure/pcs-cli/issues/82
-            choices: this.locations,
-            message: 'Select a location:',
-            name: 'location',
-            type: 'list',
+            type: 'input',
+            validate: (value: string) => {
+                if (!value.match(this.websiteHostNameRegex)) {
+                    return 'Please enter a valid prefix for azure website.\n' +
+                           'Valid characters are: ' +
+                           'alphanumeric (A-Z, a-z, 0-9), ' +
+                           'and hyphen(-)';
+                }
+                return this.checkUrlExists(value);
+            }
         }
         ];
     }
@@ -97,6 +118,18 @@ export class Questions implements Questions {
 
     public insertQuestion(index: number, question: Question): void {
         this._questions.splice(index, 0, question);
+    }
+
+    private  checkUrlExists(hostname: string): Promise<boolean | string> {
+        const host = 'http://' + hostname + this.domain;
+        const req = new fetch.Request(host, { method: 'HEAD' });
+        return fetch.default(req)
+        .then((value: fetch.Response) => {
+            return 'The app with name ' + hostname + ' is not available';
+        })
+        .catch((error: any) => {
+            return true;
+        });
     }
 }
 
