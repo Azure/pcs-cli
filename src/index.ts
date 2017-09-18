@@ -473,7 +473,7 @@ function getDeploymentQuestions(locations: string[]) {
 
 function pwdQuestion(name: string, message?: string): Question {
     if (!message) {
-        message = 'Enter a password for virtual machine:';
+        message = 'Enter a password for the virtual machine:';
     }
     return {
         mask: '*',
@@ -495,7 +495,7 @@ function pwdQuestion(name: string, message?: string): Question {
 
 function askPwdAgain(): Promise<Answers> {
     const questions: Question[] = [
-        pwdQuestion('pwdFirstAttempt', 'Passwords did not match, Please enter again:'),
+        pwdQuestion('pwdFirstAttempt', 'Passwords did not match, please enter again:'),
         pwdQuestion('pwdSecondAttempt', 'Confirm your password:')
     ];
     return prompt(questions)

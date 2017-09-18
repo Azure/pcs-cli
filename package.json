@@ -23,6 +23,9 @@
     "testMatch": [
       "**/__tests__/**/*.ts?(x)",
       "**/?(*.)(spec|test).ts?(x)"
+    ],
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/(?!@kubernetes)"
     ]
   },
   "bin": {
