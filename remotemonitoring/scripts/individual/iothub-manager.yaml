@@ -28,6 +28,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothub.connstring
+        - name: PCS_UICONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: uiconfig.webservice.url
 ---
 apiVersion: v1
 kind: Service
