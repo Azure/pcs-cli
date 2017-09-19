@@ -32,11 +32,11 @@ spec:
         backend:
           serviceName: device-simulation-svc
           servicePort: 9003
-      - path: /devicetelemetry
+      - path: /telemetry
         backend:
-          serviceName: device-telemetry-svc
+          serviceName: telemetry-svc
           servicePort: 9004
-      - path: /uiconfig
+      - path: /config
         backend:
-          serviceName: ui-config-svc
+          serviceName: config-svc
           servicePort: 9005

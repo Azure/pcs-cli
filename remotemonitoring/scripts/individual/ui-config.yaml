@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ui-config
+  name: config
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -13,15 +13,15 @@ spec:
   template:
     metadata:
       labels:
-        app: ui-config
+        app: config
     spec:
       containers:
-      - name: ui-config-pod
-        image: azureiotpcs/pcs-ui-config-dotnet:latest
+      - name: config-pod
+        image: azureiotpcs/pcs-config-dotnet:latest
         ports:
         - containerPort: 9005
         env:
-        - name: PCS_UICONFIG_WEBSERVICE_PORT
+        - name: PCS_CONFIG_WEBSERVICE_PORT
           value: "9005"
         - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
@@ -33,11 +33,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: devicesimulation.webservice.url
-        - name: PCS_DEVICETELEMETRY_WEBSERVICE_URL
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: devicetelemetry.webservice.url
+              key: telemetry.webservice.url
         - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -52,12 +52,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ui-config-svc
+  name: config-svc
   labels:
-    app: ui-config
+    app: config
 spec:
   type: NodePort
   ports:
   - port: 9005
   selector:
-    app: ui-config
+    app: config
