@@ -28,12 +28,10 @@ import { Config } from './config';
 
 const packageJson = require('../package.json');
 
-let solutionType: string = 'remotemonitoring';
-let template = require('../' + solutionType + '/templates/remoteMonitoring.json');
-let parameters = require('../' + solutionType + '/templates/remoteMonitoringParameters.json');
-enum solutionSku {
+const solutionType: string = 'remotemonitoring';
+enum solutionSkus {
     basic,
-    enterprise,
+    standard,
     test
 }
 
@@ -61,9 +59,9 @@ const MAX_RETRYCOUNT = 36;
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
     .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type: basic, enterprise, or test', /^(basic|enterprise|test)$/i, 'basic')
+    .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
     .option('-e, --environment <environment>',
-            'Azure environments: Azure, China, Germany or USGovernment',
+            'Azure environments: Azure or China',
             /^(Azure|China)$/i, 'Azure')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .on('--help', () => {
@@ -77,7 +75,7 @@ const program = new Command(packageJson.name)
             `    Example for executing a basic deployment:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
             );
         console.log(
-            `    Example for executing an enterprise deployment:  ${chalk.green('pcs -t remotemonitoring -s enterprise')}.`
+            `    Example for executing a standard deployment:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
             );
         console.log();
         console.log(
@@ -148,10 +146,9 @@ function main() {
                     subs.push({name: subscription.name, value: subscription.id});
                 }
             });
-            solutionType = program.type;
-            let templateNamePrefix = solutionType;
-            let solution = templateNamePrefix + '.json';
-            let params = templateNamePrefix + 'Parameters.json';
+            const solutionSku = program.sku;
+            const solution = solutionSku + '.json';
+            const params = solutionSku + '-parameters.json';
         
             if (!subs || !subs.length) {
                 console.log('Could not find any subscriptions in this account.');
@@ -164,17 +161,11 @@ function main() {
                     name: 'subscriptionId',
                     type: 'list'
                 });
-                
-                if (program.sku.toLowerCase() === solutionSku[solutionSku.basic]) {
-                    // Setting the ARM template that is meant to do demo deployment
-                    templateNamePrefix += 'WithSingleVM';
-                    solution = templateNamePrefix + '.json';
-                    params = templateNamePrefix + 'Parameters.json';
-                }
-
+                let template;
+                let parameters;
                 try {
-                    template = require('../' + solutionType + '/templates/' + solution);
-                    parameters = require('../' + solutionType + '/templates/' + params);
+                    template = require('../' + solutionType + '/armtemplates/' + solution);
+                    parameters = require('../' + solutionType + '/armtemplates/' + params);
                 } catch (ex) {
                     console.log('Could not find template or parameters file, Exception:', ex);
                     return;
@@ -238,8 +229,8 @@ function main() {
                         console.log(`${chalk.red(message)}`);
                     }
                 })
-                .catch((error: any) => {
-                    console.log('Prompt error: ' + error);
+                .catch((error: Error) => {
+                    console.log(JSON.stringify(error, null, 2));
                 });
             }
         })
@@ -454,8 +445,8 @@ function getDeploymentQuestions(locations: string[]) {
         },
     });
 
-        // Only add ssh key file option for enterprise deployment
-    if (program.sku.toLowerCase() === solutionSku[solutionSku.enterprise]) {
+        // Only add ssh key file option for standard deployment
+    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
         questions.push({
             default: defaultSshPublicKeyPath,
             message: 'Enter path to SSH key file path:',
