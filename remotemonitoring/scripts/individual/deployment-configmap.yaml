@@ -24,7 +24,7 @@ data:
   # Storage Adapter
   storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
 
-  # Stream Analytics
+  # Telemetry Agent
   iothubreact.hub.name: "{Iot Hub React name}"
   iothubreact.hub.endpoint: "{Iot Hub React endpoint}"
   iothubreact.hub.partitions: "{Iot Hub React partitions}"
@@ -39,11 +39,11 @@ data:
   # Device Simulation
   devicesimulation.webservice.url: "http://device-simulation-svc:9003/v1"
 
-  # Device Telemetry
-  devicetelemetry.webservice.url: "http://device-telemetry-svc:9004/v1"
+  # Telemetry
+  telemetry.webservice.url: "http://telemetry-svc:9004/v1"
 
-  # UI config
-  uiconfig.webservice.url: "http://ui-config-svc:9005/v1"
+  # PCS Config
+  config.webservice.url: "http://config-svc:9005/v1"
 
   # Auth
   auth.aad.global.tenantid: "{AAD Tenant Id}"
