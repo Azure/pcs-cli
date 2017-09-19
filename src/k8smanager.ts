@@ -184,6 +184,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['auth.aad.global.clientid'] = this._config.ApplicationId;
         configMap.data['auth.aad.global.tenantid'] = this._config.AADTenantId;
         configMap.data['auth.aad.global.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
+        configMap.data['bing.map.key'] = this._config.BingMapApiQueryKey;
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
         configMap.data['iothubreact.hub.name'] = this._config.EventHubName;
@@ -192,6 +193,10 @@ export class K8sManager implements IK8sManager {
         configMap.data['iothubreact.access.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['iothubreact.azureblob.account'] = this._config.AzureStorageAccountName;
         configMap.data['iothubreact.azureblob.key'] = this._config.AzureStorageAccountKey;
+        let deploymentConfig = configMap.data['config.js'];
+        deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
+        deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);
+        configMap.data['config.js'] = deploymentConfig;
         return this._api.createNamespacedConfigMap(this._namespace, configMap);
     }
 

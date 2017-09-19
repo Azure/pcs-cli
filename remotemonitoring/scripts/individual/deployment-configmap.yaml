@@ -6,6 +6,16 @@ metadata:
 data:
   # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
 
+  # Web UI Config
+  config.js: "var DeploymentConfig = {
+      authEnabled: true,
+      authType: 'aad',
+      aad : {
+          tenant: '{TenantId}',
+          appId: '{ApplicationId}'
+      }
+  }"
+
   # The connection string will be of format
   # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
   # Policy Type can have following values: iothubowner, service, device, registryRead, registryReadWrite
@@ -50,6 +60,9 @@ data:
   auth.aad.global.clientid: "{AAD Client Id}"
   auth.aad.global.loginuri: "https://login.microsoftonline.com/"
   auth.aad.global.issuer: "{Issuer}"
+
+  # Bing map query key
+  bing.map.key: "{BingMapApiQueryKey}"
 
   # Nginx Template
   nginx.tmpl: |

@@ -146,10 +146,7 @@ function main() {
                     subs.push({name: subscription.name, value: subscription.id});
                 }
             });
-            const solutionSku = program.sku;
-            const solution = solutionSku + '.json';
-            const params = solutionSku + '-parameters.json';
-        
+
             if (!subs || !subs.length) {
                 console.log('Could not find any subscriptions in this account.');
                 console.log('Please login with an account that has at least one active subscription');
@@ -161,15 +158,7 @@ function main() {
                     name: 'subscriptionId',
                     type: 'list'
                 });
-                let template;
-                let parameters;
-                try {
-                    template = require('../' + solutionType + '/armtemplates/' + solution);
-                    parameters = require('../' + solutionType + '/armtemplates/' + params);
-                } catch (ex) {
-                    console.log('Could not find template or parameters file, Exception:', ex);
-                    return;
-                }
+
                 let answers: Answers = {};
                 return prompt(questions.value)
                 .then((ans: Answers) => {
@@ -212,7 +201,7 @@ function main() {
                     if (appId && servicePrincipalSecret) {
                         cachedAuthResponse.options.tokenAudience = null;
                         const deploymentManager: IDeploymentManager = 
-                        new DeploymentManager(cachedAuthResponse.options, solutionType, template, parameters);
+                        new DeploymentManager(cachedAuthResponse.options, solutionType);
                         answers.appId = appId;
                         answers.adminPassword = servicePrincipalSecret;
                         answers.deploymentSku = program.sku;
