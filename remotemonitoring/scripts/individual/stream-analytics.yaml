@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: stream-analytics
+  name: telemetry-agent
 spec:
   replicas: 1
   minReadySeconds: 10
@@ -13,29 +13,29 @@ spec:
   template:
     metadata:
       labels:
-        app: stream-analytics
+        app: telemetry-agent
     spec:
       containers:
-      - name: stream-analytics-pod
-        image: azureiotpcs/iot-stream-analytics-java:latest
+      - name: telemetry-agent-pod
+        image: azureiotpcs/telemetry-agent-java:latest
         ports:
         - containerPort: 9023
         env:
-        - name: PCS_STREAMANALYTICS_DOCUMENTDB_CONNSTRING
+        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
-        - name: PCS_DEVICETELEMETRY_WEBSERVICE_URL
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: devicetelemetry.webservice.url
-        - name: PCS_UICONFIG_WEBSERVICE_URL
+              key: telemetry.webservice.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: uiconfig.webservice.url
+              key: config.webservice.url
         - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -80,12 +80,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: stream-analytics-svc
+  name: telemetry-agent-svc
   labels:
-    app: stream-analytics
+    app: telemetry-agent
 spec:
   type: NodePort
   ports:
   - port: 9023
   selector:
-    app: stream-analytics
+    app: telemetry-agent

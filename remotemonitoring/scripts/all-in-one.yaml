@@ -33,13 +33,13 @@ spec:
         backend:
           serviceName: device-simulation-svc
           servicePort: 9003
-      - path: /devicetelemetry
+      - path: /telemetry
         backend:
-          serviceName: device-telemetry-svc
+          serviceName: telemetry-svc
           servicePort: 9004
-      - path: /uiconfig
+      - path: /config
         backend:
-          serviceName: ui-config-svc
+          serviceName: config-svc
           servicePort: 9005
 # Ingress - End
 
@@ -256,11 +256,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothub.connstring
-        - name: PCS_UICONFIG_WEBSERVICE_URL
+        - name: PCS_CONFIG_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: uiconfig.webservice.url
+              key: config.webservice.url
 ---
 apiVersion: v1
 kind: Service
@@ -278,11 +278,11 @@ spec:
 
 ---
 
-# Device Telemetry - Start
+# Telemetry - Start
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: device-telemetry
+  name: telemetry
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -294,15 +294,15 @@ spec:
   template:
     metadata:
       labels:
-        app: device-telemetry
+        app: telemetry
     spec:
       containers:
-      - name: device-telemetry-pod
-        image: azureiotpcs/device-telemetry-{runtime}:latest
+      - name: telemetry-pod
+        image: azureiotpcs/telemetry-{runtime}:latest
         ports:
         - containerPort: 9004
         env:
-        - name: PCS_DEVICETELEMETRY_DOCUMENTDB_CONNSTRING
+        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
@@ -316,16 +316,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: device-telemetry-svc
+  name: telemetry-svc
   labels:
-    app: device-telemetry
+    app: telemetry
 spec:
   type: NodePort
   ports:
   - port: 9004
   selector:
-    app: device-telemetry
-# Device Telemetry - End
+    app: telemetry
+# Telemetry - End
 
 ---
 
@@ -377,11 +377,11 @@ spec:
 
 ---
 
-# Stream Analytics - Start
+# Telemetry Agent - Start
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: stream-analytics
+  name: telemetry-agent
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -393,29 +393,29 @@ spec:
   template:
     metadata:
       labels:
-        app: stream-analytics
+        app: telemetry-agent
     spec:
       containers:
-      - name: stream-analytics-pod
-        image: azureiotpcs/iot-stream-analytics-{runtime}:latest
+      - name: telemetry-agent-pod
+        image: azureiotpcs/telemetry-agent-{runtime}:latest
         ports:
         - containerPort: 9023
         env:
-        - name: PCS_STREAMANALYTICS_DOCUMENTDB_CONNSTRING
+        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
-        - name: PCS_DEVICETELEMETRY_WEBSERVICE_URL
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: devicetelemetry.webservice.url
-        - name: PCS_UICONFIG_WEBSERVICE_URL
+              key: telemetry.webservice.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: uiconfig.webservice.url
+              key: config.webservice.url
         - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -460,24 +460,24 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: stream-analytics-svc
+  name: telemetry-agent-svc
   labels:
-    app: stream-analytics
+    app: telemetry-agent
 spec:
   type: NodePort
   ports:
   - port: 9023
   selector:
-    app: stream-analytics
-# Stream Analytics - End
+    app: telemetry-agent
+# Telemetry Agent - End
 
 ---
 
-# UI Config - Start
+# PCS Config - Start
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ui-config
+  name: config
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -489,15 +489,15 @@ spec:
   template:
     metadata:
       labels:
-        app: ui-config
+        app: config
     spec:
       containers:
-      - name: ui-config-pod
-        image: azureiotpcs/pcs-ui-config-{runtime}:latest
+      - name: config-pod
+        image: azureiotpcs/pcs-config-{runtime}:latest
         ports:
         - containerPort: 9005
         env:
-        - name: PCS_UICONFIG_WEBSERVICE_PORT
+        - name: PCS_CONFIG_WEBSERVICE_PORT
           value: "9005"
         - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
@@ -509,11 +509,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: devicesimulation.webservice.url
-        - name: PCS_DEVICETELEMETRY_WEBSERVICE_URL
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: devicetelemetry.webservice.url
+              key: telemetry.webservice.url
         - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -523,16 +523,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ui-config-svc
+  name: config-svc
   labels:
-    app: ui-config
+    app: config
 spec:
   type: NodePort
   ports:
   - port: 9005
   selector:
-    app: ui-config
-# UI Config - End
+    app: config
+# PCS Config - End
 
 ---
 

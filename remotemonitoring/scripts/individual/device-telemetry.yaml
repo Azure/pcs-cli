@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: device-telemetry
+  name: telemetry
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -13,15 +13,15 @@ spec:
   template:
     metadata:
       labels:
-        app: device-telemetry
+        app: telemetry
     spec:
       containers:
-      - name: device-telemetry-pod
-        image: azureiotpcs/device-telemetry-dotnet:latest
+      - name: telemetry-pod
+        image: azureiotpcs/telemetry-dotnet:latest
         ports:
         - containerPort: 9004
         env:
-        - name: PCS_DEVICETELEMETRY_DOCUMENTDB_CONNSTRING
+        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
@@ -35,12 +35,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: device-telemetry-svc
+  name: telemetry-svc
   labels:
-    app: device-telemetry
+    app: telemetry
 spec:
   type: NodePort
   ports:
   - port: 9004
   selector:
-    app: device-telemetry
+    app: telemetry
