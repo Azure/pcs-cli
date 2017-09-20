@@ -193,7 +193,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['iothubreact.access.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['iothubreact.azureblob.account'] = this._config.AzureStorageAccountName;
         configMap.data['iothubreact.azureblob.key'] = this._config.AzureStorageAccountKey;
-        let deploymentConfig = configMap.data['config.js'];
+        let deploymentConfig = configMap.data['webui-config.js'];
         deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);
         configMap.data['webui-config.js'] = deploymentConfig;
