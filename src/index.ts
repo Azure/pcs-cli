@@ -205,6 +205,7 @@ function main() {
                         new DeploymentManager(cachedAuthResponse.options, solutionType);
                         answers.appId = appId;
                         answers.deploymentSku = program.sku;
+                        answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
                         answers.runtime = program.runtime;

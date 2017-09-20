@@ -163,7 +163,7 @@
             "type": "securestring",
             "defaultValue": "n/a"
         },
-        "adminPassword": {
+        "servicePrincipalSecret": {
             "metadata": {
                 "description": "The Service Principal Client Secret."
             },
@@ -226,7 +226,7 @@
         "orchestratorType": "Kubernetes",
         "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
         "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
-        "servicePrincipalClientSecret": "[parameters('adminPassword')]",
+        "servicePrincipalClientSecret": "[parameters('servicePrincipalSecret')]",
         "useServicePrincipalDictionary": {
             "DCOS": 0,
             "Swarm": 0,
@@ -237,7 +237,7 @@
             null,
             {
                 "ClientId": "[parameters('servicePrincipalClientId')]",
-                "Secret": "[parameters('adminPassword')]"
+                "Secret": "[parameters('servicePrincipalSecret')]"
             }
         ],
         "sku": "S1",
