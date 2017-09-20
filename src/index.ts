@@ -204,8 +204,8 @@ function main() {
                         const deploymentManager: IDeploymentManager = 
                         new DeploymentManager(cachedAuthResponse.options, solutionType);
                         answers.appId = appId;
-                        answers.adminPassword = servicePrincipalSecret;
                         answers.deploymentSku = program.sku;
+                        answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
                         answers.runtime = program.runtime;
