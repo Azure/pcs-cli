@@ -20,6 +20,18 @@ spec:
         image: azureiotpcs/pcs-remote-monitoring-webui:latest
         ports:
         - containerPort: 80
+        volumeMounts:
+          - name: webui-config-volume
+            mountPath: /app/build/config.js
+            subPath: config.js
+            readOnly: true
+      volumes:
+        - name: webui-config-volume
+          configMap:
+            name: deployment-configmap
+            items:
+            - key: config.js
+              path: config.js
 ---
 apiVersion: v1
 kind: Service

@@ -203,13 +203,6 @@
             "metadata": {
                 "description": "The storage SKU name"
             }
-        },
-        "bingMapsLocation": {
-            "type": "string",
-            "defaultValue": "westus",
-            "metadata": {
-                "description": "Bing Maps region"
-            }
         }
     },
     "variables": {
@@ -224,9 +217,9 @@
         "adminUsername": "[parameters('adminUsername')]",
         "agentCount": "[parameters('agentCount')]",
         "publicIPName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-public-ip')]",
-        "clusterName": "[concat(resourceGroup().name, '-cluster')]",
+        "clusterName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-cluster')]",
         "agentsEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-agents')]",
-        "domainNameLabel": "[concat('agent-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+        "domainNameLabel": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-agent')]",
         "agentVMSize": "[parameters('agentVMSize')]",
         "masterCount": "[parameters('masterCount')]",
         "mastersEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-mgmt')]",
@@ -253,9 +246,7 @@
         "branch": "master",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
-        "storageApiVersion": "2017-06-01",
-        "bingMapsName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-map')]",
-        "bingMapsVersion": "2016-08-18"
+        "storageApiVersion": "2017-06-01"
     },
     "resources": [
         {
@@ -405,22 +396,6 @@
             "sku": {
                 "name": "[parameters('storageSkuName')]"
             }
-        },
-        {
-            "apiVersion": "[variables('bingMapsVersion')]",
-            "type": "Microsoft.BingMaps/mapApis",
-            "name": "[variables('bingMapsName')]",
-            "location": "[parameters('bingMapsLocation')]",
-            "plan": {
-                "publisher": "bingmaps",
-                "product": "mapapis",
-                "name": "internal1",
-                "promotionCode": null
-            },
-            "tags": {
-                "IotSuiteType": "[variables('solutionType')]"
-            },
-            "properties": {}
         }
     ],
     "outputs": {
@@ -487,10 +462,6 @@
         "storageAccountKey": {
             "type": "string",
             "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
-        },
-        "mapApiQueryKey": {
-            "type": "string",
-            "value": "[listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey]"
         }
     }
 }

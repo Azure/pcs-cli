@@ -3,6 +3,7 @@ export class Config {
     public ApplicationId: string;
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
+    public BingMapApiQueryKey: string;
     public DocumentDBConnectionString: string;
     public DNS: string;
     public EventHubEndpoint: string;
@@ -12,4 +13,12 @@ export class Config {
     public LoadBalancerIP: string;
     public Runtime: string;
     public TLS: {cert: string, key: string, fingerPrint: string};
+    public WebUIConfig: { 
+        authEnabled: boolean,
+        authType: string,
+        aad: {
+            tenant: string,
+            appId: string
+        }
+    };
 }
