@@ -83,8 +83,8 @@ export class DeploymentManager implements IDeploymentManager {
             try {
                 this._template = require('../' + this._solutionType + '/armtemplates/' + solutionFileName);
                 this._parameters = require('../' + this._solutionType + '/armtemplates/' + parametersFileName);
-                // Change the default suffix based on environment
-                if (this._options.environment) {
+                // Change the default suffix for basic sku based on current environment
+                if (this._options.environment && answers.deploymentSku === 'basic') {
                     switch (this._options.environment.name) {
                         case AzureEnvironment.AzureChina.name:
                             this._parameters.storageEndpointSuffix = { value: 'core.chinacloudapi.cn' };
@@ -98,6 +98,7 @@ export class DeploymentManager implements IDeploymentManager {
                             this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.us' };
                             this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.us' };
                             break;
+                        // use default parameter values of global azure environment
                         default:
                             this._parameters.storageEndpointSuffix =  { value: 'core.windows.net' };
                             this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.com' };
