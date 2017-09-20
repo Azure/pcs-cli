@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
-import { DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
+import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
@@ -45,7 +45,8 @@ export class DeploymentManager implements IDeploymentManager {
             return Promise.reject('Solution name, subscription id and location cannot be empty');
         }
 
-        const client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), answers.subscriptionId);
+        const baseUri = this._options.environment ? this._options.environment.resourceManagerEndpointUrl : undefined;
+        const client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), answers.subscriptionId, baseUri);
         const location = answers.location;
         const deployment: Deployment = { properties: {
             mode: 'Incremental',
@@ -65,18 +66,44 @@ export class DeploymentManager implements IDeploymentManager {
 
         return client.resources.list({filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\''})
         .then((resources: ResourceModels.ResourceListResult) => {
-            resources.forEach((resource: ResourceModels.GenericResource) => {
-                if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
-                    freeBingMapResourceCount++;
-                }
-            });
-            if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
+            // using static map for China environment by default since Bing Map resource is not available.
+            if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
                 solutionSku += '-static-map';
+            } else {
+                resources.forEach((resource: ResourceModels.GenericResource) => {
+                    if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
+                        freeBingMapResourceCount++;
+                    }
+                });
+                if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
+                    solutionSku += '-static-map';
+                }
             }
             const solutionFileName = solutionSku + '.json';
             try {
                 this._template = require('../' + this._solutionType + '/armtemplates/' + solutionFileName);
                 this._parameters = require('../' + this._solutionType + '/armtemplates/' + parametersFileName);
+                // Change the default suffix for basic sku based on current environment
+                if (this._options.environment && answers.deploymentSku === 'basic') {
+                    switch (this._options.environment.name) {
+                        case AzureEnvironment.AzureChina.name:
+                            this._parameters.storageEndpointSuffix = { value: 'core.chinacloudapi.cn' };
+                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.chinacloudapi.cn' };
+                            break;
+                        case AzureEnvironment.AzureGermanCloud.name:
+                            this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.de' };
+                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.de' };
+                            break;
+                        case AzureEnvironment.AzureUSGovernment.name:
+                            this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.us' };
+                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.us' };
+                            break;
+                        // use default parameter values of global azure environment
+                        default:
+                            this._parameters.storageEndpointSuffix =  { value: 'core.windows.net' };
+                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.com' };
+                    }
+                }
                 this.setupParameters(answers);
             } catch (ex) {
                 throw new Error('Could not find template or parameters file, Exception:');
