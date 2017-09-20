@@ -195,7 +195,7 @@ function main() {
                 .then((ans: Answers) => {
                     answers.adminPassword = ans.pwdFirstAttempt;
                     answers.sshFilePath = ans.sshFilePath;
-                    return createServicePrincipal(answers.solutionName, answers.subscriptionId, cachedAuthResponse.options);
+                    return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                 })
                 .then(({appId, servicePrincipalSecret}) => {
                     if (appId && servicePrincipalSecret) {
@@ -218,8 +218,12 @@ function main() {
                         console.log(`${chalk.red(message)}`);
                     }
                 })
-                .catch((error: Error) => {
-                    console.log(JSON.stringify(error, null, 2));
+                .catch((error: any) => {
+                    if (error.request) {
+                        console.log(JSON.stringify(error, null, 2));
+                    } else {
+                        console.log(error);
+                    }
                 });
             }
         })
@@ -297,8 +301,27 @@ function getCachedAuthResponse(): any {
     }
 }
 
-function createServicePrincipal(solutionName: string, subscriptionId: string,
+function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
                                 options: DeviceTokenCredentialsOptions): Promise<{appId: string, servicePrincipalSecret: string}> {
+    let domain = '.azurewebsites.net';
+    switch (program.environment) {
+        case AzureEnvironment.Azure.name:
+            domain = '.azurewebsites.net';
+            break;
+        case AzureEnvironment.AzureChina.name:
+            domain = '.chinacloudsites.cn';
+            break;
+        case AzureEnvironment.AzureGermanCloud.name:
+            domain = '.azurewebsites.de';
+            break;
+        case AzureEnvironment.AzureUSGovernment.name:
+            domain = '.azurewebsites.us';
+            break;
+        default:
+            domain = '.azurewebsites.net';
+            break;
+    }
+    const homepage = 'https://' + azureWebsiteName + domain;
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
     const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '' );
@@ -307,12 +330,11 @@ function createServicePrincipal(solutionName: string, subscriptionId: string,
     const m = momemt(endDate);
     m.add(1, 'years');
     endDate = new Date(m.toISOString());
-    const homepage = solutionName;
     const identifierUris = [ homepage ];
-    const servicePrincipalSecret: string = uuid.v1();
+    const servicePrincipalSecret: string = uuid.v4();
     const applicationCreateParameters = {
         availableToOtherTenants: false,
-        displayName: solutionName,
+        displayName: azureWebsiteName,
         homepage,
         identifierUris,
         passwordCredentials: [{

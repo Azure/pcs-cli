@@ -60,8 +60,8 @@ export class DeploymentManager implements IDeploymentManager {
             // TODO: Explore if it makes sense to add more tags, e.g. Language(Java/.Net), version etc
             tags: { IotSolutionType: this._solutionType },
         };
-
-        this.setupParameters(answers);
+        let solutionSku = answers.deploymentSku;
+        const parametersFileName = solutionSku + '-parameters.json';
 
         return client.resources.list({filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\''})
         .then((resources: ResourceModels.ResourceListResult) => {
@@ -70,15 +70,14 @@ export class DeploymentManager implements IDeploymentManager {
                     freeBingMapResourceCount++;
                 }
             });
-            let solutionSku = answers.deploymentSku;
-            if (freeBingMapResourceCount > MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
+            if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
                 solutionSku += '-static-map';
             }
             const solutionFileName = solutionSku + '.json';
-            const parametersFileName = solutionSku + '-parameters.json';
             try {
                 this._template = require('../' + this._solutionType + '/armtemplates/' + solutionFileName);
                 this._parameters = require('../' + this._solutionType + '/armtemplates/' + parametersFileName);
+                this.setupParameters(answers);
             } catch (ex) {
                 throw new Error('Could not find template or parameters file, Exception:');
             }
@@ -241,7 +240,7 @@ export class DeploymentManager implements IDeploymentManager {
         });
     }
 
-    private setupParameters(answers: any) {
+    private setupParameters(answers: Answers) {
         this._parameters.solutionName.value = answers.solutionName;
         // Temporary check, in future both types of deployment will always have username and passord
         // If the parameters file has adminUsername section then add the value that was passed in by user
