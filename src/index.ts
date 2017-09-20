@@ -137,7 +137,8 @@ function main() {
     if (!cachedAuthResponse) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
-        let client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options));
+        const baseUri = cachedAuthResponse.options.environment.resourceManagerEndpointUrl;
+        let client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
         return client.subscriptions.list()
         .then(() => {
             const subs: ChoiceType[] = [];
@@ -170,7 +171,7 @@ function main() {
                         throw new Error(errorMessage);
                     }
                     cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
-                    client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options));
+                    client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
                     return client.subscriptions.listLocations(answers.subscriptionId)
                     .then((locationsResult: SubscriptionModels.LocationListResult) => {
                         const locations: string[] = [];
@@ -324,7 +325,8 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     const homepage = 'https://' + azureWebsiteName + domain;
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
-    const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '' );
+    const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : undefined;
+    const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '', baseUri);
     const startDate = new Date(Date.now());
     let endDate = new Date(startDate.toISOString());
     const m = momemt(endDate);
@@ -377,7 +379,8 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
     const roleDefinitionId = scope + '/providers/Microsoft.Authorization/roleDefinitions/' + roleId;
     // clearing the token audience
     options.tokenAudience = undefined;
-    const authzClient = new AuthorizationManagementClient(new DeviceTokenCredentials(options), subscriptionId);
+    const baseUri = options.environment ? options.environment.resourceManagerEndpointUrl : undefined;
+    const authzClient = new AuthorizationManagementClient(new DeviceTokenCredentials(options), subscriptionId, baseUri);
     const assignmentGuid = uuid.v1();
     const roleCreateParams = {
       properties: {
