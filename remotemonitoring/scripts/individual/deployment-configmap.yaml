@@ -8,7 +8,7 @@ data:
 
   # Web UI Config
   config.js: "var DeploymentConfig = {
-      authEnabled: true,
+      authEnabled: false,
       authType: 'aad',
       aad : {
           tenant: '{TenantId}',

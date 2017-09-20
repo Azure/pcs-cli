@@ -444,7 +444,7 @@
             "value": "[concat('https://', parameters('azureWebsiteName'), '.azurewebsites.net')]"
         },
         "eventHubPartitions": {
-            "type": "string",
+            "type": "int",
             "value": "[reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount]"
         },
         "eventHubName": {
@@ -452,7 +452,7 @@
             "value": "[parameters('iotHubName')]"
         },
         "eventHubEndpoint": {
-            "type": "int",
+            "type": "string",
             "value": "[reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint]"
         },
         "storageAccountName": {
