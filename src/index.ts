@@ -44,7 +44,7 @@ enum environments {
 
 const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
 /* tslint:disable */
-const invalidPasswordMessage = 'The supplied password must be between 6-72 characters long and must satisfy at least 3 of password complexity requirements from the following: 1) Contains an uppercase character\n2) Contains a lowercase character\n3) Contains a numeric digit\n4) Contains a special character\n5) Control characters are not allowed';
+const invalidPasswordMessage = 'The supplied password must be between 12-72 characters long and must satisfy at least 3 of password complexity requirements from the following: 1) Contains an uppercase character\n2) Contains a lowercase character\n3) Contains a numeric digit\n4) Contains a special character\n5) Control characters are not allowed';
 /* tslint:enable */
 
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli#azure-iot-pcs-cli';
@@ -146,10 +146,7 @@ function main() {
                     subs.push({name: subscription.name, value: subscription.id});
                 }
             });
-            const solutionSku = program.sku;
-            const solution = solutionSku + '.json';
-            const params = solutionSku + '-parameters.json';
-        
+
             if (!subs || !subs.length) {
                 console.log('Could not find any subscriptions in this account.');
                 console.log('Please login with an account that has at least one active subscription');
@@ -161,15 +158,7 @@ function main() {
                     name: 'subscriptionId',
                     type: 'list'
                 });
-                let template;
-                let parameters;
-                try {
-                    template = require('../' + solutionType + '/armtemplates/' + solution);
-                    parameters = require('../' + solutionType + '/armtemplates/' + params);
-                } catch (ex) {
-                    console.log('Could not find template or parameters file, Exception:', ex);
-                    return;
-                }
+
                 let answers: Answers = {};
                 return prompt(questions.value)
                 .then((ans: Answers) => {
@@ -206,13 +195,13 @@ function main() {
                 .then((ans: Answers) => {
                     answers.adminPassword = ans.pwdFirstAttempt;
                     answers.sshFilePath = ans.sshFilePath;
-                    return createServicePrincipal(answers.solutionName, answers.subscriptionId, cachedAuthResponse.options);
+                    return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                 })
                 .then(({appId, servicePrincipalSecret}) => {
                     if (appId && servicePrincipalSecret) {
                         cachedAuthResponse.options.tokenAudience = null;
                         const deploymentManager: IDeploymentManager = 
-                        new DeploymentManager(cachedAuthResponse.options, solutionType, template, parameters);
+                        new DeploymentManager(cachedAuthResponse.options, solutionType);
                         answers.appId = appId;
                         answers.adminPassword = servicePrincipalSecret;
                         answers.deploymentSku = program.sku;
@@ -229,8 +218,12 @@ function main() {
                         console.log(`${chalk.red(message)}`);
                     }
                 })
-                .catch((error: Error) => {
-                    console.log(JSON.stringify(error, null, 2));
+                .catch((error: any) => {
+                    if (error.request) {
+                        console.log(JSON.stringify(error, null, 2));
+                    } else {
+                        console.log(error);
+                    }
                 });
             }
         })
@@ -308,8 +301,27 @@ function getCachedAuthResponse(): any {
     }
 }
 
-function createServicePrincipal(solutionName: string, subscriptionId: string,
+function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
                                 options: DeviceTokenCredentialsOptions): Promise<{appId: string, servicePrincipalSecret: string}> {
+    let domain = '.azurewebsites.net';
+    switch (program.environment) {
+        case AzureEnvironment.Azure.name:
+            domain = '.azurewebsites.net';
+            break;
+        case AzureEnvironment.AzureChina.name:
+            domain = '.chinacloudsites.cn';
+            break;
+        case AzureEnvironment.AzureGermanCloud.name:
+            domain = '.azurewebsites.de';
+            break;
+        case AzureEnvironment.AzureUSGovernment.name:
+            domain = '.azurewebsites.us';
+            break;
+        default:
+            domain = '.azurewebsites.net';
+            break;
+    }
+    const homepage = 'https://' + azureWebsiteName + domain;
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
     const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '' );
@@ -318,12 +330,11 @@ function createServicePrincipal(solutionName: string, subscriptionId: string,
     const m = momemt(endDate);
     m.add(1, 'years');
     endDate = new Date(m.toISOString());
-    const homepage = solutionName;
     const identifierUris = [ homepage ];
-    const servicePrincipalSecret: string = uuid.v1();
+    const servicePrincipalSecret: string = uuid.v4();
     const applicationCreateParameters = {
         availableToOtherTenants: false,
-        displayName: solutionName,
+        displayName: azureWebsiteName,
         homepage,
         identifierUris,
         passwordCredentials: [{
