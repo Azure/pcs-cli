@@ -26,6 +26,8 @@ import { Questions, IQuestions } from './questions';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 
+const WebSiteManagementClient = require('azure-arm-website');
+
 const packageJson = require('../package.json');
 
 const solutionType: string = 'remotemonitoring';
@@ -55,6 +57,9 @@ const cacheFilePath: string = pcsTmpDir + path.sep + 'cache.json';
 const defaultSshPublicKeyPath = os.homedir() + path.sep + '.ssh' + path.sep + 'id_rsa.pub';
 
 const MAX_RETRYCOUNT = 36;
+
+let cachedAuthResponse: any;
+let answers: Answers = {};
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
@@ -133,7 +138,7 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-    const cachedAuthResponse = getCachedAuthResponse();
+    cachedAuthResponse = getCachedAuthResponse();
     if (!cachedAuthResponse) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
@@ -160,7 +165,6 @@ function main() {
                     type: 'list'
                 });
 
-                let answers: Answers = {};
                 return prompt(questions.value)
                 .then((ans: Answers) => {
                     answers = ans;
@@ -187,6 +191,7 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     answers.location = ans.location;
+                    answers.azureWebsiteName = ans.azureWebsiteName;
                     answers.adminUsername = ans.adminUsername;
                     if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
                         return askPwdAgain();
@@ -304,25 +309,7 @@ function getCachedAuthResponse(): any {
 
 function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
                                 options: DeviceTokenCredentialsOptions): Promise<{appId: string, servicePrincipalSecret: string}> {
-    let domain = '.azurewebsites.net';
-    switch (program.environment) {
-        case AzureEnvironment.Azure.name:
-            domain = '.azurewebsites.net';
-            break;
-        case AzureEnvironment.AzureChina.name:
-            domain = '.chinacloudsites.cn';
-            break;
-        case AzureEnvironment.AzureGermanCloud.name:
-            domain = '.azurewebsites.de';
-            break;
-        case AzureEnvironment.AzureUSGovernment.name:
-            domain = '.azurewebsites.us';
-            break;
-        default:
-            domain = '.azurewebsites.net';
-            break;
-    }
-    const homepage = 'https://' + azureWebsiteName + domain;
+    const homepage = getWebsiteUrl(azureWebsiteName);
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
     const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : undefined;
@@ -340,6 +327,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         displayName: azureWebsiteName,
         homepage,
         identifierUris,
+        oauth2AllowImplicitFlow: true,
         passwordCredentials: [{
                 endDate,
                 keyId: uuid.v1(),
@@ -359,6 +347,11 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
     })
     .then((sp: any) => {
+        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+            return sp.appId;
+        }
+
+        // Create role assignment only for enterprise since ACS requires it
         return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
     })
     .then((appId: string) => {
@@ -380,7 +373,7 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
     const scope = '/subscriptions/' + subscriptionId; // we shall be assigning the sp, a 'contributor' role at the subscription level
     const roleDefinitionId = scope + '/providers/Microsoft.Authorization/roleDefinitions/' + roleId;
     // clearing the token audience
-    options.tokenAudience = undefined;
+    options.tokenAudience = 'common';
     const baseUri = options.environment ? options.environment.resourceManagerEndpointUrl : undefined;
     const authzClient = new AuthorizationManagementClient(new DeviceTokenCredentials(options), subscriptionId, baseUri);
     const assignmentGuid = uuid.v1();
@@ -436,12 +429,30 @@ function createCertificate(): any {
 }
 
 function getDeploymentQuestions(locations: string[]) {
-    const questions: Question[] = [];
+    const questions: any[] = [];
     questions.push({
         choices: locations,
         message: 'Select a location:',
         name: 'location',
         type: 'list',
+    });
+
+    questions.push({
+        default: (): any => {
+            return answers.solutionName;
+        },
+        message: 'Enter prefix for ' + getDomain() + ':',
+        name: 'azureWebsiteName',
+        type: 'input',
+        validate: (value: string) => {
+            if (!value.match(Questions.websiteHostNameRegex)) {
+                return 'Please enter a valid prefix for azure website.\n' +
+                       'Valid characters are: ' +
+                       'alphanumeric (A-Z, a-z, 0-9), ' +
+                       'and hyphen(-)';
+            }
+            return checkUrlExists(value, answers.subscriptionId);
+        }
     });
 
     questions.push({
@@ -490,7 +501,7 @@ function pwdQuestion(name: string, message?: string): Question {
         message,
         name,
         type: 'password',
-        validate: (password: string, answers: Answers) => {
+        validate: (password: string) => {
             const pass: RegExpMatchArray | null = password.match(Questions.passwordRegex);
             const notAllowedPasswords = Questions.notAllowedPasswords.filter((p: string) => {
                 return p === password;
@@ -515,4 +526,46 @@ function askPwdAgain(): Promise<Answers> {
         }
         return ans;
     });
+}
+
+function checkUrlExists(hostName: string, subscriptionId: string): Promise<string | boolean> {
+    const baseUri = cachedAuthResponse.options.environment.resourceManagerEndpointUrl;
+    const client = new WebSiteManagementClient(new DeviceTokenCredentials(cachedAuthResponse.options), subscriptionId, baseUri);
+    return client.checkNameAvailability(hostName, 'Site')
+    .then((result: any) => {
+        if (!result.nameAvailable) {
+            return result.message;
+        }
+        return result.nameAvailable;
+    })
+    .catch((err) => {
+        return true;
+    });
+}
+
+function getDomain(): string {
+    let domain: string = '.azurewebsites.net';
+    switch (program.environment) {
+        case AzureEnvironment.Azure.name:
+            domain = '.azurewebsites.net';
+            break;
+        case AzureEnvironment.AzureChina.name:
+            domain = '.chinacloudsites.cn';
+            break;
+        case AzureEnvironment.AzureGermanCloud.name:
+            domain = '.azurewebsites.de';
+            break;
+        case AzureEnvironment.AzureUSGovernment.name:
+            domain = '.azurewebsites.us';
+            break;
+        default:
+            domain = '.azurewebsites.net';
+            break;
+    }
+    return domain;
+}
+
+function getWebsiteUrl(hostName: string): string {
+    const domain = getDomain();
+    return `https://${hostName}${domain}`;
 }
