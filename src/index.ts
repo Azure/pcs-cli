@@ -205,6 +205,7 @@ function main() {
                         new DeploymentManager(cachedAuthResponse.options, solutionType);
                         answers.appId = appId;
                         answers.deploymentSku = program.sku;
+                        answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
                         answers.runtime = program.runtime;
@@ -332,6 +333,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     m.add(1, 'years');
     endDate = new Date(m.toISOString());
     const identifierUris = [ homepage ];
+    const replyUrls = [ homepage ];
     const servicePrincipalSecret: string = uuid.v4();
     const applicationCreateParameters = {
         availableToOtherTenants: false,
@@ -344,7 +346,8 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
                 startDate,
                 value: servicePrincipalSecret
             }
-        ]
+        ],
+        replyUrls
     };
     
     return graphClient.applications.create(applicationCreateParameters)

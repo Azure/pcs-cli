@@ -122,7 +122,7 @@ export class Questions implements Questions {
 
     private  checkUrlExists(hostname: string): Promise<boolean | string> {
         const host = 'http://' + hostname + this.domain;
-        const req = new fetch.Request(host, { method: 'HEAD' });
+        const req = new fetch.Request(host, { method: 'HEAD', timeout: 500 });
         return fetch.default(req)
         .then((value: fetch.Response) => {
             return 'The app with name ' + hostname + ' is not available';

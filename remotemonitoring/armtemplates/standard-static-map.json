@@ -163,7 +163,7 @@
             "type": "securestring",
             "defaultValue": "n/a"
         },
-        "adminPassword": {
+        "servicePrincipalSecret": {
             "metadata": {
                 "description": "The Service Principal Client Secret."
             },
@@ -217,16 +217,16 @@
         "adminUsername": "[parameters('adminUsername')]",
         "agentCount": "[parameters('agentCount')]",
         "publicIPName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-public-ip')]",
-        "clusterName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-cluster')]",
+        "clusterName": "[concat(resourceGroup().name, '-cluster')]",
         "agentsEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-agents')]",
-        "domainNameLabel": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-agent')]",
+        "domainNameLabel": "[concat('agent-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
         "agentVMSize": "[parameters('agentVMSize')]",
         "masterCount": "[parameters('masterCount')]",
         "mastersEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-mgmt')]",
         "orchestratorType": "Kubernetes",
         "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
         "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
-        "servicePrincipalClientSecret": "[parameters('adminPassword')]",
+        "servicePrincipalClientSecret": "[parameters('servicePrincipalSecret')]",
         "useServicePrincipalDictionary": {
             "DCOS": 0,
             "Swarm": 0,
@@ -237,7 +237,7 @@
             null,
             {
                 "ClientId": "[parameters('servicePrincipalClientId')]",
-                "Secret": "[parameters('adminPassword')]"
+                "Secret": "[parameters('servicePrincipalSecret')]"
             }
         ],
         "sku": "S1",
