@@ -438,8 +438,6 @@ function getDeploymentQuestions(locations: string[]) {
     });
 
     questions.push({
-        // TODO: parvezp - Add availability check for the URL
-        // Issue: https://github.com/Azure/pcs-cli/issues/81
         default: (): any => {
             return answers.solutionName;
         },
