@@ -322,6 +322,19 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     const identifierUris = [ homepage ];
     const replyUrls = [ homepage ];
     const servicePrincipalSecret: string = uuid.v4();
+    // Allowing Graph API to sign in and read user profile for newly created application
+    const requiredResourceAccess = [{
+        resourceAccess: [
+            {
+                // This guid represents Sign in and read user profile
+                // http://www.cloudidentity.com/blog/2015/09/01/azure-ad-permissions-summary-table/
+                id: '311a71cc-e848-46a1-bdf8-97ff7156d8e6',
+                type: 'Scope'
+            }
+        ],
+        // This guid represents Directory Graph API ID
+        resourceAppId: '00000002-0000-0000-c000-000000000000'
+    }];
     const applicationCreateParameters = {
         availableToOtherTenants: false,
         displayName: azureWebsiteName,
@@ -335,9 +348,9 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
                 value: servicePrincipalSecret
             }
         ],
-        replyUrls
+        replyUrls,
+        requiredResourceAccess
     };
-    
     return graphClient.applications.create(applicationCreateParameters)
     .then((result: any) => {
         const servicePrincipalCreateParameters = {
