@@ -1,5 +1,4 @@
 import * as inquirer from 'inquirer';
-import * as fetch from 'node-fetch';
 
 import { Answers, Question } from 'inquirer';
 import { AzureEnvironment } from 'ms-rest-azure';
@@ -38,36 +37,20 @@ export class Questions implements Questions {
 // tslint:enable
     public static notAllowedPasswords = ['abc@123', 'P@$$w0rd', '@ssw0rd', 'P@ssword123', 'Pa$$word',
                                         'pass@word1', 'Password!', 'Password1', 'Password22', 'iloveyou!'];
-    public solutionNameRegex: RegExp = /^[-\a-zA-Z0-9\._\(\)]{1,64}[^\.]$/;
-    public websiteHostNameRegex: RegExp = /^[-\a-zA-Z0-9]{1,60}$/;
+    public static solutionNameRegex: RegExp = /^[-\a-zA-Z0-9\._\(\)]{1,64}[^\.]$/;
+    public static websiteHostNameRegex: RegExp = /^[-\a-zA-Z0-9]{1,60}$/;
 
     private _questions: any[] ;
     private domain: string = '.azurewebsites.net';
 
     constructor(environment: string) {
-        switch (environment) {
-            case AzureEnvironment.Azure.name:
-                this.domain = '.azurewebsites.net';
-                break;
-            case AzureEnvironment.AzureChina.name:
-                this.domain = '.chinacloudsites.cn';
-                break;
-            case AzureEnvironment.AzureGermanCloud.name:
-                this.domain = '.azurewebsites.de';
-                break;
-            case AzureEnvironment.AzureUSGovernment.name:
-                this.domain = '.azurewebsites.us';
-                break;
-            default:
-                this.domain = '.azurewebsites.net';
-                break;
-        }
+
         this._questions = [{
             message: 'Enter a solution name:',
             name: 'solutionName',
             type: 'input',
             validate: (value: string) => {
-                const pass: RegExpMatchArray | null = value.match(this.solutionNameRegex);
+                const pass: RegExpMatchArray | null = value.match(Questions.solutionNameRegex);
                 if (pass) {
                     return true;
                 }
@@ -78,25 +61,6 @@ export class Questions implements Questions {
                        'underscore (_), parentheses, ' +
                        'hyphen(-), ' +
                        'and period (.) except at the end of the solution name.';
-            }
-        },
-        {
-            // TODO: parvezp - Add availability check for the URL
-            // Issue: https://github.com/Azure/pcs-cli/issues/81
-            default: (answers: Answers): any => {
-                return answers.solutionName;
-            },
-            message: 'Enter prefix for ' + this.domain + ':',
-            name: 'azureWebsiteName',
-            type: 'input',
-            validate: (value: string) => {
-                if (!value.match(this.websiteHostNameRegex)) {
-                    return 'Please enter a valid prefix for azure website.\n' +
-                           'Valid characters are: ' +
-                           'alphanumeric (A-Z, a-z, 0-9), ' +
-                           'and hyphen(-)';
-                }
-                return this.checkUrlExists(value);
             }
         }
         ];
@@ -118,18 +82,6 @@ export class Questions implements Questions {
 
     public insertQuestion(index: number, question: Question): void {
         this._questions.splice(index, 0, question);
-    }
-
-    private  checkUrlExists(hostname: string): Promise<boolean | string> {
-        const host = 'http://' + hostname + this.domain;
-        const req = new fetch.Request(host, { method: 'HEAD', timeout: 500 });
-        return fetch.default(req)
-        .then((value: fetch.Response) => {
-            return 'The app with name ' + hostname + ' is not available';
-        })
-        .catch((error: any) => {
-            return true;
-        });
     }
 }
 
