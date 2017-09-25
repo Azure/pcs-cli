@@ -27,17 +27,38 @@ const MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN = 2;
 
 export interface IDeploymentManager {
     submit(answers: Answers | undefined): Promise<any>;
+    getLocations(): Promise<string[] | undefined>;
 }
 
 export class DeploymentManager implements IDeploymentManager {
     private _options: DeviceTokenCredentialsOptions;
     private _solutionType: string;
+    private _sku: string;
     private _template: any;
     private _parameters: any;
+    private _subscriptionId: string;
+    private _client: ResourceManagementClient;
 
-    constructor(options: DeviceTokenCredentialsOptions, solutionType: string) {
+    constructor(options: DeviceTokenCredentialsOptions, subscriptionId: string, solutionType: string, sku: string) {
         this._options = options;
         this._solutionType = solutionType;
+        this._sku = sku;
+        this._subscriptionId = subscriptionId;
+        const baseUri = this._options.environment ? this._options.environment.resourceManagerEndpointUrl : undefined;
+        this._client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
+    }
+
+    public getLocations(): Promise<string[] | undefined> {
+        // Currently IotHub is not supported in all the regions so using it to get the available locations
+        return this._client.providers.get('Microsoft.Devices')
+        .then((providers: ResourceModels.Provider) => {
+            if (providers.resourceTypes) {
+                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
+                if (resourceType && resourceType.length) {
+                    return resourceType[0].locations;
+                }
+            }
+        });
     }
 
     public submit(answers: Answers): Promise<any> {
@@ -45,8 +66,6 @@ export class DeploymentManager implements IDeploymentManager {
             return Promise.reject('Solution name, subscription id and location cannot be empty');
         }
 
-        const baseUri = this._options.environment ? this._options.environment.resourceManagerEndpointUrl : undefined;
-        const client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), answers.subscriptionId, baseUri);
         const location = answers.location;
         const deployment: Deployment = { properties: {
             mode: 'Incremental',
@@ -61,14 +80,13 @@ export class DeploymentManager implements IDeploymentManager {
             // TODO: Explore if it makes sense to add more tags, e.g. Language(Java/.Net), version etc
             tags: { IotSolutionType: this._solutionType },
         };
-        let solutionSku = answers.deploymentSku;
-        const parametersFileName = solutionSku + '-parameters.json';
+        const parametersFileName = this._sku + '-parameters.json';
 
-        return client.resources.list({filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\''})
+        return this._client.resources.list({filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\''})
         .then((resources: ResourceModels.ResourceListResult) => {
             // using static map for China environment by default since Bing Map resource is not available.
             if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
-                solutionSku += '-static-map';
+                this._sku += '-static-map';
             } else {
                 resources.forEach((resource: ResourceModels.GenericResource) => {
                     if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
@@ -76,33 +94,33 @@ export class DeploymentManager implements IDeploymentManager {
                     }
                 });
                 if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                    solutionSku += '-static-map';
+                    this._sku += '-static-map';
                 }
             }
-            const solutionFileName = solutionSku + '.json';
+            const solutionFileName = this._sku + '.json';
             try {
                 this._template = require('../' + this._solutionType + '/armtemplates/' + solutionFileName);
                 this._parameters = require('../' + this._solutionType + '/armtemplates/' + parametersFileName);
                 // Change the default suffix for basic sku based on current environment
                 if (this._options.environment && answers.deploymentSku === 'basic') {
-                    switch (this._options.environment.name) {
-                        case AzureEnvironment.AzureChina.name:
-                            this._parameters.storageEndpointSuffix = { value: 'core.chinacloudapi.cn' };
-                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.chinacloudapi.cn' };
-                            break;
-                        case AzureEnvironment.AzureGermanCloud.name:
-                            this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.de' };
-                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.de' };
-                            break;
-                        case AzureEnvironment.AzureUSGovernment.name:
-                            this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.us' };
-                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.us' };
-                            break;
-                        // use default parameter values of global azure environment
-                        default:
-                            this._parameters.storageEndpointSuffix =  { value: 'core.windows.net' };
-                            this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.com' };
-                    }
+                switch (this._options.environment.name) {
+                    case AzureEnvironment.AzureChina.name:
+                        this._parameters.storageEndpointSuffix = { value: 'core.chinacloudapi.cn' };
+                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.chinacloudapi.cn' };
+                        break;
+                    case AzureEnvironment.AzureGermanCloud.name:
+                        this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.de' };
+                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.de' };
+                        break;
+                    case AzureEnvironment.AzureUSGovernment.name:
+                        this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.us' };
+                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.us' };
+                        break;
+                    // use default parameter values of global azure environment
+                    default:
+                        this._parameters.storageEndpointSuffix =  { value: 'core.windows.net' };
+                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.com' };
+                }
                 }
                 this.setupParameters(answers);
             } catch (ex) {
@@ -113,12 +131,12 @@ export class DeploymentManager implements IDeploymentManager {
             return deployment;
         })
         .then((properties: Deployment) => {
-            return client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup);
+            return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup);
         })
         .then((result: ResourceGroup) => {
             resourceGroup = result;
             resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
-            return client.deployments.validate(answers.solutionName, deploymentName, deployment);
+            return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
         })
         .then((validationResult: DeploymentValidateResult) => {
             if (validationResult.error) {
@@ -126,8 +144,8 @@ export class DeploymentManager implements IDeploymentManager {
                 throw new Error(JSON.stringify(validationResult.error));
             }
 
-            deployUI.start(client, answers.solutionName, deploymentName, deployment.properties.template.resources.length as number);
-            return client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
+            deployUI.start(this._client, answers.solutionName, deploymentName, deployment.properties.template.resources.length as number);
+            return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
         })
         .then((res: DeploymentExtended) => {
             deployUI.stop();

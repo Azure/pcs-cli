@@ -143,7 +143,7 @@ function main() {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
         const baseUri = cachedAuthResponse.options.environment.resourceManagerEndpointUrl;
-        let client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
+        const client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
         return client.subscriptions.list()
         .then(() => {
             const subs: ChoiceType[] = [];
@@ -165,6 +165,7 @@ function main() {
                     type: 'list'
                 });
 
+                let deploymentManager: IDeploymentManager;
                 return prompt(questions.value)
                 .then((ans: Answers) => {
                     answers = ans;
@@ -175,16 +176,8 @@ function main() {
                         throw new Error(errorMessage);
                     }
                     cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
-                    client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
-                    return client.subscriptions.listLocations(answers.subscriptionId)
-                    .then((locationsResult: SubscriptionModels.LocationListResult) => {
-                        const locations: string[] = [];
-                        locationsResult.forEach((location: SubscriptionModels.Location) => {
-                            const name = location.displayName as string;
-                            locations.push(name);
-                        });
-                        return locations;
-                    });
+                    deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, solutionType, program.sku);
+                    return deploymentManager.getLocations();
                 })
                 .then((locations: string[]) => {
                     return prompt(getDeploymentQuestions(locations));
@@ -206,8 +199,6 @@ function main() {
                 .then(({appId, servicePrincipalSecret}) => {
                     if (appId && servicePrincipalSecret) {
                         cachedAuthResponse.options.tokenAudience = null;
-                        const deploymentManager: IDeploymentManager = 
-                        new DeploymentManager(cachedAuthResponse.options, solutionType);
                         answers.appId = appId;
                         answers.deploymentSku = program.sku;
                         answers.servicePrincipalSecret = servicePrincipalSecret;
