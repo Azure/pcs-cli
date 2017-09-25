@@ -99,8 +99,9 @@ export class DeploymentManager implements IDeploymentManager {
             }
             const solutionFileName = this._sku + '.json';
             try {
-                this._template = require('../' + this._solutionType + '/armtemplates/' + solutionFileName);
-                this._parameters = require('../' + this._solutionType + '/armtemplates/' + parametersFileName);
+                const armTemplatePath = __dirname + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
+                this._template = require(armTemplatePath + solutionFileName);
+                this._parameters = require(armTemplatePath + parametersFileName);
                 // Change the default suffix for basic sku based on current environment
                 if (this._options.environment && answers.deploymentSku === 'basic') {
                 switch (this._options.environment.name) {

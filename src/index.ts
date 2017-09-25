@@ -377,7 +377,7 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
     const scope = '/subscriptions/' + subscriptionId; // we shall be assigning the sp, a 'contributor' role at the subscription level
     const roleDefinitionId = scope + '/providers/Microsoft.Authorization/roleDefinitions/' + roleId;
     // clearing the token audience
-    options.tokenAudience = 'common';
+    options.tokenAudience = undefined;
     const baseUri = options.environment ? options.environment.resourceManagerEndpointUrl : undefined;
     const authzClient = new AuthorizationManagementClient(new DeviceTokenCredentials(options), subscriptionId, baseUri);
     const assignmentGuid = uuid.v1();

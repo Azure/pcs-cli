@@ -4,7 +4,8 @@
   "description": "Command Line Interface for deploying pre-configured IoT solutions through Azure",
   "main": "./publish/index.js",
   "scripts": {
-    "start": "npm run build && npm test",
+    "start": "npm run build && npm test && npm run copy",
+    "copy": "copyfiles ./remotemonitoring/**/*.* ./publish/",
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -c tslint.json --type-check -p tsconfig.json 'src/**/*.{ts,tsx}'",
     "pretest": "npm run lint",
@@ -49,6 +50,7 @@
     "@types/node": "^7.0.29",
     "@types/node-forge": "^0.6.10",
     "@types/ssh2": "^0.5.35",
+    "copyfiles": "^1.2.0",
     "import-sort": "^2.4.0",
     "jest": "^20.0.4",
     "nodemon": "^1.11.0",
