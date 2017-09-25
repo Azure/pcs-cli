@@ -38,10 +38,10 @@ enum solutionSkus {
 }
 
 enum environments {
-    azure,
-    china,
-    germany,
-    usgovernment
+    azurecloud,
+    azurechinacloud,
+    azuregermanycloud,
+    azureusgovernment
 }
 
 const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
@@ -66,8 +66,8 @@ const program = new Command(packageJson.name)
     .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
     .option('-e, --environment <environment>',
-            'Azure environments: Azure or China',
-            /^(Azure|China)$/i, 'Azure')
+            'Azure environments: AzureCloud or AzureChinaCloud',
+            /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .on('--help', () => {
         console.log(
@@ -143,7 +143,7 @@ function main() {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
         const baseUri = cachedAuthResponse.options.environment.resourceManagerEndpointUrl;
-        let client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
+        const client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
         return client.subscriptions.list()
         .then(() => {
             const subs: ChoiceType[] = [];
@@ -165,6 +165,7 @@ function main() {
                     type: 'list'
                 });
 
+                let deploymentManager: IDeploymentManager;
                 return prompt(questions.value)
                 .then((ans: Answers) => {
                     answers = ans;
@@ -175,16 +176,8 @@ function main() {
                         throw new Error(errorMessage);
                     }
                     cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
-                    client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
-                    return client.subscriptions.listLocations(answers.subscriptionId)
-                    .then((locationsResult: SubscriptionModels.LocationListResult) => {
-                        const locations: string[] = [];
-                        locationsResult.forEach((location: SubscriptionModels.Location) => {
-                            const name = location.displayName as string;
-                            locations.push(name);
-                        });
-                        return locations;
-                    });
+                    deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, solutionType, program.sku);
+                    return deploymentManager.getLocations();
                 })
                 .then((locations: string[]) => {
                     return prompt(getDeploymentQuestions(locations));
@@ -206,8 +199,6 @@ function main() {
                 .then(({appId, servicePrincipalSecret}) => {
                     if (appId && servicePrincipalSecret) {
                         cachedAuthResponse.options.tokenAudience = null;
-                        const deploymentManager: IDeploymentManager = 
-                        new DeploymentManager(cachedAuthResponse.options, solutionType);
                         answers.appId = appId;
                         answers.deploymentSku = program.sku;
                         answers.servicePrincipalSecret = servicePrincipalSecret;
@@ -244,16 +235,16 @@ function login(): Promise<void> {
     let environment: any;
     const lowerCaseEnv = program.environment.toLowerCase();
     switch (lowerCaseEnv) {
-        case environments[environments.azure]:
+        case environments[environments.azurecloud]:
             environment = AzureEnvironment.Azure;
             break;
-        case environments[environments.china]:
+        case environments[environments.azurechinacloud]:
             environment = AzureEnvironment.AzureChina;
             break;
-        case environments[environments.germany]:
+        case environments[environments.azuregermanycloud]:
             environment = AzureEnvironment.AzureGermanCloud;
             break;
-        case environments[environments.usgovernment]:
+        case environments[environments.azureusgovernment]:
             environment = AzureEnvironment.AzureUSGovernment;
             break;
         default:
