@@ -38,10 +38,10 @@ enum solutionSkus {
 }
 
 enum environments {
-    azure,
-    china,
-    germany,
-    usgovernment
+    azurecloud,
+    azurechinacloud,
+    azuregermanycloud,
+    azureusgovernment
 }
 
 const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
@@ -66,8 +66,8 @@ const program = new Command(packageJson.name)
     .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
     .option('-e, --environment <environment>',
-            'Azure environments: Azure or China',
-            /^(Azure|China)$/i, 'Azure')
+            'Azure environments: AzureCloud or AzureChinaCloud',
+            /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .on('--help', () => {
         console.log(
@@ -244,16 +244,16 @@ function login(): Promise<void> {
     let environment: any;
     const lowerCaseEnv = program.environment.toLowerCase();
     switch (lowerCaseEnv) {
-        case environments[environments.azure]:
+        case environments[environments.azurecloud]:
             environment = AzureEnvironment.Azure;
             break;
-        case environments[environments.china]:
+        case environments[environments.azurechinacloud]:
             environment = AzureEnvironment.AzureChina;
             break;
-        case environments[environments.germany]:
+        case environments[environments.azuregermanycloud]:
             environment = AzureEnvironment.AzureGermanCloud;
             break;
-        case environments[environments.usgovernment]:
+        case environments[environments.azureusgovernment]:
             environment = AzureEnvironment.AzureUSGovernment;
             break;
         default:
