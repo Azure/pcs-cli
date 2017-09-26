@@ -211,7 +211,7 @@ export class DeploymentManager implements IDeploymentManager {
         .catch((err: Error) => {
             let errorMessage = err.toString();
             if (err.toString().includes('Entry not found in cache.')) {
-                errorMessage = 'Session expired, Please run azpcs login again. \n\
+                errorMessage = 'Session expired, Please run pcs login again. \n\
                 Resources are being deployed at ' + resourceGroupUrl;
             }
             deployUI.stop(errorMessage);
