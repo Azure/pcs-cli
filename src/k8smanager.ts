@@ -102,7 +102,7 @@ export class K8sManager implements IK8sManager {
     }
 
     public deleteConfigMap(): Promise<any> {
-        const configPath = process.cwd() + path.sep + 'remotemonitoring/scripts/individual/deployment-configmap.yaml';
+        const configPath = __dirname + path.sep + 'remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
         return this._api.deleteNamespacedConfigMap(configMap.metadata.name, this._namespace, configMap);
@@ -184,7 +184,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['auth.aad.global.clientid'] = this._config.ApplicationId;
         configMap.data['auth.aad.global.tenantid'] = this._config.AADTenantId;
         configMap.data['auth.aad.global.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
-        configMap.data['bing.map.key'] = this._config.BingMapApiQueryKey;
+        configMap.data['bing.map.key'] = this._config.BingMapApiQueryKey ? this._config.BingMapApiQueryKey : '';
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
         configMap.data['iothubreact.hub.name'] = this._config.EventHubName;
