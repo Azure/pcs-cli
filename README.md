@@ -43,7 +43,7 @@ and [Kubernetes](https://kubernetes.io/) for orchestration. It also requires
 some manual steps in running commands through different CLIs like
 [az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) and
 [kubectl](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-in addition to ```azpcs```.
+in addition to ```pcs```.
 
 Enterprise deployment provisions following resources:
 
@@ -58,14 +58,14 @@ How to use the CLI
 ==================
 
 ## Install CLI
-`npm install azpcs -g`
+`npm install iotsuite-cli -g`
 
 ## Basic Deployment
 
 ### Deploy Azure Resources
 
-1. If you haven't logged in with your Azure account from the command prompt run `azpcs login`.
-1. Run either `azpcs` or `azpcs -t remotemonitoring -s basic`.  These are equivalent in that they will both deploy a basic deployment (i.e. a deployment to a single VM).
+1. If you haven't logged in with your Azure account from the command prompt run `pcs login`.
+1. Run either `pcs` or `pcs -t remotemonitoring -s basic`.  These are equivalent in that they will both deploy a basic deployment (i.e. a deployment to a single VM).
 1. Follow the on-screen prompts
 1. The results of the deployment will be saved to a file named `output.json`
 
@@ -78,7 +78,7 @@ the Remote Monitoring WebApp
 
 ### Deploy Azure Resources
 
-1. `azpcs -t remotemonitoring -s standard`
+1. `pcs -t remotemonitoring -s standard`
 2. Follow the on-screen prompts
 3. The results of the deployment will be saved to a file named {deployment-name}-output.json 
 
@@ -123,8 +123,8 @@ web proxy for your cluster (it will start a local server at http://127.0.0.1:800
 
 ## CLI Options
 
-To get help run `azpcs -h` or `--help` \
-To get the version run `azpcs -v` or `--version`
+To get help run `pcs -h` or `--help` \
+To get the version run `pcs -v` or `--version`
 
 Feedback
 ========

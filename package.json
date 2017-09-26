@@ -1,5 +1,5 @@
 {
-  "name": "azpcs",
+  "name": "iotsuite-cli",
   "version": "1.0.0",
   "description": "Command Line Interface for deploying pre-configured IoT solutions through Azure",
   "main": "./publish/index.js",
@@ -30,7 +30,7 @@
     ]
   },
   "bin": {
-    "azpcs": "./publish/index.js"
+    "pcs": "./publish/index.js"
   },
   "keywords": [
     "remotemonitoring",
