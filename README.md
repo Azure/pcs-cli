@@ -39,10 +39,8 @@ are ready for demo pursposes.
 The Enterprise deployment offers a production ready deployment that can be
 scaled up or down as needed. It uses
 [Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)
-and [Kubernetes](https://kubernetes.io/) for orchestration. It also requires
-some manual steps in running commands through different CLIs like
-[az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) and
-[kubectl](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+and [Kubernetes](https://kubernetes.io/) for orchestration. It would be nice to have installed
+[kubectl](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for running commands on kubernetes
 in addition to ```pcs```.
 
 Enterprise deployment provisions following resources:
