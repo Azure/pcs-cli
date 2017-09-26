@@ -52,7 +52,7 @@ const invalidPasswordMessage = 'The supplied password must be between 12-72 char
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli#azure-iot-pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/azure-remote-monitoring-cli/issues/new';
 
-const pcsTmpDir: string = os.homedir() + path.sep + '.azpcs';
+const pcsTmpDir: string = os.homedir() + path.sep + '.pcs';
 const cacheFilePath: string = pcsTmpDir + path.sep + 'cache.json';
 const defaultSshPublicKeyPath = os.homedir() + path.sep + '.ssh' + path.sep + 'id_rsa.pub';
 
@@ -77,10 +77,10 @@ const program = new Command(packageJson.name)
             `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
             );
         console.log(
-            `    Example for executing a basic deployment:  ${chalk.green('azpcs -t remotemonitoring -s basic')}.`
+            `    Example for executing a basic deployment:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
             );
         console.log(
-            `    Example for executing a standard deployment:  ${chalk.green('azpcs -t remotemonitoring -s standard')}.`
+            `    Example for executing a standard deployment:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
             );
         console.log();
         console.log(
@@ -140,7 +140,7 @@ function main() {
      */
     cachedAuthResponse = getCachedAuthResponse();
     if (!cachedAuthResponse) {
-        console.log('Please run %s', `${chalk.yellow('azpcs login')}`);
+        console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
         const baseUri = cachedAuthResponse.options.environment.resourceManagerEndpointUrl;
         const client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
@@ -226,7 +226,7 @@ function main() {
         })
         .catch((error: any) => {
             // In case of login error it is better to ask user to login again
-            console.log('Please run %s', `${chalk.yellow('\"azpcs login\"')}`);
+            console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
         });
     }
 }
