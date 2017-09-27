@@ -416,17 +416,18 @@ function createCertificate(): any {
     const pki: any = forge.pki;
     // generate a keypair and create an X.509v3 certificate
     const keys = pki.rsa.generateKeyPair(2048);
-    const cert = pki.createCertificate();
-    cert.publicKey = keys.publicKey;
-    cert.serialNumber = '01';
-    cert.validity.notBefore = new Date(Date.now());
-    cert.validity.notAfter = new Date(Date.now());
-    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+    const certificate = pki.createCertificate();
+    certificate.publicKey = keys.publicKey;
+    certificate.serialNumber = '01';
+    certificate.validity.notBefore = new Date(Date.now());
+    certificate.validity.notAfter = new Date(Date.now());
+    certificate.validity.notAfter.setFullYear(certificate.validity.notBefore.getFullYear() + 1);
     // self-sign certificate
-    cert.sign(keys.privateKey);
-    const fingerPrint = pki.getPublicKeyFingerprint(keys.publicKey, {encoding: 'hex', delimiter: ':'});
+    certificate.sign(keys.privateKey);
+    const cert = forge.pki.certificateToPem(certificate);
+    const fingerPrint = forge.md.sha1.create().update(forge.asn1.toDer(pki.certificateToAsn1(certificate)).getBytes()).digest().toHex();
     return {
-        cert: forge.pki.certificateToPem(cert),
+        cert,
         fingerPrint,
         key: forge.pki.privateKeyToPem(keys.privateKey)
     };
