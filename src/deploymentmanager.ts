@@ -108,6 +108,8 @@ export class DeploymentManager implements IDeploymentManager {
                     case AzureEnvironment.AzureChina.name:
                         this._parameters.storageEndpointSuffix = { value: 'core.chinacloudapi.cn' };
                         this._parameters.vmFQDNSuffix = { value: 'cloudapp.chinacloudapi.cn' };
+                        // ToDo: we may need to add similar parameter to AzureGermanCloud and AzureUSGovernment
+                        this._parameters.aadInstance = { value: 'https://login.chinacloudapi.cn/' };
                         break;
                     case AzureEnvironment.AzureGermanCloud.name:
                         this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.de' };
