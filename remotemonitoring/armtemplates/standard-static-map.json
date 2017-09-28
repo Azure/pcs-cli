@@ -449,7 +449,7 @@
         },
         "eventHubName": {
             "type": "string",
-            "value": "[parameters('iotHubName')]"
+            "value": "[reference(variables('iotHubResourceId')).eventHubEndpoints.events.path]"
         },
         "eventHubEndpoint": {
             "type": "string",
