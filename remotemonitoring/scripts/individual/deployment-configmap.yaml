@@ -12,7 +12,8 @@ data:
       authType: 'aad',
       aad : {
           tenant: '{TenantId}',
-          appId: '{ApplicationId}'
+          appId: '{ApplicationId}',
+          instance: '{AadLoginInstance}'
       }
   }"
 

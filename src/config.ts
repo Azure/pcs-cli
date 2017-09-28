@@ -1,5 +1,6 @@
 export class Config {
     public AADTenantId: string;
+    public AADLoginURL: string;
     public ApplicationId: string;
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;

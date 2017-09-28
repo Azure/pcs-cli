@@ -121,6 +121,7 @@ export class DeploymentManager implements IDeploymentManager {
                         break;
                     // use default parameter values of global azure environment
                     default:
+                        this._parameters.aadInstance = 'https://login.microsoftonline.com';
                         this._parameters.storageEndpointSuffix =  { value: 'core.windows.net' };
                         this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.com' };
                 }
@@ -182,6 +183,7 @@ export class DeploymentManager implements IDeploymentManager {
                 const outputs = deploymentProperties.outputs;
                 const config = new Config();
                 config.AADTenantId = answers.aadTenantId;
+                config.AADLoginURL = this._parameters.aadInstance;
                 config.ApplicationId = answers.appId;
                 config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                 config.AzureStorageAccountName = outputs.storageAccountName.value;
