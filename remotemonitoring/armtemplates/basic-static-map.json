@@ -209,7 +209,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/azure-iot-pcs-tools/xzsheng/azureChinaAuthSupport/remote-monitoring/single-vm-setup.sh",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/azure-iot-pcs-tools/master/remote-monitoring/single-vm-setup.sh",
             "metadata": {
                 "description": "The Uri of the script to setup a single VM deployment"
             }
