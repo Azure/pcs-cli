@@ -13,7 +13,7 @@ data:
       aad : {
           tenant: '{TenantId}',
           appId: '{ApplicationId}',
-          instance: '{AadLoginInstance}'
+          instance: '{AADLoginInstance}'
       }
   }"
 
