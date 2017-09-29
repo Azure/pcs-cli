@@ -56,7 +56,7 @@ How to use the CLI
 ==================
 
 ## Install CLI
-`npm install iotsuite-cli -g`
+`npm install iot-solitions -g`
 
 ## Basic Deployment
 
