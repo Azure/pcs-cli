@@ -2,6 +2,7 @@ import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as fetch from 'node-fetch';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
@@ -81,6 +82,11 @@ export class DeploymentManager implements IDeploymentManager {
             tags: { IotSolutionType: this._solutionType },
         };
         const parametersFileName = this._sku + '-parameters.json';
+        const environment = this._options.environment;
+        let portalUrl = 'https://portal.azure.com';
+        let storageEndpointSuffix: string;
+        let azureVMFQDNSuffix: string;
+        let activeDirectoryEndpointUrl: string;
 
         return this._client.resources.list({filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\''})
         .then((resources: ResourceModels.ResourceListResult) => {
@@ -103,27 +109,31 @@ export class DeploymentManager implements IDeploymentManager {
                 this._template = require(armTemplatePath + solutionFileName);
                 this._parameters = require(armTemplatePath + parametersFileName);
                 // Change the default suffix for basic sku based on current environment
-                if (this._options.environment && answers.deploymentSku === 'basic') {
-                switch (this._options.environment.name) {
-                    case AzureEnvironment.AzureChina.name:
-                        this._parameters.storageEndpointSuffix = { value: 'core.chinacloudapi.cn' };
-                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.chinacloudapi.cn' };
-                        // ToDo: we may need to add similar parameter to AzureGermanCloud and AzureUSGovernment
-                        this._parameters.aadInstance = { value: 'https://login.chinacloudapi.cn/' };
-                        break;
-                    case AzureEnvironment.AzureGermanCloud.name:
-                        this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.de' };
-                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.de' };
-                        break;
-                    case AzureEnvironment.AzureUSGovernment.name:
-                        this._parameters.storageEndpointSuffix =  { value: 'core.cloudapi.us' };
-                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.us' };
-                        break;
-                    // use default parameter values of global azure environment
-                    default:
-                        this._parameters.storageEndpointSuffix =  { value: 'core.windows.net' };
-                        this._parameters.vmFQDNSuffix = { value: 'cloudapp.azure.com' };
-                }
+                if (environment) {
+                    switch (environment.name) {
+                        case AzureEnvironment.AzureChina.name:
+                            azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
+                            break;
+                        case AzureEnvironment.AzureGermanCloud.name:
+                            azureVMFQDNSuffix = 'cloudapp.azure.de';
+                            break;
+                        case AzureEnvironment.AzureUSGovernment.name:
+                            azureVMFQDNSuffix = 'cloudapp.azure.us';
+                            break;
+                        default:
+                            // use default parameter values of global azure environment
+                            azureVMFQDNSuffix = 'cloudapp.azure.com';
+                    }
+                    storageEndpointSuffix = environment.storageEndpointSuffix;
+                    activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
+                    if (storageEndpointSuffix.startsWith('.')) {
+                        storageEndpointSuffix = storageEndpointSuffix.substring(1);
+                    }
+                    if (answers.deploymentSku === 'basic') {
+                        this._parameters.storageEndpointSuffix =  { value: storageEndpointSuffix };
+                        this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
+                        this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
+                    }
                 }
                 this.setupParameters(answers);
             } catch (ex) {
@@ -134,57 +144,57 @@ export class DeploymentManager implements IDeploymentManager {
             return deployment;
         })
         .then((properties: Deployment) => {
+            deployUI.start('Creating resource group');
             return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup);
         })
         .then((result: ResourceGroup) => {
             resourceGroup = result;
-            resourceGroupUrl = 'https://portal.azure.com/#resource' + resourceGroup.id;
+            if (environment && environment.portalUrl) {
+                portalUrl = environment.portalUrl;
+            }
+            resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
+            deployUI.stop({message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}`});
+            deployUI.start('Running validation before deploying resources');
             return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
         })
         .then((validationResult: DeploymentValidateResult) => {
             if (validationResult.error) {
-                deployUI.stop('Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2));
+                const status = {
+                    err: 'Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2)
+                };
+                deployUI.stop(status);
                 throw new Error(JSON.stringify(validationResult.error));
             }
-
-            deployUI.start(this._client, answers.solutionName, deploymentName, deployment.properties.template.resources.length as number);
+            const options = {
+                client: this._client,
+                deploymentName,
+                resourceGroupName: answers.solutionName,
+                totalResources: deployment.properties.template.resources.length as number
+            };
+            deployUI.start('', options);
             return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
         })
         .then((res: DeploymentExtended) => {
             deployUI.stop();
             deploymentProperties = res.properties;
-            const directoryPath = process.cwd() + path.sep + 'deployments';
-            if (!fs.existsSync(directoryPath)) {
-                fs.mkdirSync(directoryPath);
-            }
-            const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
-            fs.writeFileSync(fileName, JSON.stringify(deploymentProperties.outputs, null, 2));
-            if (deploymentProperties.outputs.azureWebsite) {
-                const webUrl = deploymentProperties.outputs.azureWebsite.value;
-                if (answers.deploymentSku === 'standard') {
-                    console.log('The app will be available on following url after kubernetes setup is done:');
-                }
-                console.log('Please click %s %s %s', `${chalk.cyan(webUrl)}`,
-                            'to deployed solution:', `${chalk.green(answers.solutionName)}`);
-            }
-            console.log('Please click %s %s', `${chalk.cyan(resourceGroupUrl)}`,
-                        'to manage your deployed resources');
-            console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
 
             if (answers.deploymentSku === 'standard') {
-                console.log('Downloading the kubeconfig file from:', `${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
+                deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
                 return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
             }
             return Promise.resolve('');
         })
         .then((kubeConfigPath: string) => {
             if (answers.deploymentSku === 'standard') {
+                deployUI.stop({message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}`});
                 const outputs = deploymentProperties.outputs;
                 const config = new Config();
                 config.AADTenantId = answers.aadTenantId;
+                config.AADLoginURL = activeDirectoryEndpointUrl;
                 config.ApplicationId = answers.appId;
                 config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                 config.AzureStorageAccountName = outputs.storageAccountName.value;
+                config.AzureStorageEndpointSuffix = storageEndpointSuffix;
                 // If we are under the plan limi then we should have received a query key
                 if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
                     config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
@@ -199,24 +209,54 @@ export class DeploymentManager implements IDeploymentManager {
                 config.Runtime = answers.runtime;
                 config.TLS = answers.certData;
                 const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
-                console.log(`${chalk.cyan('Setting up kubernetes')}`);
-                return k8sMananger.setupAll()
-                .catch((err: any) => {
-                    console.log(err);
-                });
+                deployUI.start('Setting up Kubernetes');
+                return k8sMananger.setupAll();
             }
             return Promise.resolve();
         })
         .then(() => {
-            console.log('Setup done sucessfully, the website will be ready in 2-5 minutes');
+            const webUrl = deploymentProperties.outputs.azureWebsite.value;
+            deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
+            return this.waitForWebsiteToBeReady(webUrl);
         })
-        .catch((err: Error) => {
-            let errorMessage = err.toString();
-            if (err.toString().includes('Entry not found in cache.')) {
-                errorMessage = 'Session expired, Please run pcs login again. \n\
+        .then((done: boolean) => {
+            const directoryPath = process.cwd() + path.sep + 'deployments';
+            if (!fs.existsSync(directoryPath)) {
+                fs.mkdirSync(directoryPath);
+            }
+            const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
+            const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
+
+            if (deploymentProperties.outputs.azureWebsite) {
+                const webUrl = deploymentProperties.outputs.azureWebsite.value;
+                const status = {
+                    message: `Solution: ${chalk.cyan(answers.solutionName)} is deployed at ${chalk.cyan(webUrl)}`
+                };
+                if (!done) {
+                    status.message += `\n${chalk.yellow('Website not yet available, please refer to troubleshooting guide here:')}\n` +
+                    `${chalk.cyan(troubleshootingGuide)}`;
+                }
+                deployUI.stop(status);
+                const output = {
+                    aadAppUrl: answers.aadAppUrl,
+                    resourceGroupUrl,
+                    troubleshootingGuide,
+                    website: deploymentProperties.outputs.azureWebsite.value,
+                };
+                fs.writeFileSync(fileName, JSON.stringify(output, null, 2));
+                console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
+                return Promise.resolve();
+            } else {
+                return Promise.reject('Azure website url not found in deployment output');
+            }
+        })
+        .catch((error: Error) => {
+            let err = error.toString();
+            if (err.includes('Entry not found in cache.')) {
+                err = 'Session expired, Please run pcs login again. \n\
                 Resources are being deployed at ' + resourceGroupUrl;
             }
-            deployUI.stop(errorMessage);
+            deployUI.stop({err});
         });
     }
 
@@ -258,7 +298,6 @@ export class DeploymentManager implements IDeploymentManager {
                                     reject(err);
                                     return;
                                 }
-                                console.log('kubectl config file downloaded to: %s', `${chalk.cyan(localKubeConfigPath)}`);
                                 clearInterval(timer);
                                 resolve(localKubeConfigPath);
                             });
@@ -268,18 +307,12 @@ export class DeploymentManager implements IDeploymentManager {
                         if (retryCount++ > MAX_RETRY) {
                             clearInterval(timer);
                             reject(err);
-                        } else {
-                            console.log(`${chalk.yellow('Retrying connection to: ' +
-                            outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
                         }
                     })
                     .on('timeout', () => {
                         if (retryCount++ > MAX_RETRY) {
                             clearInterval(timer);
                             reject(new Error('Failed after maximum number of tries'));
-                        } else {
-                            console.log(`${chalk.yellow('Retrying connection to: ' +
-                            outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
                         }
                     })
                     .connect(config);
@@ -329,6 +362,40 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.microServiceRuntime) {
             this._parameters.microServiceRuntime.value = answers.runtime;
         }
+    }
+
+    private  waitForWebsiteToBeReady(url: string): Promise<boolean> {
+        const status: string = url + '/ssl-proxy-status';
+        const req = new fetch.Request(status, { method: 'GET' });
+        let retryCount = 0;
+        return new Promise((resolve, reject) => {
+            const timer = setInterval(
+                () => {
+                    fetch.default(req)
+                    .then((value: fetch.Response) => {
+                        return value.json();
+                    })
+                    .then((body: any) => {
+                        if (body.Status.includes('Alive') || retryCount > MAX_RETRY) {
+                            clearInterval(timer);
+                            if (retryCount > MAX_RETRY) {
+                                resolve(false);
+                            } else {
+                                resolve(true);
+                            }
+                        }
+                    })
+                    .catch((error: any) => {
+                        // Continue
+                        if (retryCount > MAX_RETRY) {
+                            clearInterval(timer);
+                            resolve(false);
+                        }
+                    });
+                    retryCount++;
+                },
+                10000);
+        });
     }
 }
 

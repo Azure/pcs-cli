@@ -22,6 +22,7 @@ import { Command } from 'commander';
 
 import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
+import DeployUI from './deployui';
 import { Questions, IQuestions } from './questions';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
@@ -118,6 +119,7 @@ if (!program.args[0] || program.args[0] === '-t') {
     logout();
 } else {
     console.log(`${chalk.red('Invalid choice:', program.args.toString())}`);
+    console.log('For help, %s', `${chalk.yellow('pcs -h')}`);
 }
 
 function main() {
@@ -165,6 +167,7 @@ function main() {
                     type: 'list'
                 });
 
+                const deployUI = DeployUI.instance;
                 let deploymentManager: IDeploymentManager;
                 return prompt(questions.value)
                 .then((ans: Answers) => {
@@ -194,17 +197,23 @@ function main() {
                 .then((ans: Answers) => {
                     answers.adminPassword = ans.pwdFirstAttempt;
                     answers.sshFilePath = ans.sshFilePath;
+                    deployUI.start('Regsitering application in the Azure Active Directory');
                     return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                 })
-                .then(({appId, servicePrincipalSecret}) => {
+                .then(({appId, domainName, objectId, servicePrincipalSecret}) => {
                     if (appId && servicePrincipalSecret) {
+                        const env = cachedAuthResponse.options.environment;
+                        const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
+                        deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
                         cachedAuthResponse.options.tokenAudience = null;
                         answers.appId = appId;
+                        answers.aadAppUrl = appUrl;
                         answers.deploymentSku = program.sku;
                         answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
                         answers.runtime = program.runtime;
+                        answers.domainName = domainName;
                         return deploymentManager.submit(answers);
                     } else {
                         const message = 'To create a service principal, you must have permissions to register an ' +
@@ -299,7 +308,8 @@ function getCachedAuthResponse(): any {
 }
 
 function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
-                                options: DeviceTokenCredentialsOptions): Promise<{appId: string, servicePrincipalSecret: string}> {
+                                options: DeviceTokenCredentialsOptions):
+                                Promise<{appId: string, domainName: string, objectId: string, servicePrincipalSecret: string}> {
     const homepage = getWebsiteUrl(azureWebsiteName);
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
@@ -342,12 +352,14 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         replyUrls,
         requiredResourceAccess
     };
+    let objectId: string = '';
     return graphClient.applications.create(applicationCreateParameters)
     .then((result: any) => {
         const servicePrincipalCreateParameters = {
             accountEnabled: true,
             appId: result.appId
-            };
+        };
+        objectId = result.objectId;
         return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
     })
     .then((sp: any) => {
@@ -359,10 +371,21 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
     })
     .then((appId: string) => {
-        return {
-            appId,
-            servicePrincipalSecret
-        };
+        return graphClient.domains.list()
+        .then((domains: any[]) => {
+            let domainName: string = '';
+            domains.forEach((value: any) => {
+                if (value.isDefault) {
+                    domainName = value.name;
+                }
+            });
+            return {
+                appId,
+                domainName,
+                objectId,
+                servicePrincipalSecret
+            };
+        });
     })
     .catch((error: Error) => {
         throw error;
@@ -391,23 +414,23 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
     };
     let retryCount = 0;
     const promise = new Promise<any>((resolve, reject) => {
-        const timer: NodeJS.Timer = setInterval(() => {
-            retryCount++;
-            return authzClient.roleAssignments.create(scope, assignmentGuid, roleCreateParams)
-            .then((roleResult: any) => {
-                clearInterval(timer);
-                resolve(appId);
-            })
-            .catch ((error: Error) => {
-                if (retryCount >= MAX_RETRYCOUNT) {
+        const timer: NodeJS.Timer = setInterval(
+            () => {
+                retryCount++;
+                return authzClient.roleAssignments.create(scope, assignmentGuid, roleCreateParams)
+                .then((roleResult: any) => {
                     clearInterval(timer);
-                    console.log(error);
-                    reject(error);
-                } else {
-                    console.log(`${chalk.yellow('Retrying role assignment creation:', retryCount.toString(), 'of', MAX_RETRYCOUNT.toString())}`);
-                }
-            });
-        },                                      5000);
+                    resolve(appId);
+                })
+                .catch ((error: Error) => {
+                    if (retryCount >= MAX_RETRYCOUNT) {
+                        clearInterval(timer);
+                        console.log(error);
+                        reject(error);
+                    }
+                });
+            },
+            5000);
     });
     return promise;
 }

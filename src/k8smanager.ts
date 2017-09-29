@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as jsyaml from 'js-yaml';
 
 import { Config } from './config';
+import DeployUI from './deployui';
 
 const MAX_RETRY: number = 36;
 const DEFAULT_TIMEOUT = 10000;
@@ -31,6 +32,7 @@ export class K8sManager implements IK8sManager {
     private _namespace: string;
     private _config: Config;
     private _secret: any;
+    private _deployUI: DeployUI;
 
     constructor(namespace: string, kubeConfigFilePath: string, config: Config) {
         this._namespace = namespace;
@@ -51,6 +53,7 @@ export class K8sManager implements IK8sManager {
         this._secret.kind = 'Secret';
         this._secret.type = 'Opaque';
         this._secret.data = {};
+        this._deployUI = DeployUI.instance;
     }
 
     public createNamespace(name: string): Promise<any> {
@@ -137,11 +140,14 @@ export class K8sManager implements IK8sManager {
     }
 
     public setupAll(): Promise<any> {
+        this._deployUI.start('Setting up Kubernetes: Uploading secrets');
         return this.setupSecrets()
             .then(() => {
+                this._deployUI.start('Setting up Kubernetes: Uploading config map');
                 return this.setupConfigMap();
             })
             .then(() => {
+                this._deployUI.start('Setting up Kubernetes: Starting web app and microservices');
                 return this.setupDeployment();
             });
     }
@@ -160,7 +166,6 @@ export class K8sManager implements IK8sManager {
                     .catch((error: any) => {
                         if (error.code === 'ETIMEDOUT' && this._retryCount < MAX_RETRY) {
                             this._retryCount++;
-                            console.log(`${chalk.yellow('Setting up secrets: retrying', this._retryCount.toString(), 'of', MAX_RETRY.toString())}`);
                         } else {
                             let err = error;
                             if (error.code !== 'ETIMEDOUT') {
@@ -193,9 +198,11 @@ export class K8sManager implements IK8sManager {
         configMap.data['iothubreact.access.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['iothubreact.azureblob.account'] = this._config.AzureStorageAccountName;
         configMap.data['iothubreact.azureblob.key'] = this._config.AzureStorageAccountKey;
+        configMap.data['iothubreact.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
         let deploymentConfig = configMap.data['webui-config.js'];
         deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);
+        deploymentConfig = deploymentConfig.replace('{AADLoginInstance}', this._config.AADLoginURL);
         configMap.data['webui-config.js'] = deploymentConfig;
         return this._api.createNamespacedConfigMap(this._namespace, configMap);
     }

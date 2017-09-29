@@ -41,7 +41,6 @@ class DeployUI {
             throw new Error('Error - use DeployUI.instance');
         }
         this.resourcesStatusAvailable = 0;
-        this.ui = new inquirer.ui.BottomBar();
         DeployUI._instance = this;
     }
 
@@ -53,32 +52,42 @@ class DeployUI {
         return this._instance;
     }
 
-    public start(client: ResourceManagementClient, resourceGroupName: string, deploymentName: string, totalResources: number): void {
+    public start(message: string,
+                 options?: {client: ResourceManagementClient, resourceGroupName: string, deploymentName: string, totalResources: number}): void {
+        this.clear();
+        this.ui = new inquirer.ui.BottomBar();
         this.startTime = Date.now();
         this.timer = setInterval(
             () => {
-                client.deploymentOperations.list(resourceGroupName, deploymentName)
-                .then((value: DeploymentOperationsListResult) => {
-                    this.operationSet = new Set();
-                    this.errorMessages = new Map();
-                    const loader = this.loader[this.i++ % 4];
-                    let operationsStatus = this.operationsStatusFormatter(value, loader);
-                    if (operationsStatus) {
-                        operationsStatus += loader + this.deployedResources +
-                        `${chalk.cyan(this.completedResourceCount.toString(), 'of', this.totalResourceCount.toString())}`;
-                        this.ui.updateBottomBar(operationsStatus);
-                    } else {
-                        this.ui.updateBottomBar(loader + this.deploying);
-                    }
-                })
-                .catch((err: Error) => {
-                    this.ui.updateBottomBar(this.loader[this.i++ % 4] + this.deploying);
-                });
+                if (options) {
+                    options.client.deploymentOperations.list(options.resourceGroupName, options.deploymentName)
+                    .then((value: DeploymentOperationsListResult) => {
+                        this.operationSet = new Set();
+                        this.errorMessages = new Map();
+                        const loader = this.loader[this.i++ % 4];
+                        let operationsStatus = this.operationsStatusFormatter(value, loader);
+                        if (operationsStatus) {
+                            if (this.totalResourceCount > options.totalResources) {
+                                options.totalResources = this.totalResourceCount;
+                            }
+                            operationsStatus += loader + this.deployedResources +
+                            `${chalk.cyan(this.completedResourceCount.toString(), 'of', options.totalResources.toString())}`;
+                            this.ui.updateBottomBar(operationsStatus);
+                        } else {
+                            this.ui.updateBottomBar(loader + this.deploying);
+                        }
+                    })
+                    .catch((err: Error) => {
+                        this.ui.updateBottomBar(this.loader[this.i++ % 4] + this.deploying);
+                    });
+                } else {
+                    this.ui.updateBottomBar(this.loader[this.i++ % 4] + message);
+                }
             },
             200);
     }
 
-    public stop(err?: string): void {
+    public stop(status?: {err?: string, message?: string}): void {
         clearInterval(this.timer);
         let message: string = '';
         if (this.errorMessages && this.errorMessages.size > 0) {
@@ -86,15 +95,18 @@ class DeployUI {
             this.errorMessages.forEach((value: string) => {
                 message += `${chalk.red(value)}` + '\n';
             });
-        } else if (err) {
-            message = this.crossMark + `${chalk.red(err)}` + '\n';
+        } else if (status) {
+            if (status.err) {
+                message = this.crossMark + `${chalk.red(status.err)}` + '\n';
+            } else if (status.message) {
+                message += this.checkMark + status.message + '\n';
+            }
         } else {
             const totalTime: Date = new Date(Date.now() - this.startTime);
             message += this.combinedStatus +
-                       this.checkMark + `${chalk.green(this.deployed)}` +
-                       `${chalk.green(', time taken:',
-                                      totalTime.getMinutes().toString(), 'minutes &',
-                                      totalTime.getSeconds().toString(), 'seconds')}` +
+                       this.checkMark + this.deployed + ', time taken: ' +
+                       `${chalk.cyan(totalTime.getMinutes().toString(), 'minutes &',
+                                     totalTime.getSeconds().toString(), 'seconds')}` +
                         '\n';
         }
 
@@ -102,8 +114,17 @@ class DeployUI {
         this.close();
     }
 
+    public clear(): void {
+        if (this.ui) {
+            clearInterval(this.timer);
+            this.ui.updateBottomBar('');
+        }
+    }
+
     public close(): void {
-        this.ui.close();
+        if (this.ui) {
+            this.ui.close();
+        }
     }
 
     private operationsStatusFormatter(operations: DeploymentOperationsListResult, loader: string): string {
@@ -113,8 +134,8 @@ class DeployUI {
         this.completedResourceCount = 0;
         operations.forEach((operation: DeploymentOperation) => {
             const props: DeploymentOperationProperties = operation.properties as DeploymentOperationProperties;
-            const targetResource: TargetResource = props.targetResource as TargetResource;
-            if (targetResource && targetResource.resourceType && targetResource.resourceName) {
+            const targetResource: any = props.targetResource as any;
+            if (targetResource && targetResource.resourceType && targetResource.resourceName && !targetResource.actionName) {
                 const key: string = targetResource.id as string;
                 if (!this.operationSet.has(key)) {
                     this.totalResourceCount++;
