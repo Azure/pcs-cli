@@ -307,18 +307,12 @@ export class DeploymentManager implements IDeploymentManager {
                         if (retryCount++ > MAX_RETRY) {
                             clearInterval(timer);
                             reject(err);
-                        } else {
-                            // console.log(`${chalk.yellow('Retrying connection to: ' +
-                            // outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
                         }
                     })
                     .on('timeout', () => {
                         if (retryCount++ > MAX_RETRY) {
                             clearInterval(timer);
                             reject(new Error('Failed after maximum number of tries'));
-                        } else {
-                            // console.log(`${chalk.yellow('Retrying connection to: ' +
-                            // outputs.masterFQDN.value + ' ' + retryCount + ' of ' + MAX_RETRY)}`);
                         }
                     })
                     .connect(config);
