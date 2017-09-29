@@ -1,6 +1,6 @@
 {
-  "name": "iotsuite-cli",
-  "version": "1.0.1-preview",
+  "name": "iot-solutions",
+  "version": "1.0.0-preview",
   "description": "Command Line Interface for deploying pre-configured IoT solutions through Azure",
   "main": "./publish/index.js",
   "scripts": {

@@ -140,14 +140,14 @@ export class K8sManager implements IK8sManager {
     }
 
     public setupAll(): Promise<any> {
-        this._deployUI.start('Setting up Kubernetes clusters: Uploading secrets');
+        this._deployUI.start('Setting up Kubernetes: Uploading secrets');
         return this.setupSecrets()
             .then(() => {
-                this._deployUI.start('Setting up Kubernetes clusters: Uploading config map');
+                this._deployUI.start('Setting up Kubernetes: Uploading config map');
                 return this.setupConfigMap();
             })
             .then(() => {
-                this._deployUI.start('Setting up Kubernetes clusters: Starting web app and micro services');
+                this._deployUI.start('Setting up Kubernetes: Starting web app and microservices');
                 return this.setupDeployment();
             });
     }

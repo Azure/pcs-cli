@@ -120,8 +120,8 @@ export class DeploymentManager implements IDeploymentManager {
                         case AzureEnvironment.AzureUSGovernment.name:
                             azureVMFQDNSuffix = 'cloudapp.azure.us';
                             break;
-                            // use default parameter values of global azure environment
                         default:
+                            // use default parameter values of global azure environment
                             azureVMFQDNSuffix = 'cloudapp.azure.com';
                     }
                     storageEndpointSuffix = environment.storageEndpointSuffix;
@@ -216,7 +216,7 @@ export class DeploymentManager implements IDeploymentManager {
         })
         .then(() => {
             const webUrl = deploymentProperties.outputs.azureWebsite.value;
-            deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take upto 5 minutes`);
+            deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
             return this.waitForWebsiteToBeReady(webUrl);
         })
         .then((done: boolean) => {
@@ -225,7 +225,7 @@ export class DeploymentManager implements IDeploymentManager {
                 fs.mkdirSync(directoryPath);
             }
             const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
-            const troubleshootingGuide = 'https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/wiki/Developer-Troubleshooting-Guide';
+            const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
 
             if (deploymentProperties.outputs.azureWebsite) {
                 const webUrl = deploymentProperties.outputs.azureWebsite.value;
