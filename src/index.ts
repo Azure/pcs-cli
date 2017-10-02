@@ -197,7 +197,7 @@ function main() {
                 .then((ans: Answers) => {
                     answers.adminPassword = ans.pwdFirstAttempt;
                     answers.sshFilePath = ans.sshFilePath;
-                    deployUI.start('Regsitering application in the Azure Active Directory');
+                    deployUI.start('Registering application in the Azure Active Directory');
                     return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                 })
                 .then(({appId, domainName, objectId, servicePrincipalSecret}) => {
