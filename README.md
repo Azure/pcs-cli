@@ -135,9 +135,9 @@ Related
 * [Contributing and Development setup](CONTRIBUTING.md)
 
 
-[build-badge]: https://img.shields.io/travis/Azure/iot-pcs-cli.svg
-[build-url]: https://travis-ci.com/Azure/iot-pcs-cli
-[issues-badge]: https://img.shields.io/github/issues/azure/iot-pcs-cli.svg
-[issues-url]: https://github.com/azure/iot-pcs-cli/issues
+[build-badge]: https://img.shields.io/travis/Azure/pcs-cli.svg
+[build-url]: https://travis-ci.com/Azure/pcs-cli
+[issues-badge]: https://img.shields.io/github/issues/azure/pcs-cli.svg
+[issues-url]: https://github.com/azure/pcs-cli/issues
 [gitter-badge]: https://img.shields.io/gitter/room/azure/iot-solutions.js.svg
 [gitter-url]: https://gitter.im/azure/iot-solutions
