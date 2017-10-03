@@ -77,6 +77,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/Azure/azure-remote-monitoring-cli.git"
+    "url": "git+ssh://git@github.com/Azure/pcs-cli.git"
   }
 }
