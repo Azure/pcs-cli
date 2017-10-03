@@ -136,7 +136,7 @@ Related
 
 
 [build-badge]: https://img.shields.io/travis/Azure/pcs-cli.svg
-[build-url]: https://travis-ci.com/Azure/pcs-cli
+[build-url]: https://travis-ci.org/Azure/pcs-cli
 [issues-badge]: https://img.shields.io/github/issues/azure/pcs-cli.svg
 [issues-url]: https://github.com/azure/pcs-cli/issues
 [gitter-badge]: https://img.shields.io/gitter/room/azure/iot-solutions.js.svg
