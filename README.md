@@ -5,7 +5,7 @@
 Azure IoT PCS CLI Overview
 ==========================
 
-Command Line Interface for deploying an IoT pre-configured solution into a
+Command Line Interface for deploying an IoT preconfigured solution into a
 user's subscription.
 
 This CLI has the ability to deploy two configurations of PCS solutions:
