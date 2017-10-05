@@ -107,7 +107,6 @@ services:
       - PCS_APPLICATION_SECRET
 
   telemetryagent:
-    # TODO: rename image to telemetry-agent-dotnet
     image: azureiotpcs/telemetry-agent-dotnet:testing
     depends_on:
       - telemetry
