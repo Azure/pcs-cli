@@ -367,7 +367,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
             return sp.appId;
         }
 
-        // Create role assignment only for enterprise since ACS requires it
+        // Create role assignment only for standard deployment since ACS requires it
         return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
     })
     .then((appId: string) => {

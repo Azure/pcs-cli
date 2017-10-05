@@ -11,7 +11,7 @@ user's subscription.
 This CLI has the ability to deploy two configurations of PCS solutions:
 
 1. Basic - deploys all resources to a single VM.
-2. Enterprise - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
+2. Standard - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
 
 Dependencies
 ============
@@ -34,16 +34,16 @@ Basic deployment provisions following resources:
 At the end of deployment, Remote Monitoring WebApp and all the microservices
 are ready for demo pursposes.
 
-## Enterprise
+## Standard
 
-The Enterprise deployment offers a production ready deployment that can be
+The Standard deployment offers a production ready deployment that can be
 scaled up or down as needed. It uses
 [Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)
 and [Kubernetes](https://kubernetes.io/) for orchestration. It would be nice to have installed
 [kubectl](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for running commands on kubernetes
 in addition to ```pcs```.
 
-Enterprise deployment provisions following resources:
+Standard deployment provisions following resources:
 
 1. [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
 2. [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-dotnet)
@@ -72,7 +72,7 @@ How to use the CLI
 Click on the link that is shown in the output window, it will take you to
 the Remote Monitoring WebApp
 
-## Enterprise Deployment
+## Standard Deployment
 
 ### Deploy Azure Resources
 
