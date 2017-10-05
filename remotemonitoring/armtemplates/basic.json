@@ -55,7 +55,7 @@
         },
         "microServiceVersion": {
             "type": "string",
-            "defaultValue": "latest",
+            "defaultValue": "testing",
             "metadata": {
                 "description": "The container image version of the solution"
             }
@@ -209,9 +209,9 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/azure-iot-pcs-tools/master/remote-monitoring/single-vm-setup.sh",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/master/remotemonitoring/single-vm/setup.sh",
             "metadata": {
-                "description": "The Uri of the script to setup a single VM deployment"
+                "description": "The URL of the script to setup a single VM deployment"
             }
         },
         "vmFQDNSuffix": {
