@@ -13,7 +13,6 @@ PKEY="${CERTS}/tls.key"
 # TODO: move files to Remote Monitoring repositories
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/master/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
-DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.${APP_RUNTIME}.yml"
 
 # ========================================================================
 
@@ -73,6 +72,9 @@ cd ${APP_PATH}
 # ========================================================================
 
 # Docker compose file
+
+# Note: the "APP_RUNTIME" var needs to be defined before getting here
+DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.${APP_RUNTIME}.yml"
 wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
 
 # ========================================================================
