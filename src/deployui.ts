@@ -99,15 +99,19 @@ class DeployUI {
             if (status.err) {
                 message = this.crossMark + `${chalk.red(status.err)}` + '\n';
             } else if (status.message) {
-                message += this.checkMark + status.message + '\n';
+                const activityTime: Date = new Date(Date.now() - this.startTime);                
+                message += this.checkMark + status.message + ', time taken: ' +
+                `${chalk.cyan(
+                    activityTime.getMinutes().toString(), 'minutes &',
+                    activityTime.getSeconds().toString(), 'seconds')}` + '\n';
             }
         } else {
             const totalTime: Date = new Date(Date.now() - this.startTime);
             message += this.combinedStatus +
-                       this.checkMark + this.deployed + ', time taken: ' +
+                       this.checkMark + 'Resource provisioning time taken: ' +
                        `${chalk.cyan(totalTime.getMinutes().toString(), 'minutes &',
                                      totalTime.getSeconds().toString(), 'seconds')}` +
-                        '\n';
+                        '\n' + this.checkMark + this.deployed + '\n';
         }
 
         this.ui.updateBottomBar(message);
