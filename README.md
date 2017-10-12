@@ -132,7 +132,7 @@ Please enter issues, bugs, or suggestions as GitHub Issues here: https://github.
 Related
 =======
 
-* [Contributing and Development setup](CONTRIBUTING.md)
+* [Contributing](CONTRIBUTING.md)
 
 [build-badge]: https://img.shields.io/travis/Azure/pcs-cli.svg
 [build-url]: https://travis-ci.org/Azure/pcs-cli

@@ -1,12 +1,3 @@
-pcs-cli is essentially a TypeScript project (it's structure should look 
-very familiar to those that had dabbled with TypeScript projects before). 
-Development dependencies are all resolved via `npm`, so obviously you'll 
-need to have a TypeScript and Node.js development environment setup.
-
-Once that is in place, have a look at `scripts` within `package.json` to 
-look through the convenience  scripts already in place that you can use 
-via npm. The entrypoint to start development should now be obvious to you.
-
 We'll be glad to accept patches and contributions to the project. There are
 just few guidelines we ask to follow.
 
