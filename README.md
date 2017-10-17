@@ -56,7 +56,10 @@ How to use the CLI
 ==================
 
 ## Install CLI
-`npm install iot-solutions -g`
+1. `npm install`
+1. `npm start`
+1. `npm link`
+
 
 ## Basic Deployment
 
