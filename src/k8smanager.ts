@@ -186,9 +186,9 @@ export class K8sManager implements IK8sManager {
         const configPath = process.cwd() + path.sep + 'remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
-        configMap.data['auth.aad.global.clientid'] = this._config.ApplicationId;
-        configMap.data['auth.aad.global.tenantid'] = this._config.AADTenantId;
-        configMap.data['auth.aad.global.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
+        configMap.data['security.auth.audience'] = this._config.ApplicationId;
+        configMap.data['security.auth.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
+        configMap.data['security.application.secret'] = this.genPassword();
         configMap.data['bing.map.key'] = this._config.BingMapApiQueryKey ? this._config.BingMapApiQueryKey : '';
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
@@ -240,5 +240,15 @@ export class K8sManager implements IK8sManager {
             }
         });
         return Promise.all(promises);
+    }
+
+    private genPassword(): string {
+        const chs = '0123456789-ABCDEVISFGHJKLMNOPQRTUWXYZ_abcdevisfghjklmnopqrtuwxyz'.split('');
+        const len = chs.length;
+        let result = '';
+        for (let i = 0; i < 40; i++) {
+            result += chs[Math.floor(len * Math.random())];
+        }
+        return result;
     }
 }

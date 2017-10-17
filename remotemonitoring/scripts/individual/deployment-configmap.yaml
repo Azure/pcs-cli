@@ -57,10 +57,11 @@ data:
   config.webservice.url: "http://config-svc:9005/v1"
 
   # Auth
-  auth.aad.global.tenantid: "{AAD Tenant Id}"
-  auth.aad.global.clientid: "{AAD Client Id}"
-  auth.aad.global.loginuri: "https://login.microsoftonline.com/"
-  auth.aad.global.issuer: "{Issuer}"
+  security.auth.issuer: "{OAuth2 Issuer, e.g. STS URL with Tenant ID}"
+  security.auth.audience: "{OAuth2 Audience, e.g. Application ID}"
+  security.auth.required: "true"
+  security.cors.whitelist: ""
+  security.application.secret: "{Application secret}"
 
   # Bing map query key
   bing.map.key: "{BingMapApiQueryKey}"

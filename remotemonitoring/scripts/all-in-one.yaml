@@ -208,6 +208,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: storageadapter.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
 ---
 apiVersion: v1
 kind: Service
@@ -261,6 +286,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: config.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
 ---
 apiVersion: v1
 kind: Service
@@ -312,6 +362,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: storageadapter.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
 ---
 apiVersion: v1
 kind: Service
@@ -360,6 +435,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
 ---
 apiVersion: v1
 kind: Service
@@ -456,6 +556,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothubreact.access.connstring
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
 ---
 apiVersion: v1
 kind: Service
@@ -524,6 +649,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: bing.map.key
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
 ---
 apiVersion: v1
 kind: Service
@@ -565,33 +715,31 @@ spec:
         ports:
         - containerPort: 9001
         env:
-        - name: PCS_AUTH_WEBSERVICE_PORT
-          value: "9001"
-        - name: PCS_AUTH_AAD_GLOBAL_LOGINURI
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.aad.global.loginuri
-        - name: PCS_AUTH_AAD_GLOBAL_TENANTID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.aad.global.tenantid
-        - name: PCS_AUTH_AAD_GLOBAL_CLIENTID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.aad.global.clientid
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: auth.aad.global.issuer
+              key: security.auth.issuer
         - name: PCS_AUTH_AUDIENCE
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: auth.aad.global.clientid
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
 ---
 apiVersion: v1
 kind: Service
