@@ -1,4 +1,4 @@
-# Type of issue <!-- [x] in all the boxes that apply -->
+# Type of issue <!-- [x] all the boxes that apply -->
 
 - [ ] Bug
 - [ ] New feature
@@ -8,19 +8,19 @@
 
 ...
 
-# Steps to reproduce <!-- The steps required to reproduce the issue -->
+# Steps to reproduce <!-- How can we reproduce the issue? -->
 
 1. [First step]
 2. [Second step]
 3. [and so on...]
 
-# Expected behavior <!-- The behavior you expect -->
+# Expected behavior <!-- The behavior you're expecting -->
 ...
 
-# Current behavior <!-- The actual behavior you observed -->
+# Current behavior <!-- The actual behavior observed --
 ...
 
-# Known workarounds <!-- If you know any known workaround please share here -->
+# Known workarounds <!-- If any, please share here -->
 ...
 
 # Possible solution <!-- If you have a suggestion, how the issue could be solved -->
