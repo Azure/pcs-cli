@@ -4,7 +4,7 @@
 *.iml
 
 # Create-React-App build output
-build
+build/
 
 # Sass ignore css files
 src/**/*.css
