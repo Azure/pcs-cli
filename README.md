@@ -54,8 +54,11 @@ Standard deployment provisions following resources:
 
 How to use the CLI
 ==================
+## Clone the CLI repository
+1. `git clone https://github.com/Azure/pcs-cli.git`
 
 ## Install CLI
+In locally cloned directory run
 1. `npm install`
 1. `npm start`
 1. `npm link`
