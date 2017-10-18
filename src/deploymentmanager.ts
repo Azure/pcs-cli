@@ -261,7 +261,7 @@ export class DeploymentManager implements IDeploymentManager {
     }
 
     private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<string> {
-        if (!fs.existsSync) {
+        if (!fs.existsSync(KUBEDIR)) {
             fs.mkdirSync(KUBEDIR);
         }
         const localKubeConfigPath: string = KUBEDIR + path.sep + 'config' + '-' + outputs.containerServiceName.value;
@@ -294,11 +294,11 @@ export class DeploymentManager implements IDeploymentManager {
                             }
                             sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {
                                 sshClient.end();
+                                clearInterval(timer);
                                 if (err) {
                                     reject(err);
                                     return;
                                 }
-                                clearInterval(timer);
                                 resolve(localKubeConfigPath);
                             });
                         });
