@@ -17,7 +17,8 @@ SCRIPTS_URL="${REPOSITORY}/scripts/"
 # ========================================================================
 
 export HOST_NAME="${1:-localhost}"
-export APP_RUNTIME="${3:-dotnet}"
+export APP_RUNTIME="${3:-${APP_RUNTIME}}"
+export APP_RELEASE_VERSION="${4:-${APP_RELEASE_VERSION}}"
 export PCS_IOTHUB_CONNSTRING="$8"
 export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$9"
 export PCS_TELEMETRY_DOCUMENTDB_CONNSTRING="$9"
@@ -73,9 +74,138 @@ cd ${APP_PATH}
 
 # Docker compose file
 
-# Note: the "APP_RUNTIME" var needs to be defined before getting here
-DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.${APP_RUNTIME}.yml"
-wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
+touch ${DOCKERCOMPOSE} && chmod 550 ${DOCKERCOMPOSE}
+echo "version: '2'"                                                                         >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "services:"                                                                            >> ${DOCKERCOMPOSE}
+echo "  reverseproxy:"                                                                      >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/remote-monitoring-nginx:${APP_RELEASE_VERSION}"                >> ${DOCKERCOMPOSE}
+echo "    ports:"                                                                           >> ${DOCKERCOMPOSE}
+echo "      - \"80:80\""                                                                    >> ${DOCKERCOMPOSE}
+echo "      - \"443:443\""                                                                  >> ${DOCKERCOMPOSE}
+echo "    depends_on:"                                                                      >> ${DOCKERCOMPOSE}
+echo "      - webui"                                                                        >> ${DOCKERCOMPOSE}
+echo "      - auth"                                                                         >> ${DOCKERCOMPOSE}
+echo "      - iothubmanager"                                                                >> ${DOCKERCOMPOSE}
+echo "      - devicesimulation"                                                             >> ${DOCKERCOMPOSE}
+echo "      - telemetry"                                                                    >> ${DOCKERCOMPOSE}
+echo "      - config"                                                                       >> ${DOCKERCOMPOSE}
+echo "    volumes:"                                                                         >> ${DOCKERCOMPOSE}
+echo "      - /app/certs:/app/certs:ro"                                                     >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  webui:"                                                                             >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/pcs-remote-monitoring-webui:${APP_RELEASE_VERSION}"            >> ${DOCKERCOMPOSE}
+echo "    depends_on:"                                                                      >> ${DOCKERCOMPOSE}
+echo "      - auth"                                                                         >> ${DOCKERCOMPOSE}
+echo "      - iothubmanager"                                                                >> ${DOCKERCOMPOSE}
+echo "      - devicesimulation"                                                             >> ${DOCKERCOMPOSE}
+echo "      - telemetry"                                                                    >> ${DOCKERCOMPOSE}
+echo "      - config"                                                                       >> ${DOCKERCOMPOSE}
+echo "    volumes:"                                                                         >> ${DOCKERCOMPOSE}
+echo "      - /app/webui-config.js:/app/build/webui-config.js:ro"                           >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  auth:"                                                                              >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/pcs-auth-dotnet:${APP_RELEASE_VERSION}"                        >> ${DOCKERCOMPOSE}
+echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_ISSUER"                                                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_AUDIENCE"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_REQUIRED"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_CORS_WHITELIST"                                                           >> ${DOCKERCOMPOSE}
+echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  iothubmanager:"                                                                     >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/iothub-manager-${APP_RUNTIME}:${APP_RELEASE_VERSION}"          >> ${DOCKERCOMPOSE}
+echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUB_CONNSTRING"                                                        >> ${DOCKERCOMPOSE}
+echo "      # TODO: the dependency on config is temporary"                                  >> ${DOCKERCOMPOSE}
+echo "      - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1"                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_ISSUER"                                                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_AUDIENCE"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_REQUIRED"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_CORS_WHITELIST"                                                           >> ${DOCKERCOMPOSE}
+echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  devicesimulation:"                                                                  >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/device-simulation-dotnet:${APP_RELEASE_VERSION}"               >> ${DOCKERCOMPOSE}
+echo "    depends_on:"                                                                      >> ${DOCKERCOMPOSE}
+echo "      - storageadapter"                                                               >> ${DOCKERCOMPOSE}
+echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUB_CONNSTRING"                                                        >> ${DOCKERCOMPOSE}
+echo "      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1"              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_ISSUER"                                                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_AUDIENCE"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_REQUIRED"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_CORS_WHITELIST"                                                           >> ${DOCKERCOMPOSE}
+echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
+echo "    # How one could mount custom device models"                                       >> ${DOCKERCOMPOSE}
+echo "    #volumes:"                                                                        >> ${DOCKERCOMPOSE}
+echo "    #  - ./my-device-models:/app/data:ro"                                             >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  telemetry:"                                                                         >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/telemetry-${APP_RUNTIME}:${APP_RELEASE_VERSION}"               >> ${DOCKERCOMPOSE}
+echo "    depends_on:"                                                                      >> ${DOCKERCOMPOSE}
+echo "      - storageadapter"                                                               >> ${DOCKERCOMPOSE}
+echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_TELEMETRY_DOCUMENTDB_CONNSTRING"                                          >> ${DOCKERCOMPOSE}
+echo "      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1"              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_ISSUER"                                                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_AUDIENCE"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_REQUIRED"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_CORS_WHITELIST"                                                           >> ${DOCKERCOMPOSE}
+echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  config:"                                                                            >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/pcs-config-${APP_RUNTIME}:${APP_RELEASE_VERSION}"              >> ${DOCKERCOMPOSE}
+echo "    depends_on:"                                                                      >> ${DOCKERCOMPOSE}
+echo "      - storageadapter"                                                               >> ${DOCKERCOMPOSE}
+echo "      - devicesimulation"                                                             >> ${DOCKERCOMPOSE}
+echo "      - telemetry"                                                                    >> ${DOCKERCOMPOSE}
+echo "      - iothubmanager"                                                                >> ${DOCKERCOMPOSE}
+echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1"              >> ${DOCKERCOMPOSE}
+echo "      - PCS_DEVICESIMULATION_WEBSERVICE_URL=http://devicesimulation:9003/v1"          >> ${DOCKERCOMPOSE}
+echo "      - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1"                        >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://iothubmanager:9002/v1"                >> ${DOCKERCOMPOSE}
+echo "      - PCS_BINGMAP_KEY"                                                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_ISSUER"                                                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_AUDIENCE"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_REQUIRED"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_CORS_WHITELIST"                                                           >> ${DOCKERCOMPOSE}
+echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  storageadapter:"                                                                    >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/pcs-storage-adapter-${APP_RUNTIME}:${APP_RELEASE_VERSION}"     >> ${DOCKERCOMPOSE}
+echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING"                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_ISSUER"                                                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_AUDIENCE"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_REQUIRED"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_CORS_WHITELIST"                                                           >> ${DOCKERCOMPOSE}
+echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
+echo ""                                                                                     >> ${DOCKERCOMPOSE}
+echo "  telemetryagent:"                                                                    >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/telemetry-agent-${APP_RUNTIME}:${APP_RELEASE_VERSION}"         >> ${DOCKERCOMPOSE}
+echo "    depends_on:"                                                                      >> ${DOCKERCOMPOSE}
+echo "      - telemetry"                                                                    >> ${DOCKERCOMPOSE}
+echo "      - iothubmanager"                                                                >> ${DOCKERCOMPOSE}
+echo "      - config"                                                                       >> ${DOCKERCOMPOSE}
+echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING"                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1"                        >> ${DOCKERCOMPOSE}
+echo "      - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1"                              >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://iothubmanager:9002/v1"                >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT"                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBREACT_AZUREBLOB_KEY"                                                >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX"                                    >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBREACT_HUB_NAME"                                                     >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBREACT_HUB_ENDPOINT"                                                 >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBREACT_HUB_PARTITIONS"                                               >> ${DOCKERCOMPOSE}
+echo "      - PCS_IOTHUBREACT_ACCESS_CONNSTRING"                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_ISSUER"                                                              >> ${DOCKERCOMPOSE} 
+echo "      - PCS_AUTH_AUDIENCE"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_AUTH_REQUIRED"                                                            >> ${DOCKERCOMPOSE}
+echo "      - PCS_CORS_WHITELIST"                                                           >> ${DOCKERCOMPOSE}
+echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
 
 # ========================================================================
 

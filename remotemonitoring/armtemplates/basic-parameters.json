@@ -28,5 +28,8 @@
     },
     "microServiceRuntime": {
       "value": "{Added through command line interface}"
+    },
+    "microServiceVersion": {
+      "value": "{Added through command line interface}"
     }
 }

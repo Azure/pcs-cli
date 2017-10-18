@@ -62,7 +62,7 @@ const MAX_RETRYCOUNT = 36;
 let cachedAuthResponse: any;
 let answers: Answers = {};
 
-const program = new Command(packageJson.name)
+const program = new Command('pcs')
     .version(packageJson.version, '-v, --version')
     .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
@@ -70,6 +70,7 @@ const program = new Command(packageJson.name)
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('--release <release>', 'Microservices release version: currently published or testing', /^[\w\.]{1,64}$/i, 'testing')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -213,6 +214,7 @@ function main() {
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
                         answers.runtime = program.runtime;
+                        answers.release = program.release;
                         answers.domainName = domainName;
                         return deploymentManager.submit(answers);
                     } else {
