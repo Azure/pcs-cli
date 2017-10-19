@@ -364,7 +364,7 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.microServiceRuntime.value = answers.runtime;
         }
         if (this._parameters.microServiceVersion) {
-            this._parameters.microServiceVersion.value = answers.version;
+            this._parameters.microServiceVersion.value = answers.release;
         }
     }
 
