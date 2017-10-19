@@ -69,8 +69,8 @@ const program = new Command('pcs')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
-    .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
-    .option('--release <release>', 'Microservices release version: currently published or testing', /^[\w\.\-\_]{1,64}$/i, 'testing')
+    .option('-r, --runtime <runtime>', 'Solution runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('--release <release>', 'Solution release version')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -161,6 +161,20 @@ function main() {
                 console.log('Please login with an account that has at least one active subscription');
             } else {
                 const questions: IQuestions = new Questions(program.environment);
+                // If user didn't specify any release version then prompt from the version
+                // that have been released so far. Also note that this list will need to be
+                // updated with each release. More long term solution would be to look at github
+                // tags/releases to populate the list of options shown to the user per solution
+                // type.
+                if (!program.release) {
+                    questions.addQuestion({
+                        choices: [{value: '1.0.0-preview'}, {name: 'latest', value: 'testing'}],
+                        default: '1.0.0-preview',
+                        message: 'Please select a release version:',
+                        name: 'release',
+                        type: 'list'
+                    });
+                }
                 questions.addQuestion({
                     choices: subs,
                     message: 'Select a subscription:',
@@ -214,7 +228,10 @@ function main() {
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
                         answers.runtime = program.runtime;
-                        answers.release = program.release;
+                        // If we didn't prompt for relase version, use the one provided from the cmd line parameter
+                        if (!answers.release) {
+                            answers.release = program.release;
+                        }
                         answers.domainName = domainName;
                         return deploymentManager.submit(answers);
                     } else {
