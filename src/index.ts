@@ -70,7 +70,7 @@ const program = new Command('pcs')
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
-    .option('--release <release>', 'Microservices release version: currently published or testing', /^[\w\.]{1,64}$/i, 'testing')
+    .option('--release <release>', 'Microservices release version: currently published or testing', /^[\w\.\-\_]{1,64}$/i, 'testing')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
