@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-dotnet:testing
+        image: azureiotpcs/telemetry-dotnet:{release}
         ports:
         - containerPort: 9004
         env:

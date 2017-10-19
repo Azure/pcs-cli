@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: config-pod
-        image: azureiotpcs/pcs-config-dotnet:testing
+        image: azureiotpcs/pcs-config-dotnet:{release}
         ports:
         - containerPort: 9005
         env:

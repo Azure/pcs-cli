@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: azureiotpcs/device-simulation-dotnet:testing
+        image: azureiotpcs/device-simulation-dotnet:{release}
         ports:
         - containerPort: 9003
         env:
