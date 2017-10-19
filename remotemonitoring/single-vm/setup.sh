@@ -114,7 +114,7 @@ echo "      - PCS_CORS_WHITELIST"                                               
 echo "      - PCS_APPLICATION_SECRET"                                                       >> ${DOCKERCOMPOSE}
 echo ""                                                                                     >> ${DOCKERCOMPOSE}
 echo "  iothubmanager:"                                                                     >> ${DOCKERCOMPOSE}
-echo "    image: azureiotpcs/iothub-manager-${APP_RUNTIME}:${APP_RELEASE_VERSION}"          >> ${DOCKERCOMPOSE}
+echo "    image: azureiotpcs/iothub-manager-dotnet:${APP_RELEASE_VERSION}"                  >> ${DOCKERCOMPOSE}
 echo "    environment:"                                                                     >> ${DOCKERCOMPOSE}
 echo "      - PCS_IOTHUB_CONNSTRING"                                                        >> ${DOCKERCOMPOSE}
 echo "      # TODO: the dependency on config is temporary"                                  >> ${DOCKERCOMPOSE}
