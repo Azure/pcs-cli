@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: telemetry-agent-pod
-        image: azureiotpcs/telemetry-agent-java:testing
+        image: azureiotpcs/telemetry-agent-java:1.0.0-preview.2
         ports:
         - containerPort: 9023
         env:
