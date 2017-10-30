@@ -83,7 +83,7 @@ services:
       - APPLICATION_SECRET
 
   config:
-    image: azureiotpcs/pcs-config-java:testing
+    image: azureiotpcs/pcs-config-dotnet:testing
     depends_on:
       - storageadapter
       - devicesimulation

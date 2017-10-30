@@ -618,7 +618,7 @@ spec:
     spec:
       containers:
       - name: config-pod
-        image: azureiotpcs/pcs-config-{runtime}:testing
+        image: azureiotpcs/pcs-config-dotnet:testing
         ports:
         - containerPort: 9005
         env:
