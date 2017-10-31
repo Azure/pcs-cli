@@ -114,7 +114,7 @@ services:
       - APPLICATION_SECRET
 
   telemetryagent:
-    image: azureiotpcs/telemetry-agent-java:testing
+    image: azureiotpcs/telemetry-agent-dotnet:testing
     depends_on:
       - telemetry
       - iothubmanager
