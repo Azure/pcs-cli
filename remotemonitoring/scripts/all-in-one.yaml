@@ -604,7 +604,7 @@ kind: Deployment
 metadata:
   name: config
 spec:
-  replicas: 3
+  replicas: 1
   minReadySeconds: 10
   strategy:
     type: RollingUpdate
