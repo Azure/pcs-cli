@@ -348,7 +348,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-{runtime}:1.0.0-preview.3
+        image: azureiotpcs/telemetry-dotnet:1.0.0-preview.3
         ports:
         - containerPort: 9004
         env:
@@ -424,7 +424,7 @@ spec:
     spec:
       containers:
       - name: storage-adapter-pod
-        image: azureiotpcs/pcs-storage-adapter-{runtime}:1.0.0-preview.3
+        image: azureiotpcs/pcs-storage-adapter-dotnet:1.0.0-preview.3
         ports:
         - containerPort: 9022
         env:
@@ -497,7 +497,7 @@ spec:
     spec:
       containers:
       - name: telemetry-agent-pod
-        image: azureiotpcs/telemetry-agent-{runtime}:1.0.0-preview.3
+        image: azureiotpcs/telemetry-agent-dotnet:1.0.0-preview.3
         ports:
         - containerPort: 9023
         env:
@@ -604,7 +604,7 @@ kind: Deployment
 metadata:
   name: config
 spec:
-  replicas: 3
+  replicas: 1
   minReadySeconds: 10
   strategy:
     type: RollingUpdate
@@ -618,7 +618,7 @@ spec:
     spec:
       containers:
       - name: config-pod
-        image: azureiotpcs/pcs-config-{runtime}:1.0.0-preview.3
+        image: azureiotpcs/pcs-config-dotnet:1.0.0-preview.3
         ports:
         - containerPort: 9005
         env:
