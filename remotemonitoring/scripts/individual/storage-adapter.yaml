@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: storage-adapter-pod
-        image: azureiotpcs/pcs-storage-adapter-dotnet:1.0.0-preview.2
+        image: azureiotpcs/pcs-storage-adapter-dotnet:1.0.0-preview.3
         ports:
         - containerPort: 9022
         env:
