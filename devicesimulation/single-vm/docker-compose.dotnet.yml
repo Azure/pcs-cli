@@ -1,0 +1,57 @@
+version: '2'
+
+services:
+  reverseproxy:
+    image: azureiotpcs/remote-monitoring-nginx:1.0.0-preview.3
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - webui
+      - auth
+      - devicesimulation
+    volumes:
+      - /app/certs:/app/certs:ro
+
+  webui:
+    image: azureiotpcs/pcs-remote-monitoring-webui:1.0.0-preview.3
+    depends_on:
+      - auth
+      - devicesimulation
+    volumes:
+      - /app/webui-config.js:/app/build/webui-config.js:ro
+
+  auth:
+    image: azureiotpcs/pcs-auth-dotnet:1.0.0-preview.3
+    environment:
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
+      - PCS_AUTH_REQUIRED
+      - PCS_CORS_WHITELIST
+      - PCS_APPLICATION_SECRET
+
+  devicesimulation:
+    image: azureiotpcs/device-simulation-dotnet:1.0.0-preview.3
+    depends_on:
+      - storageadapter
+    environment:
+      - PCS_IOTHUB_CONNSTRING
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
+      - PCS_AUTH_REQUIRED
+      - PCS_CORS_WHITELIST
+      - PCS_APPLICATION_SECRET
+    # How one could mount custom device models
+    #volumes:
+    #  - ./my-device-models:/app/data:ro
+
+  storageadapter:
+    image: azureiotpcs/pcs-storage-adapter-dotnet:1.0.0-preview.3
+    environment:
+      - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
+      - PCS_AUTH_REQUIRED
+      - PCS_CORS_WHITELIST
+      - PCS_APPLICATION_SECRET
