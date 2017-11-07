@@ -11,7 +11,7 @@ CERT="${CERTS}/tls.crt"
 PKEY="${CERTS}/tls.key"
 
 # TODO: move files to Remote Monitoring repositories
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/xzsheng/deviceSimlation/devicesimulation/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/devicesimulation/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # ========================================================================
@@ -81,7 +81,6 @@ echo "${PCS_CERTIFICATE_KEY}"  > ${PKEY}
 
 # Download scripts
 wget $SCRIPTS_URL/logs.sh     -O /app/logs.sh     && chmod 750 /app/logs.sh
-wget $SCRIPTS_URL/simulate.sh -O /app/simulate.sh && chmod 750 /app/simulate.sh
 wget $SCRIPTS_URL/start.sh    -O /app/start.sh    && chmod 750 /app/start.sh
 wget $SCRIPTS_URL/stats.sh    -O /app/stats.sh    && chmod 750 /app/stats.sh
 wget $SCRIPTS_URL/status.sh   -O /app/status.sh   && chmod 750 /app/status.sh
