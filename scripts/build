@@ -5,6 +5,7 @@
 APP_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )/"
 cd $APP_HOME
 
+npm install npm@latest
 npm install
 npm start
 
