@@ -11,7 +11,7 @@ CERT="${CERTS}/tls.crt"
 PKEY="${CERTS}/tls.key"
 
 # TODO: move files to Remote Monitoring repositories
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/tree/xzsheng/deviceSimlation/devicesimulation/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/xzsheng/deviceSimlation/devicesimulation/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # ========================================================================

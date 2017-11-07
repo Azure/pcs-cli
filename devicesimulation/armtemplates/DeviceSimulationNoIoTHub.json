@@ -182,7 +182,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/tree/xzsheng/deviceSimlation/devicesimulation/single-vm/setup.sh",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/xzsheng/deviceSimlation/devicesimulation/single-vm/setup.sh",
             "metadata": {
                 "description": "The URL of the script to setup a single VM deployment"
             }
