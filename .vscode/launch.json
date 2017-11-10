@@ -10,8 +10,7 @@
         "sourceMaps": true,
         "program": "${workspaceRoot}/src/index.ts",
         //"args": [ "-r", "java", "-s", "standard" ],
-        //"args": [ "-t", "test", "-s", "test" ],
-        "args": [ "-t", "devicesimulation" ],
+        "args": [ "-t", "test", "-s", "test" ],
         "console": "integratedTerminal",
         "outFiles": [
             "${workspaceRoot}/publish/**/*.js"
