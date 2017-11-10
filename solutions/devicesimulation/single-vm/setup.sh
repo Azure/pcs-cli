@@ -13,7 +13,7 @@ CERTS="${APP_PATH}/certs"
 CERT="${CERTS}/tls.crt"
 PKEY="${CERTS}/tls.key"
 
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/devicesimulation/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/2017-11-09-deployment/solutions/devicesimulation/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # ========================================================================
