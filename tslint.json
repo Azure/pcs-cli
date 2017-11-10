@@ -24,7 +24,7 @@
         "interface-name": [true, "always-prefix"],
         "jsdoc-format": true,
         "label-position": true,
-        "max-line-length": [ true, 150 ],
+        "max-line-length": [ true, 160 ],
         "member-ordering": [
             true,
             "public-before-private",
