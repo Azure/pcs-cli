@@ -189,7 +189,7 @@ function main() {
                                 throw new Error(errorMessage);
                             }
                             cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
-                            deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, solutionType, program.sku);
+                            deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, program.type, program.sku);
                             return deploymentManager.getLocations();
                         })
                         .then((locations: string[]) => {
