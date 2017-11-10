@@ -8,13 +8,6 @@ If you want/plan to contribute, we ask you to sign a
 [CLA](https://cla.microsoft.com/) (Contribution license Agreement).
 A friendly bot will remind you about it when you submit a pull-request.
 
-This project has adopted the
-[Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct).
-For more information see the
-[Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq)
-or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with
-any additional questions or comments.
-
 Submitting a contribution
 =========================
 
@@ -34,8 +27,6 @@ Any significant change should almost always be accompanied by tests. Look at
 the existing tests to see the testing approach and style used.
 
 Follow the project coding style, to ensure consistency and quick code reviews.
-For more information about the development workflow, have a look at
-[the development notes](DEVELOPMENT.md).
 
 Do your best to have clear commit messages for each change, in order to keep
 consistency throughout the project. Reference the issue number (#num). A good
