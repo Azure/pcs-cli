@@ -69,7 +69,7 @@
             "type": "string",
             "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
-                "description": "The name of the DocumentDB"
+                "description": "The name of the CosmosDB"
             }
         },
         "docDBConsistencyLevel": {
@@ -83,7 +83,7 @@
             ],
             "defaultValue": "Strong",
             "metadata": {
-                "description": "The DocumentDB deault consistency level for this account."
+                "description": "The CosmosDB default consistency level for this account."
             }
         },
         "docDBMaxStalenessPrefix": {
@@ -92,7 +92,7 @@
             "maxValue": 1000,
             "defaultValue": 10,
             "metadata": {
-                "description": "When DocumentDB consistencyLevel is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
+                "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
             }
         },
         "docDBMaxIntervalInSeconds": {
@@ -101,7 +101,7 @@
             "maxValue": 600,
             "defaultValue": 5,
             "metadata": {
-                "description": "When DocumentDB consistencyLevel is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
+                "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
             }
         },
         "vmName": {
@@ -215,7 +215,7 @@
     },
     "resources": [
         {
-            "comments": "Azure CosmosDb",
+            "comments": "Azure CosmosDB",
             "apiVersion": "[variables('documentDBApiVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
             "name": "[parameters('documentDBName')]",

@@ -24,7 +24,7 @@ services:
     depends_on:
       - storageadapter
     environment:
-      - PCS_IOTHUB_CONNSTRING
+      - PCS_IOTHUB_CONNSTRING=none
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
