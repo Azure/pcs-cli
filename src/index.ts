@@ -183,6 +183,9 @@ function main() {
                     return deploymentManager.getLocations();
                 })
                 .then((locations: string[]) => {
+                    if (locations && locations.length === 0) {
+                        throw new Error('Locations list cannot be empty');
+                    }
                     return prompt(getDeploymentQuestions(locations));
                 })
                 .then((ans: Answers) => {
