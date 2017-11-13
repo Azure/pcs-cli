@@ -184,7 +184,7 @@ function main() {
                 })
                 .then((locations: string[]) => {
                     if (locations && locations.length === 0) {
-                        throw new Error('Locations list cannot empty');
+                        throw new Error('Locations list cannot be empty');
                     }
                     return prompt(getDeploymentQuestions(locations));
                 })
