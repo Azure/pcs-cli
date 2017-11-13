@@ -17,7 +17,7 @@ Dependencies
 ============
 The command line interface depends on:
 
-* [nodejs](https://nodejs.org/en/) used as the runtime for the CLI.  Please install node before attempting a deployment.
+* [nodejs](https://nodejs.org) used as the runtime for the CLI.  Please install node before attempting a deployment.
 
 ## Basic
 
@@ -26,10 +26,10 @@ and requires minimal setup, deploying all resources to a single VM.
 
 Basic deployment provisions following resources:
 
-1. [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
-2. [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-dotnet)
-3. [Azure Storage](https://azure.microsoft.com/en-us/services/storage/)
-4. [Single instance of Azure Virtual Machine with Docker Extension](https://azure.microsoft.com/en-us/services/virtual-machines/)
+1. [Azure IoT Hub](https://azure.microsoft.com/services/iot-hub/)
+2. [Azure Cosmos DB](https://docs.microsoft.com/azure/cosmos-db/create-documentdb-dotnet)
+3. [Azure Storage](https://azure.microsoft.com/services/storage/)
+4. [Single instance of Azure Virtual Machine with Docker Extension](https://azure.microsoft.com/services/virtual-machines/)
 
 At the end of deployment, Remote Monitoring WebApp and all the microservices
 are ready for demo pursposes.
@@ -38,19 +38,19 @@ are ready for demo pursposes.
 
 The Standard deployment offers a production ready deployment that can be
 scaled up or down as needed. It uses
-[Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)
-and [Kubernetes](https://kubernetes.io/) for orchestration. It would be nice to have installed
-[kubectl](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for running commands on kubernetes
+[Azure Container Service](https://azure.microsoft.com/services/container-service)
+and [Kubernetes](https://kubernetes.io) for orchestration. It would be nice to have installed
+[kubectl](https://docs.microsoft.com/cli/azure/install-azure-cli) for running commands on kubernetes
 in addition to ```pcs```.
 
 Standard deployment provisions following resources:
 
-1. [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
-2. [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-dotnet)
-3. [Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)
+1. [Azure IoT Hub](https://azure.microsoft.com/services/iot-hub)
+2. [Azure Cosmos DB](https://docs.microsoft.com/azure/cosmos-db/create-documentdb-dotnet)
+3. [Azure Container Service](https://azure.microsoft.com/services/container-service/)
    which also provisions following:
-   1. [Azure Storage](https://azure.microsoft.com/en-us/services/storage/)
-   2. [Three instances of Azure Virtual Machine with Docker](https://azure.microsoft.com/en-us/services/virtual-machines/)
+   1. [Azure Storage](https://azure.microsoft.com/services/storage)
+   2. [Three instances of Azure Virtual Machine with Docker](https://azure.microsoft.com/services/virtual-machines)
 
 How to use the CLI
 ==================

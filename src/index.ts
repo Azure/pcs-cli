@@ -12,8 +12,10 @@ import * as momemt from 'moment';
 
 import { exec } from 'child_process';
 import { ChoiceType, prompt } from 'inquirer';
-import { AuthResponse, AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
-    LinkedSubscription, InteractiveLoginOptions, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
+import {
+    AuthResponse, AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
+    LinkedSubscription, InteractiveLoginOptions, interactiveLoginWithAuthResponse
+} from 'ms-rest-azure';
 import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
 import GraphRbacManagementClient = require('azure-graph');
 import AuthorizationManagementClient = require('azure-arm-authorization');
@@ -64,49 +66,57 @@ let answers: Answers = {};
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
+    .option('-t, --type <type>', 'Solution Type: remotemonitoring, devicesimulation, devicesimulation-nohub',
+            /^(remotemonitoring|devicesimulation|devicesimulation-nohub|test)$/i,
+            'remotemonitoring')
+    .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
-    .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('-r, --runtime <runtime>', 'Microservices runtime (only for Remote Monitoring): dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
-            );
+        );
         console.log(
             `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
-            );
+        );
         console.log(
-            `    Example for executing a basic deployment:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
-            );
+            `    Example for deploying Remote Monitoring Basic:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
+        );
         console.log(
-            `    Example for executing a standard deployment:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
-            );
+            `    Example for deploying Remote Monitoring Standard:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
+        );
+        console.log(
+            `    Example for deploying Device Simulation:  ${chalk.green('pcs -t devicesimulation')}.`
+        );
+        console.log(
+            `    Example for deploying Device Simulation without IoT Hub:  ${chalk.green('pcs -t devicesimulation-nohub')}.`
+        );
         console.log();
         console.log(
             '  Commands:'
-            );
+        );
         console.log();
         console.log(
             '    login:         Log in to access Azure subscriptions.'
-            );
+        );
         console.log(
             '    logout:        Log out to remove access to Azure subscriptions.'
-                );
+        );
         console.log();
         console.log(
             `    For further documentation, please visit:`
         );
         console.log(
             `    ${chalk.cyan(gitHubUrl)}`
-            );
+        );
         console.log(
             `    If you have any problems please file an issue:`
-            );
+        );
         console.log(
             `    ${chalk.cyan(gitHubIssuesUrl)}`
-            );
+        );
         console.log();
     })
     .parse(process.argv);
@@ -147,96 +157,96 @@ function main() {
         const baseUri = cachedAuthResponse.options.environment.resourceManagerEndpointUrl;
         const client = new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.options), baseUri);
         return client.subscriptions.list()
-        .then(() => {
-            const subs: ChoiceType[] = [];
-            cachedAuthResponse.subscriptions.map((subscription: LinkedSubscription) => {
-                if (subscription.state === 'Enabled') {
-                    subs.push({name: subscription.name, value: subscription.id});
+            .then(() => {
+                const subs: ChoiceType[] = [];
+                cachedAuthResponse.subscriptions.map((subscription: LinkedSubscription) => {
+                    if (subscription.state === 'Enabled') {
+                        subs.push({ name: subscription.name, value: subscription.id });
+                    }
+                });
+
+                if (!subs || !subs.length) {
+                    console.log('Could not find any subscriptions in this account.');
+                    console.log('Please login with an account that has at least one active subscription');
+                } else {
+                    const questions: IQuestions = new Questions(program.environment);
+                    questions.addQuestion({
+                        choices: subs,
+                        message: 'Select a subscription:',
+                        name: 'subscriptionId',
+                        type: 'list'
+                    });
+
+                    const deployUI = DeployUI.instance;
+                    let deploymentManager: IDeploymentManager;
+                    return prompt(questions.value)
+                        .then((ans: Answers) => {
+                            answers = ans;
+                            const index = cachedAuthResponse.subscriptions.findIndex((x: LinkedSubscription) => x.id === answers.subscriptionId);
+                            if (index === -1) {
+                                const errorMessage = 'Selected subscriptionId was not found in cache';
+                                console.log(errorMessage);
+                                throw new Error(errorMessage);
+                            }
+                            cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
+                            deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, program.type, program.sku);
+                            return deploymentManager.getLocations();
+                        })
+                        .then((locations: string[]) => {
+                            return prompt(getDeploymentQuestions(locations));
+                        })
+                        .then((ans: Answers) => {
+                            answers.location = ans.location;
+                            answers.azureWebsiteName = ans.azureWebsiteName;
+                            answers.adminUsername = ans.adminUsername;
+                            if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
+                                return askPwdAgain();
+                            }
+                            return ans;
+                        })
+                        .then((ans: Answers) => {
+                            answers.adminPassword = ans.pwdFirstAttempt;
+                            answers.sshFilePath = ans.sshFilePath;
+                            deployUI.start('Registering application in the Azure Active Directory');
+                            return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
+                        })
+                        .then(({ appId, domainName, objectId, servicePrincipalSecret }) => {
+                            if (appId && servicePrincipalSecret) {
+                                const env = cachedAuthResponse.options.environment;
+                                const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
+                                deployUI.stop({ message: `Application registered: ${chalk.cyan(appUrl)} ` });
+                                cachedAuthResponse.options.tokenAudience = null;
+                                answers.appId = appId;
+                                answers.aadAppUrl = appUrl;
+                                answers.deploymentSku = program.sku;
+                                answers.servicePrincipalSecret = servicePrincipalSecret;
+                                answers.certData = createCertificate();
+                                answers.aadTenantId = cachedAuthResponse.options.domain;
+                                answers.runtime = program.runtime;
+                                answers.domainName = domainName;
+                                return deploymentManager.submit(answers);
+                            } else {
+                                const message = 'To create a service principal, you must have permissions to register an ' +
+                                    'application with your Azure Active Directory (AAD) tenant, and to assign ' +
+                                    'the application to a role in your subscription. To see if you have the ' +
+                                    'required permissions, check here https://docs.microsoft.com/en-us/azure/azure-resource-manager/' +
+                                    'resource-group-create-service-principal-portal#required-permissions.';
+                                console.log(`${chalk.red(message)}`);
+                            }
+                        })
+                        .catch((error: any) => {
+                            if (error.request) {
+                                console.log(JSON.stringify(error, null, 2));
+                            } else {
+                                console.log(error);
+                            }
+                        });
                 }
+            })
+            .catch((error: any) => {
+                // In case of login error it is better to ask user to login again
+                console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
             });
-
-            if (!subs || !subs.length) {
-                console.log('Could not find any subscriptions in this account.');
-                console.log('Please login with an account that has at least one active subscription');
-            } else {
-                const questions: IQuestions = new Questions(program.environment);
-                questions.addQuestion({
-                    choices: subs,
-                    message: 'Select a subscription:',
-                    name: 'subscriptionId',
-                    type: 'list'
-                });
-
-                const deployUI = DeployUI.instance;
-                let deploymentManager: IDeploymentManager;
-                return prompt(questions.value)
-                .then((ans: Answers) => {
-                    answers = ans;
-                    const index = cachedAuthResponse.subscriptions.findIndex((x: LinkedSubscription) => x.id === answers.subscriptionId);
-                    if (index === -1) {
-                        const errorMessage = 'Selected subscriptionId was not found in cache';
-                        console.log(errorMessage);
-                        throw new Error(errorMessage);
-                    }
-                    cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
-                    deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, solutionType, program.sku);
-                    return deploymentManager.getLocations();
-                })
-                .then((locations: string[]) => {
-                    return prompt(getDeploymentQuestions(locations));
-                })
-                .then((ans: Answers) => {
-                    answers.location = ans.location;
-                    answers.azureWebsiteName = ans.azureWebsiteName;
-                    answers.adminUsername = ans.adminUsername;
-                    if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
-                        return askPwdAgain();
-                    }
-                    return ans;
-                })
-                .then((ans: Answers) => {
-                    answers.adminPassword = ans.pwdFirstAttempt;
-                    answers.sshFilePath = ans.sshFilePath;
-                    deployUI.start('Registering application in the Azure Active Directory');
-                    return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
-                })
-                .then(({appId, domainName, objectId, servicePrincipalSecret}) => {
-                    if (appId && servicePrincipalSecret) {
-                        const env = cachedAuthResponse.options.environment;
-                        const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
-                        deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
-                        cachedAuthResponse.options.tokenAudience = null;
-                        answers.appId = appId;
-                        answers.aadAppUrl = appUrl;
-                        answers.deploymentSku = program.sku;
-                        answers.servicePrincipalSecret = servicePrincipalSecret;
-                        answers.certData = createCertificate();
-                        answers.aadTenantId = cachedAuthResponse.options.domain;
-                        answers.runtime = program.runtime;
-                        answers.domainName = domainName;
-                        return deploymentManager.submit(answers);
-                    } else {
-                        const message = 'To create a service principal, you must have permissions to register an ' +
-                        'application with your Azure Active Directory (AAD) tenant, and to assign ' +
-                        'the application to a role in your subscription. To see if you have the ' +
-                        'required permissions, check here https://docs.microsoft.com/en-us/azure/azure-resource-manager/' +
-                        'resource-group-create-service-principal-portal#required-permissions.';
-                        console.log(`${chalk.red(message)}`);
-                    }
-                })
-                .catch((error: any) => {
-                    if (error.request) {
-                        console.log(JSON.stringify(error, null, 2));
-                    } else {
-                        console.log(error);
-                    }
-                });
-            }
-        })
-        .catch((error: any) => {
-            // In case of login error it is better to ask user to login again
-            console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
-        });
     }
 }
 
@@ -275,9 +285,9 @@ function login(): Promise<void> {
         fs.writeFileSync(cacheFilePath, JSON.stringify(data));
         console.log(`${chalk.green('Successfully logged in')}`);
     })
-    .catch((error: Error) => {
-        console.log(error);
-    });
+        .catch((error: Error) => {
+            console.log(error);
+        });
 }
 
 function logout() {
@@ -307,9 +317,11 @@ function getCachedAuthResponse(): any {
     }
 }
 
-function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
-                                options: DeviceTokenCredentialsOptions):
-                                Promise<{appId: string, domainName: string, objectId: string, servicePrincipalSecret: string}> {
+function createServicePrincipal(
+    azureWebsiteName: string, 
+    subscriptionId: string,
+    options: DeviceTokenCredentialsOptions): Promise<{ appId: string, domainName: string, objectId: string, servicePrincipalSecret: string }> {
+
     const homepage = getWebsiteUrl(azureWebsiteName);
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
@@ -320,8 +332,8 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     const m = momemt(endDate);
     m.add(1, 'years');
     endDate = new Date(m.toISOString());
-    const identifierUris = [ homepage ];
-    const replyUrls = [ homepage ];
+    const identifierUris = [homepage];
+    const replyUrls = [homepage];
     const servicePrincipalSecret: string = uuid.v4();
     // Allowing Graph API to sign in and read user profile for newly created application
     const requiredResourceAccess = [{
@@ -343,59 +355,62 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         identifierUris,
         oauth2AllowImplicitFlow: true,
         passwordCredentials: [{
-                endDate,
-                keyId: uuid.v1(),
-                startDate,
-                value: servicePrincipalSecret
-            }
+            endDate,
+            keyId: uuid.v1(),
+            startDate,
+            value: servicePrincipalSecret
+        }
         ],
         replyUrls,
         requiredResourceAccess
     };
     let objectId: string = '';
     return graphClient.applications.create(applicationCreateParameters)
-    .then((result: any) => {
-        const servicePrincipalCreateParameters = {
-            accountEnabled: true,
-            appId: result.appId
-        };
-        objectId = result.objectId;
-        return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
-    })
-    .then((sp: any) => {
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-            return sp.appId;
-        }
-
-        // Create role assignment only for standard deployment since ACS requires it
-        return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
-    })
-    .then((appId: string) => {
-        return graphClient.domains.list()
-        .then((domains: any[]) => {
-            let domainName: string = '';
-            domains.forEach((value: any) => {
-                if (value.isDefault) {
-                    domainName = value.name;
-                }
-            });
-            return {
-                appId,
-                domainName,
-                objectId,
-                servicePrincipalSecret
+        .then((result: any) => {
+            const servicePrincipalCreateParameters = {
+                accountEnabled: true,
+                appId: result.appId
             };
+            objectId = result.objectId;
+            return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
+        })
+        .then((sp: any) => {
+            if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+                return sp.appId;
+            }
+
+            // Create role assignment only for standard deployment since ACS requires it
+            return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
+        })
+        .then((appId: string) => {
+            return graphClient.domains.list()
+                .then((domains: any[]) => {
+                    let domainName: string = '';
+                    domains.forEach((value: any) => {
+                        if (value.isDefault) {
+                            domainName = value.name;
+                        }
+                    });
+                    return {
+                        appId,
+                        domainName,
+                        objectId,
+                        servicePrincipalSecret
+                    };
+                });
+        })
+        .catch((error: Error) => {
+            throw error;
         });
-    })
-    .catch((error: Error) => {
-        throw error;
-    });
 }
 
 // After creating the new application the propogation takes sometime and hence we need to try
 // multiple times until the role assignment is successful or it fails after max try.
-function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
-                                       appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
+function createRoleAssignmentWithRetry(
+    subscriptionId: string, 
+    objectId: string,
+    appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
+
     const roleId = '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'; // that of a owner
     const scope = '/subscriptions/' + subscriptionId; // we shall be assigning the sp, a 'contributor' role at the subscription level
     const roleDefinitionId = scope + '/providers/Microsoft.Authorization/roleDefinitions/' + roleId;
@@ -405,12 +420,12 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
     const authzClient = new AuthorizationManagementClient(new DeviceTokenCredentials(options), subscriptionId, baseUri);
     const assignmentGuid = uuid.v1();
     const roleCreateParams = {
-      properties: {
-        principalId: objectId,
-        // have taken this from the comments made above
-        roleDefinitionId,
-        scope
-      }
+        properties: {
+            principalId: objectId,
+            // have taken this from the comments made above
+            roleDefinitionId,
+            scope
+        }
     };
     let retryCount = 0;
     const promise = new Promise<any>((resolve, reject) => {
@@ -418,17 +433,17 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
             () => {
                 retryCount++;
                 return authzClient.roleAssignments.create(scope, assignmentGuid, roleCreateParams)
-                .then((roleResult: any) => {
-                    clearInterval(timer);
-                    resolve(appId);
-                })
-                .catch ((error: Error) => {
-                    if (retryCount >= MAX_RETRYCOUNT) {
+                    .then((roleResult: any) => {
                         clearInterval(timer);
-                        console.log(error);
-                        reject(error);
-                    }
-                });
+                        resolve(appId);
+                    })
+                    .catch((error: Error) => {
+                        if (retryCount >= MAX_RETRYCOUNT) {
+                            clearInterval(timer);
+                            console.log(error);
+                            reject(error);
+                        }
+                    });
             },
             5000);
     });
@@ -475,9 +490,9 @@ function getDeploymentQuestions(locations: string[]) {
         validate: (value: string) => {
             if (!value.match(Questions.websiteHostNameRegex)) {
                 return 'Please enter a valid prefix for azure website.\n' +
-                       'Valid characters are: ' +
-                       'alphanumeric (A-Z, a-z, 0-9), ' +
-                       'and hyphen(-)';
+                    'Valid characters are: ' +
+                    'alphanumeric (A-Z, a-z, 0-9), ' +
+                    'and hyphen(-)';
             }
             return checkUrlExists(value, answers.subscriptionId);
         }
@@ -500,7 +515,7 @@ function getDeploymentQuestions(locations: string[]) {
         },
     });
 
-        // Only add ssh key file option for standard deployment
+    // Only add ssh key file option for standard deployment
     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
         questions.push({
             default: defaultSshPublicKeyPath,
@@ -548,27 +563,27 @@ function askPwdAgain(): Promise<Answers> {
         pwdQuestion('pwdSecondAttempt', 'Confirm your password:')
     ];
     return prompt(questions)
-    .then((ans: Answers) => {
-        if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
-            return askPwdAgain();
-        }
-        return ans;
-    });
+        .then((ans: Answers) => {
+            if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
+                return askPwdAgain();
+            }
+            return ans;
+        });
 }
 
 function checkUrlExists(hostName: string, subscriptionId: string): Promise<string | boolean> {
     const baseUri = cachedAuthResponse.options.environment.resourceManagerEndpointUrl;
     const client = new WebSiteManagementClient(new DeviceTokenCredentials(cachedAuthResponse.options), subscriptionId, baseUri);
     return client.checkNameAvailability(hostName, 'Site')
-    .then((result: any) => {
-        if (!result.nameAvailable) {
-            return result.message;
-        }
-        return result.nameAvailable;
-    })
-    .catch((err) => {
-        return true;
-    });
+        .then((result: any) => {
+            if (!result.nameAvailable) {
+                return result.message;
+            }
+            return result.nameAvailable;
+        })
+        .catch((err) => {
+            return true;
+        });
 }
 
 function getDomain(): string {
