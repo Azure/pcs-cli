@@ -49,7 +49,7 @@ config_for_azure_china() {
     set -e
 }
 
-config_for_azure_china $HOST_NAME $5
+config_for_azure_china $HOST_NAME $PCS_WEBUI_AUTH_AAD_TENANT
 
 # ========================================================================
 
