@@ -28,7 +28,7 @@ const MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN = 2;
 
 export interface IDeploymentManager {
     submit(answers: Answers | undefined): Promise<any>;
-    getLocations(): Promise<string[] | undefined>;
+    getLocations(): Promise<string[]>;
 }
 
 export class DeploymentManager implements IDeploymentManager {
@@ -49,16 +49,17 @@ export class DeploymentManager implements IDeploymentManager {
         this._client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
     }
 
-    public getLocations(): Promise<string[] | undefined> {
+    public getLocations(): Promise<string[]> {
         // Currently IotHub is not supported in all the regions so using it to get the available locations
         return this._client.providers.get('Microsoft.Devices')
         .then((providers: ResourceModels.Provider) => {
             if (providers.resourceTypes) {
                 const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
                 if (resourceType && resourceType.length) {
-                    return resourceType[0].locations;
+                    return resourceType[0].locations || [];
                 }
             }
+            return [];
         });
     }
 
