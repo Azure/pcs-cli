@@ -54,9 +54,15 @@ Standard deployment provisions following resources:
 
 How to use the CLI
 ==================
+## Clone the CLI repository
+1. `git clone https://github.com/Azure/pcs-cli.git`
 
 ## Install CLI
-`npm install iot-solutions -g`
+In locally cloned directory run
+1. `npm install`
+1. `npm start`
+1. `npm link`
+
 
 ## Basic Deployment
 
@@ -132,8 +138,7 @@ Please enter issues, bugs, or suggestions as GitHub Issues here: https://github.
 Related
 =======
 
-* [Contributing and Development setup](CONTRIBUTING.md)
-
+* [Contributing](CONTRIBUTING.md)
 
 [build-badge]: https://img.shields.io/travis/Azure/pcs-cli.svg
 [build-url]: https://travis-ci.org/Azure/pcs-cli

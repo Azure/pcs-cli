@@ -3,3 +3,5 @@
 
 # Bash scripts
 *.sh text eol=lf
+scripts/clean-up text eol=lf
+scripts/build text eol=lf

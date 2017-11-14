@@ -1,7 +1,16 @@
 {
   "name": "iot-solutions",
-  "version": "1.0.1-preview",
-  "description": "Command Line Interface for deploying pre-configured IoT solutions through Azure",
+  "version": "1.0.1-preview.2",
+  "description": "Azure IoT Solutions cross platform command line tool",
+  "license": "MIT",
+  "author": "Parvez Pathan",
+  "keywords": [
+    "azure",
+    "iot",
+    "remotemonitoring",
+    "pcs",
+    "cli"
+  ],
   "main": "./publish/index.js",
   "scripts": {
     "start": "npm run build && npm test && npm run copy",
@@ -11,7 +20,19 @@
     "pretest": "npm run lint",
     "test": "jest",
     "build:live": "nodemon --exec npm run build:tsnode",
-    "build:tsnode": "ts-node ./src/index.ts"
+    "build:tsnode": "ts-node ./src/index.ts",
+    "main": "node ./publish/index.js"
+  },
+  "bin": {
+    "pcs": "./publish/index.js"
+  },
+  "homepage": "https://github.com/Azure/pcs-cli",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Azure/pcs-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Azure/pcs-cli/issues"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -29,54 +50,40 @@
       "<rootDir>/node_modules/(?!@kubernetes)"
     ]
   },
-  "bin": {
-    "pcs": "./publish/index.js"
-  },
-  "keywords": [
-    "remotemonitoring",
-    "pcs",
-    "cli"
-  ],
-  "author": "Parvez Pathan",
-  "license": "MIT",
   "devDependencies": {
-    "@types/adal": "^1.0.26",
-    "@types/azure": "^0.9.19",
-    "@types/chalk": "^0.4.31",
-    "@types/commander": "^2.9.1",
+    "@types/adal": "1.0.26",
+    "@types/azure": "0.9.19",
+    "@types/chalk": "0.4.31",
+    "@types/commander": "2.9.1",
     "@types/inquirer": "0.0.35",
-    "@types/jest": "^19.2.4",
-    "@types/js-yaml": "^3.9.1",
-    "@types/node": "^7.0.29",
-    "@types/node-forge": "^0.6.10",
-    "@types/ssh2": "^0.5.35",
-    "copyfiles": "^1.2.0",
-    "import-sort": "^2.4.0",
-    "jest": "^20.0.4",
-    "nodemon": "^1.11.0",
-    "ts-jest": "^20.0.6",
-    "ts-node": "^3.0.6",
-    "tslint": "^5.4.3",
-    "typescript": "^2.5.2"
+    "@types/jest": "19.2.4",
+    "@types/js-yaml": "3.9.1",
+    "@types/node": "7.0.29",
+    "@types/node-forge": "0.6.10",
+    "@types/ssh2": "0.5.35",
+    "copyfiles": "1.2.0",
+    "import-sort": "2.4.0",
+    "jest": "20.0.4",
+    "nodemon": "1.11.0",
+    "ts-jest": "20.0.6",
+    "ts-node": "3.0.6",
+    "tslint": "5.4.3",
+    "typescript": "2.5.2"
   },
   "dependencies": {
-    "@kubernetes/typescript-node": "^0.1.1",
-    "azure": "^2.0.0-preview",
-    "azure-arm-resource": "^2.0.0-preview",
-    "azure-graph": "^2.2.0",
-    "btoa": "^1.1.2",
-    "commander": "^2.9.0",
-    "inquirer": "^3.1.0",
-    "js-yaml": "^3.10.0",
-    "json-loader": "^0.5.4",
-    "ms-rest": "^2.2.0",
-    "ms-rest-azure": "^2.1.2",
-    "node-fetch": "^1.7.3",
-    "node-forge": "^0.7.1",
-    "ssh2": "^0.5.5"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/Azure/pcs-cli.git"
+    "@kubernetes/typescript-node": "0.1.1",
+    "azure": "2.0.0-preview",
+    "azure-arm-resource": "2.0.0-preview",
+    "azure-graph": "2.2.0",
+    "btoa": "1.1.2",
+    "commander": "2.9.0",
+    "inquirer": "3.1.0",
+    "js-yaml": "3.10.0",
+    "json-loader": "0.5.4",
+    "ms-rest": "2.2.0",
+    "ms-rest-azure": "2.1.2",
+    "node-fetch": "1.7.3",
+    "node-forge": "0.7.1",
+    "ssh2": "0.5.5"
   }
 }
