@@ -72,8 +72,8 @@
   },
   "dependencies": {
     "@kubernetes/typescript-node": "0.1.1",
-    "azure": "2.0.0-preview",
-    "azure-arm-resource": "2.0.0-preview",
+    "azure": "2.2.1-preview",
+    "azure-arm-resource": "3.0.0-preview",
     "azure-graph": "2.2.0",
     "btoa": "1.1.2",
     "commander": "2.9.0",
@@ -81,7 +81,7 @@
     "js-yaml": "3.10.0",
     "json-loader": "0.5.4",
     "ms-rest": "2.2.0",
-    "ms-rest-azure": "2.1.2",
+    "ms-rest-azure": "2.4.4",
     "node-fetch": "1.7.3",
     "node-forge": "0.7.1",
     "ssh2": "0.5.5"
