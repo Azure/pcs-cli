@@ -39,7 +39,7 @@ services:
       - APPLICATION_SECRET
 
   iothubmanager:
-    image: azureiotpcs/iothub-manager-dotnet:testing
+    image: azureiotpcs/iothub-manager-java:testing
     environment:
       - PCS_IOTHUB_CONNSTRING
       # TODO: the dependency on config is temporary
@@ -69,7 +69,7 @@ services:
     #  - ./my-device-models:/app/data:ro
 
   telemetry:
-    image: azureiotpcs/telemetry-dotnet:testing
+    image: azureiotpcs/telemetry-java:testing
     depends_on:
       - storageadapter
     environment:
@@ -83,7 +83,7 @@ services:
       - APPLICATION_SECRET
 
   config:
-    image: azureiotpcs/pcs-config-dotnet:testing
+    image: azureiotpcs/pcs-config-java:testing
     depends_on:
       - storageadapter
       - devicesimulation
@@ -103,7 +103,7 @@ services:
       - APPLICATION_SECRET
 
   storageadapter:
-    image: azureiotpcs/pcs-storage-adapter-dotnet:testing
+    image: azureiotpcs/pcs-storage-adapter-java:testing
     environment:
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AUTH_ISSUER
@@ -114,7 +114,7 @@ services:
       - APPLICATION_SECRET
 
   telemetryagent:
-    image: azureiotpcs/telemetry-agent-dotnet:testing
+    image: azureiotpcs/telemetry-agent-java:testing
     depends_on:
       - telemetry
       - iothubmanager
