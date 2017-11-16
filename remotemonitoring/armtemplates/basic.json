@@ -292,6 +292,7 @@
     },
     "resources": [
         {
+            "comments": "AppService plan to host the Application Gateway Web App",
             "type": "Microsoft.Web/serverfarms",
             "sku": {
                 "name": "[variables('sku')]",
@@ -305,11 +306,14 @@
             }
         },
         {
+            "comments": "Application Gateway Web App",
             "type": "Microsoft.Web/sites",
             "name": "[parameters('azureWebsiteName')]",
             "apiVersion": "2015-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
+                "enabled": true,
+                "clientAffinityEnabled": false,
                 "serverFarmId": "[variables('hostingPlanName')]",
                 "siteConfig": {
                     "appSettings": [
@@ -340,8 +344,7 @@
                 }
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
             ]
         },
         {
@@ -358,6 +361,7 @@
             }
         },
         {
+            "comments": "Azure CosmosDb",
             "apiVersion": "[variables('documentDBApiVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
             "name": "[parameters('documentDBName')]",
@@ -376,6 +380,7 @@
             }
         },
         {
+            "comments": "Azure IoT Hub",
             "apiVersion": "[variables('iotHubApiVersion')]",
             "type": "Microsoft.Devices/Iothubs",
             "name": "[parameters('iotHubName')]",
@@ -409,6 +414,7 @@
             "properties": {}
         },
         {
+            "comments": "Security rules used for the VM network interface",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('networkSecurityGroupName')]",
             "apiVersion": "[variables('networkApiVersion')]",
@@ -458,6 +464,7 @@
             }
         },
         {
+            "comments": "Network interface used by the VM",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicName')]",
             "apiVersion": "[variables('networkApiVersion')]",
@@ -485,10 +492,14 @@
                             }
                         }
                     }
-                ]
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                }
             }
         },
         {
+            "comments": "VM running the microservices",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('vmName')]",
             "apiVersion": "[variables('computeApiVersion')]",
@@ -541,6 +552,7 @@
             }
         },
         {
+            "comments": "Docker extension used to run the microservices",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('vmName'), '/', 'DockerExtension')]",
             "apiVersion": "[variables('computeApiVersion')]",
@@ -559,6 +571,7 @@
             }
         },
         {
+            "comments": "One time script execution to prepare the VM environment",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('vmName'), '/', 'scriptextensions')]",
             "apiVersion": "[variables('computeApiVersion')]",
