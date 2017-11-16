@@ -70,8 +70,14 @@ class DeployUI {
                             if (this.totalResourceCount > options.totalResources) {
                                 options.totalResources = this.totalResourceCount;
                             }
+                            const elapsedTime: Date = new Date(Date.now() - this.startTime);
                             operationsStatus += loader + this.deployedResources +
-                            `${chalk.cyan(this.completedResourceCount.toString(), 'of', options.totalResources.toString())}`;
+                            `${chalk.cyan(
+                                this.completedResourceCount.toString(), 'of',
+                                options.totalResources.toString())}` + '\t(Elapsed Time: ' +
+                            `${chalk.cyan(
+                                elapsedTime.getMinutes().toString(), 'minutes &',
+                                elapsedTime.getSeconds().toString(), 'seconds')})`;
                             this.ui.updateBottomBar(operationsStatus);
                         } else {
                             this.ui.updateBottomBar(loader + this.deploying);

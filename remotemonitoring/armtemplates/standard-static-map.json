@@ -263,7 +263,6 @@
             }
         },
         {
-            "comments": "AppService plan to host the Application Gateway Web App",
             "type": "Microsoft.Web/serverfarms",
             "sku": {
                 "name": "[variables('sku')]",
@@ -277,14 +276,11 @@
             }
         },
         {
-            "comments": "Application Gateway Web App",
             "type": "Microsoft.Web/sites",
             "name": "[parameters('azureWebsiteName')]",
             "apiVersion": "2015-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
-                "enabled": true,
-                "clientAffinityEnabled": false,
                 "serverFarmId": "[variables('hostingPlanName')]",
                 "siteConfig": {
                     "appSettings": [
@@ -315,11 +311,11 @@
                 }
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
             ]
         },
         {
-            "comments": "Azure CosmosDb",
             "apiVersion": "[variables('docDBVersion')]",
             "type": "Microsoft.DocumentDb/databaseAccounts",
             "name": "[parameters('documentDBName')]",
@@ -338,7 +334,6 @@
             }
         },
         {
-            "comments": "Azure IoT Hub",
             "apiVersion": "[variables('iotHubVersion')]",
             "type": "Microsoft.Devices/Iothubs",
             "name": "[parameters('iotHubName')]",

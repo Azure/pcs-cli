@@ -138,7 +138,7 @@ export class DeploymentManager implements IDeploymentManager {
                 }
                 this.setupParameters(answers);
             } catch (ex) {
-                throw new Error('Could not find template or parameters file, Exception:');
+                throw new Error('Could not find template or parameters file: ' + ex.name + ': ' + ex.message);
             }
             deployment.properties.parameters = this._parameters;
             deployment.properties.template = this._template;
