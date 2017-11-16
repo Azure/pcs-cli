@@ -396,6 +396,23 @@
             "location": "[variables('location')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "HTTPS",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
             }
         },
         {
