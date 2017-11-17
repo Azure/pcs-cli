@@ -2,7 +2,7 @@ version: '2'
 
 services:
   reverseproxy:
-    image: azureiotpcs/remote-monitoring-nginx:testing
+    image: azureiotpcs/remote-monitoring-nginx:1.0.0-preview.4
     ports:
       - "80:80"
       - "443:443"
@@ -17,7 +17,7 @@ services:
       - /app/certs:/app/certs:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:testing
+    image: azureiotpcs/pcs-remote-monitoring-webui:1.0.0-preview.4
     depends_on:
       - auth
       - iothubmanager
@@ -28,7 +28,7 @@ services:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
   auth:
-    image: azureiotpcs/pcs-auth-dotnet:testing
+    image: azureiotpcs/pcs-auth-dotnet:1.0.0-preview.4
     environment:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
@@ -37,7 +37,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   iothubmanager:
-    image: azureiotpcs/iothub-manager-dotnet:testing
+    image: azureiotpcs/iothub-manager-dotnet:1.0.0-preview.4
     environment:
       - PCS_IOTHUB_CONNSTRING
       # TODO: the dependency on config is temporary
@@ -49,7 +49,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:testing
+    image: azureiotpcs/device-simulation-dotnet:1.0.0-preview.4
     depends_on:
       - storageadapter
     environment:
@@ -65,7 +65,7 @@ services:
     #  - ./my-device-models:/app/data:ro
 
   telemetry:
-    image: azureiotpcs/telemetry-dotnet:testing
+    image: azureiotpcs/telemetry-dotnet:1.0.0-preview.4
     depends_on:
       - storageadapter
     environment:
@@ -78,7 +78,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   config:
-    image: azureiotpcs/pcs-config-dotnet:testing
+    image: azureiotpcs/pcs-config-dotnet:1.0.0-preview.4
     depends_on:
       - storageadapter
       - devicesimulation
@@ -97,7 +97,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   storageadapter:
-    image: azureiotpcs/pcs-storage-adapter-dotnet:testing
+    image: azureiotpcs/pcs-storage-adapter-dotnet:1.0.0-preview.4
     environment:
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AUTH_ISSUER
@@ -107,7 +107,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   telemetryagent:
-    image: azureiotpcs/telemetry-agent-dotnet:testing
+    image: azureiotpcs/telemetry-agent-dotnet:1.0.0-preview.4
     depends_on:
       - telemetry
       - iothubmanager

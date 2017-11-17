@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: auth-pod
-        image: azureiotpcs/pcs-auth-dotnet:testing
+        image: azureiotpcs/pcs-auth-dotnet:1.0.0-preview.4
         ports:
         - containerPort: 9001
         env:

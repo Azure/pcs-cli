@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: iothub-manager-pod
-        image: azureiotpcs/iothub-manager-{runtime}:testing
+        image: azureiotpcs/iothub-manager-{runtime}:1.0.0-preview.4
         ports:
         - containerPort: 9002
         env:

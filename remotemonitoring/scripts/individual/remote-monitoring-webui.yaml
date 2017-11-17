@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/pcs-remote-monitoring-webui:testing
+        image: azureiotpcs/pcs-remote-monitoring-webui:1.0.0-preview.4
         ports:
         - containerPort: 80
         volumeMounts:

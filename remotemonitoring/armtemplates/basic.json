@@ -209,7 +209,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/master/remotemonitoring/single-vm/setup.sh",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/1.0.0-preview.4/remotemonitoring/single-vm/setup.sh",
             "metadata": {
                 "description": "The URL of the script to setup a single VM deployment"
             }
@@ -285,7 +285,7 @@
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "branch": "master",
+        "branch": "1.0.0-preview.4",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "bingMapsName": "[concat(parameters('solutionName'), '-map')]",
         "bingMapsVersion": "2016-08-18"
