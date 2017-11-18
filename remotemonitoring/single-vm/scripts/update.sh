@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 # Where to download scripts from
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/master/remotemonitoring/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/1.0.0-preview.4/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 cd /app
