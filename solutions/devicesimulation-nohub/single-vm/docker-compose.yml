@@ -1,31 +1,30 @@
 version: '2'
 
 services:
-  reverseproxy:
+  apigateway-svc:
     image: azureiotpcs/simulation-api-gateway:millennium
     ports:
-      - "80:80"
       - "443:443"
     depends_on:
-      - webui
-      - devicesimulation
+      - webui-svc
+      - devicesimulation-svc
     volumes:
       - /app/certs:/app/certs:ro
 
-  webui:
+  webui-svc:
     image: azureiotpcs/device-simulation-webui:millennium
     depends_on:
-      - devicesimulation
+      - devicesimulation-svc
     volumes:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
-  devicesimulation:
+  devicesimulation-svc:
     image: azureiotpcs/device-simulation-dotnet:millennium
     depends_on:
-      - storageadapter
+      - storageadapter-svc
     environment:
       - PCS_IOTHUB_CONNSTRING=none
-      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
@@ -39,7 +38,7 @@ services:
     #volumes:
     #  - ./my-device-models:/app/data:ro
 
-  storageadapter:
+  storageadapter-svc:
     image: azureiotpcs/pcs-storage-adapter-dotnet:millennium
     environment:
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
