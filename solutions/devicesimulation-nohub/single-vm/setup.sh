@@ -134,4 +134,4 @@ echo "export PCS_CORS_WHITELIST=\"\""                                           
 
 # ========================================================================
 
-nohup /app/start.sh &
+nohup /app/start.sh > /dev/null 2>&1&

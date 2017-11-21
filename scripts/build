@@ -9,6 +9,8 @@ APP_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )/"
 cd $APP_HOME
 
 npm install
+git co package-lock.json
+npm install
 npm start
 
 MARK='\033[1;33m'

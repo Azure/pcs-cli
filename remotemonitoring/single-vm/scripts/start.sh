@@ -30,9 +30,8 @@ list=$(docker ps -aq)
 if [ -n "$list" ]; then
     docker rm -f $list
 fi
-rm -f nohup.out
 
-nohup docker-compose up &
+nohup docker-compose up > /dev/null 2>&1&
 
 ISUP=$(curl -ks https://localhost/ | grep -i "html" | wc -l)
 while [[ "$ISUP" == "0" ]]; do
