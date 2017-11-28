@@ -113,11 +113,8 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_D16_v3",
-            "allowedValues": [
-              "Standard_D16_v3", "Standard_DS5_v2", "Standard_D5_v2", "Standard_F16",
-              "Standard_D8_v3", "Standard_DS5_v2", "Standard_D5_v2", "Standard_DS4_v2", "Standard_D4_v2", "Standard_DS4", "Standard_D4", "Standard_A8_v2", "Standard_A8m_v2", "Standard_A4", "Standard_A7", "Standard_F8"
-            ],
+            "defaultValue": "Standard_D4_v3",
+            "allowedValues": [],
             "metadata": {
                 "description": "The size of the Virtual Machine."
             }
@@ -303,6 +300,36 @@
             "location": "[variables('location')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "HTTPS",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 101,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
             }
         },
         {
