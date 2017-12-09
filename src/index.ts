@@ -70,6 +70,8 @@ const program = new Command(packageJson.name)
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('-p, --servicePrincipal <servicePrincipal>', 'Service Principal')
+    .option('-secret --secret <secret>', 'Secret')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -310,7 +312,8 @@ function getCachedAuthResponse(): any {
     }
 }
 
-function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
+function createServicePrincipal(azureWebsiteName: string, 
+                                subscriptionId: string,
                                 options: DeviceTokenCredentialsOptions):
                                 Promise<{appId: string, domainName: string, objectId: string, servicePrincipalSecret: string}> {
     const homepage = getWebsiteUrl(azureWebsiteName);
@@ -325,7 +328,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     endDate = new Date(m.toISOString());
     const identifierUris = [ homepage ];
     const replyUrls = [ homepage ];
-    const servicePrincipalSecret: string = uuid.v4();
+    const servicePrincipalSecret: string = program.secret !== undefined ? program.secret : uuid.v4();
     // Allowing Graph API to sign in and read user profile for newly created application
     const requiredResourceAccess = [{
         resourceAccess: [
@@ -356,43 +359,61 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         requiredResourceAccess
     };
     let objectId: string = '';
-    return graphClient.applications.create(applicationCreateParameters)
-    .then((result: any) => {
-        const servicePrincipalCreateParameters = {
-            accountEnabled: true,
-            appId: result.appId
-        };
-        objectId = result.objectId;
-        return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
-    })
-    .then((sp: any) => {
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-            return sp.appId;
-        }
-
-        // Create role assignment only for standard deployment since ACS requires it
-        return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
-    })
-    .then((appId: string) => {
+    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard] && program.servicePrincipal !== undefined && program.secret !== undefined) {
+        let domain: string = '';
+        graphClient.applications.patch(program.servicePrincipal, applicationCreateParameters);
         return graphClient.domains.list()
-        .then((domains: any[]) => {
-            let domainName: string = '';
-            domains.forEach((value: any) => {
-                if (value.isDefault) {
-                    domainName = value.name;
-                }
-            });
-            return {
-                appId,
-                domainName,
-                objectId,
-                servicePrincipalSecret
-            };
+            .then((domains: any[]) => {
+                domains.forEach((value: any) => {
+                    if (value.isDefault) {
+                        domain = value.name;
+                    }
+                });
+                return Promise.resolve({
+                    appId: program.servicePrincipal, 
+                    domainName: domain,
+                    objectId: '',
+                    servicePrincipalSecret: program.secret });
         });
-    })
-    .catch((error: Error) => {
-        throw error;
-    });
+    } else {
+        return graphClient.applications.create(applicationCreateParameters)
+        .then((result: any) => {
+            const servicePrincipalCreateParameters = {
+                accountEnabled: true,
+                appId: result.appId
+            };
+            objectId = result.objectId;
+            return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
+        })
+        .then((sp: any) => {
+            if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+                return sp.appId;
+            }
+
+            // Create role assignment only for standard deployment since ACS requires it
+            return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
+        })
+        .then((appId: string) => {
+            return graphClient.domains.list()
+            .then((domains: any[]) => {
+                let domainName: string = '';
+                domains.forEach((value: any) => {
+                    if (value.isDefault) {
+                        domainName = value.name;
+                    }
+                });
+                return {
+                    appId,
+                    domainName,
+                    objectId,
+                    servicePrincipalSecret
+                };
+            });
+        })
+        .catch((error: Error) => {
+            throw error;
+        });
+    }
 }
 
 // After creating the new application the propogation takes sometime and hence we need to try
