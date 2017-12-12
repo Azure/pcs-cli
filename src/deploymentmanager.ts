@@ -337,7 +337,7 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.servicePrincipalSecret.value = answers.servicePrincipalSecret;
         }
         if (this._parameters.servicePrincipalClientId) {
-            this._parameters.servicePrincipalClientId.value = answers.appId;
+            this._parameters.servicePrincipalClientId.value = answers.servicePrincipalId;
         }
         if (this._parameters.sshRSAPublicKey) {
             this._parameters.sshRSAPublicKey.value = fs.readFileSync(answers.sshFilePath, 'UTF-8');

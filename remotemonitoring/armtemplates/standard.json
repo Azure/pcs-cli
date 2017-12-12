@@ -232,21 +232,6 @@
         "mastersEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-mgmt')]",
         "orchestratorType": "Kubernetes",
         "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
-        "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
-        "servicePrincipalClientSecret": "[parameters('servicePrincipalSecret')]",
-        "useServicePrincipalDictionary": {
-            "DCOS": 0,
-            "Swarm": 0,
-            "Kubernetes": 1
-        },
-        "useServicePrincipal": "[variables('useServicePrincipalDictionary')[variables('orchestratorType')]]",
-        "servicePrincipalFields": [
-            null,
-            {
-                "ClientId": "[parameters('servicePrincipalClientId')]",
-                "Secret": "[parameters('servicePrincipalSecret')]"
-            }
-        ],
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
@@ -395,7 +380,10 @@
                         ]
                     }
                 },
-                "servicePrincipalProfile": "[variables('servicePrincipalFields')[variables('useServicePrincipal')]]"
+                "servicePrincipalProfile": {
+                    "ClientId": "[parameters('servicePrincipalClientId')]",
+                    "Secret": "[parameters('servicePrincipalSecret')]"
+                }
             }
         },
         {
