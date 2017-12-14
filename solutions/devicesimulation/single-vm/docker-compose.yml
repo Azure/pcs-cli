@@ -23,12 +23,17 @@ services:
     depends_on:
       - storageadapter-svc
     environment:
+      - PCS_LOG_LEVEL
       - PCS_IOTHUB_CONNSTRING
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
+      - PCS_SUBSCRIPTION_DOMAIN
+      - PCS_SUBSCRIPTION_ID
+      - PCS_RESOURCE_GROUP
+      - PCS_IOHUB_NAME
     # How one could mount custom device models. The path depends on
     # the Docker Compose version, see first line in this file.
     #
@@ -49,6 +54,7 @@ services:
   storageadapter-svc:
     image: azureiotpcs/pcs-storage-adapter-dotnet:millennium
     environment:
+      - PCS_LOG_LEVEL
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
