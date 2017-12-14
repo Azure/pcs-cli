@@ -117,7 +117,7 @@ touch ${WEBUICONFIG} && chmod 444 ${WEBUICONFIG}
 touch ${WEBUICONFIG_SAFE} && chmod 444 ${WEBUICONFIG_SAFE}
 touch ${WEBUICONFIG_UNSAFE} && chmod 444 ${WEBUICONFIG_UNSAFE}
 
-echo "var DeploymentConfig = {"                       >> ${WEBUICONFIG_SAFE}
+echo "var DeploymentConfig = {"                        > ${WEBUICONFIG_SAFE}
 echo "  solutionName: '${PCS_SOLUTION_NAME}',"        >> ${WEBUICONFIG_SAFE}
 echo "  authEnabled: true,"                           >> ${WEBUICONFIG_SAFE}
 echo "  authType: '${PCS_WEBUI_AUTH_TYPE}',"          >> ${WEBUICONFIG_SAFE}
@@ -128,8 +128,8 @@ echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_SAFE}
 echo "  }"                                            >> ${WEBUICONFIG_SAFE}
 echo "}"                                              >> ${WEBUICONFIG_SAFE}
 
-echo "var DeploymentConfig = {"                       >> ${WEBUICONFIG_UNSAFE}
-echo "  solutionName: '${PCS_SOLUTION_NAME}',"        >> ${WEBUICONFIG_SAFE}
+echo "var DeploymentConfig = {"                        > ${WEBUICONFIG_UNSAFE}
+echo "  solutionName: '${PCS_SOLUTION_NAME}',"        >> ${WEBUICONFIG_UNSAFE}
 echo "  authEnabled: false,"                          >> ${WEBUICONFIG_UNSAFE}
 echo "  authType: '${PCS_WEBUI_AUTH_TYPE}',"          >> ${WEBUICONFIG_UNSAFE}
 echo "  aad : {"                                      >> ${WEBUICONFIG_UNSAFE}
@@ -146,7 +146,7 @@ cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
 # Environment variables
 touch ${ENVVARS} && chmod 440 ${ENVVARS}
 
-echo "# Valid values: Debug, Info, Warn, Error"                                                          >> ${ENVVARS}
+echo "# Valid values: Debug, Info, Warn, Error"                                                           > ${ENVVARS}
 echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "export HOST_NAME=\"${HOST_NAME}\""                                                                 >> ${ENVVARS}
