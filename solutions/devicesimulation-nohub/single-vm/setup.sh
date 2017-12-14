@@ -29,10 +29,10 @@ export PCS_WEBUI_AUTH_TYPE="aad"
 export PCS_IOTHUB_CONNSTRING=""
 
 while [ "$#" -gt 0 ]; do
-	case "$1" in
+    case "$1" in
         --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
         --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
-	    --hostname)                HOST_NAME="$2" ;;
+        --hostname)                HOST_NAME="$2" ;;
         --log-level)               PCS_LOG_LEVEL="$2" ;;
         --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)           PCS_SOLUTION_NAME="$2" ;;
@@ -41,21 +41,21 @@ while [ "$#" -gt 0 ]; do
         --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
         --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
         --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
-	    --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
+        --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
-	    --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
+        --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --storage-sku)             PCS_STORAGE_SKU="$2" ;;
         --storage-endpoint-suffix) PCS_STORAGE_ENDPOINT_SUFFIX="$2" ;;
-	    --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
-	    --ssl-certificate-key)     PCS_CERTIFICATE_KEY="$2" ;;
-	    --auth-audience)           PCS_AUTH_AUDIENCE="$2" ;;
-	    --auth-issuer)             PCS_AUTH_ISSUER="$2" ;;
-	    --auth-type)               PCS_WEBUI_AUTH_TYPE="$2" ;;
-	    --aad-appid)               PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
-	    --aad-tenant)              PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
-	    --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
-	esac
-	shift
+        --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
+        --ssl-certificate-key)     PCS_CERTIFICATE_KEY="$2" ;;
+        --auth-audience)           PCS_AUTH_AUDIENCE="$2" ;;
+        --auth-issuer)             PCS_AUTH_ISSUER="$2" ;;
+        --auth-type)               PCS_WEBUI_AUTH_TYPE="$2" ;;
+        --aad-appid)               PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
+        --aad-tenant)              PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
+        --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
+    esac
+    shift
 done
 
 # ========================================================================
