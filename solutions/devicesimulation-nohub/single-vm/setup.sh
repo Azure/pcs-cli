@@ -18,16 +18,45 @@ SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # ========================================================================
 
-export HOST_NAME="${1:-localhost}"
-export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="${3}"
-export PCS_CERTIFICATE="${4}"
-export PCS_CERTIFICATE_KEY="${5}"
-export PCS_AUTH_AUDIENCE="${6}"
-export PCS_AUTH_ISSUER="https://sts.windows.net/${7}/"
+# Arguments
+readonly ARGS="$@"
+# Arguments number
+readonly ARGNUM="$#"
+# Default values
+export HOST_NAME="localhost"
+export PCS_LOG_LEVEL="Info"
 export PCS_WEBUI_AUTH_TYPE="aad"
-export PCS_WEBUI_AUTH_AAD_APPID="${6}"
-export PCS_WEBUI_AUTH_AAD_TENANT="${7}"
-export PCS_WEBUI_AUTH_AAD_INSTANCE="${8}"
+export PCS_IOTHUB_CONNSTRING=""
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
+        --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
+        --hostname)                HOST_NAME="$2" ;;
+        --log-level)               PCS_LOG_LEVEL="$2" ;;
+        --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
+        --solution-name)           PCS_SOLUTION_NAME="$2" ;;
+        --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
+        --iothub-name)             PCS_IOHUB_NAME="$2" ;;
+        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
+        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
+        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
+        --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
+        --docdb-name)              PCS_DOCDB_NAME="$2" ;;
+        --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
+        --storage-sku)             PCS_STORAGE_SKU="$2" ;;
+        --storage-endpoint-suffix) PCS_STORAGE_ENDPOINT_SUFFIX="$2" ;;
+        --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
+        --ssl-certificate-key)     PCS_CERTIFICATE_KEY="$2" ;;
+        --auth-audience)           PCS_AUTH_AUDIENCE="$2" ;;
+        --auth-issuer)             PCS_AUTH_ISSUER="$2" ;;
+        --auth-type)               PCS_WEBUI_AUTH_TYPE="$2" ;;
+        --aad-appid)               PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
+        --aad-tenant)              PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
+        --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
+    esac
+    shift
+done
 
 # ========================================================================
 
@@ -88,7 +117,8 @@ touch ${WEBUICONFIG} && chmod 444 ${WEBUICONFIG}
 touch ${WEBUICONFIG_SAFE} && chmod 444 ${WEBUICONFIG_SAFE}
 touch ${WEBUICONFIG_UNSAFE} && chmod 444 ${WEBUICONFIG_UNSAFE}
 
-echo "var DeploymentConfig = {"                       >> ${WEBUICONFIG_SAFE}
+echo "var DeploymentConfig = {"                        > ${WEBUICONFIG_SAFE}
+echo "  solutionName: '${PCS_SOLUTION_NAME}',"        >> ${WEBUICONFIG_SAFE}
 echo "  authEnabled: true,"                           >> ${WEBUICONFIG_SAFE}
 echo "  authType: '${PCS_WEBUI_AUTH_TYPE}',"          >> ${WEBUICONFIG_SAFE}
 echo "  aad : {"                                      >> ${WEBUICONFIG_SAFE}
@@ -98,7 +128,8 @@ echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_SAFE}
 echo "  }"                                            >> ${WEBUICONFIG_SAFE}
 echo "}"                                              >> ${WEBUICONFIG_SAFE}
 
-echo "var DeploymentConfig = {"                       >> ${WEBUICONFIG_UNSAFE}
+echo "var DeploymentConfig = {"                        > ${WEBUICONFIG_UNSAFE}
+echo "  solutionName: '${PCS_SOLUTION_NAME}',"        >> ${WEBUICONFIG_UNSAFE}
 echo "  authEnabled: false,"                          >> ${WEBUICONFIG_UNSAFE}
 echo "  authType: '${PCS_WEBUI_AUTH_TYPE}',"          >> ${WEBUICONFIG_UNSAFE}
 echo "  aad : {"                                      >> ${WEBUICONFIG_UNSAFE}
@@ -115,10 +146,18 @@ cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
 # Environment variables
 touch ${ENVVARS} && chmod 440 ${ENVVARS}
 
+echo "# Valid values: Debug, Info, Warn, Error"                                                           > ${ENVVARS}
+echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}
+echo ""                                                                                                  >> ${ENVVARS}
 echo "export HOST_NAME=\"${HOST_NAME}\""                                                                 >> ${ENVVARS}
 echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
 echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
+echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
+echo "export PCS_SUBSCRIPTION_DOMAIN=\"${PCS_SUBSCRIPTION_DOMAIN}\""                                     >> ${ENVVARS}
+echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
+echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
+echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
