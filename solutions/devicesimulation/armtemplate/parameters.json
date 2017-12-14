@@ -25,5 +25,11 @@
     },
     "aadClientId": {
       "value": "{Added through command line interface}"
+    },
+    "domain": {
+      "value": "{Added through command line interface}"
+    },
+    "subscriptionId": {
+      "value": "{Added through command line interface}"
     }
 }
