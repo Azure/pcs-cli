@@ -180,6 +180,18 @@
             "metadata": {
                 "description": "The certificate key that needs to be uploaded to the VM"
             }
+        },
+        "domain": {
+            "type": "string",
+            "metadata": {
+                "description": "The Azure Active Directory domain used by the Azure Subscription where the solution is deployed"
+            }
+        },
+        "subscriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": "ID of the Azure Subscription where the solution is deployed"
+            }
         }
     },
     "variables": {
