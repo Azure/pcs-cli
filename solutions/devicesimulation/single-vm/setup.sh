@@ -18,10 +18,6 @@ SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # ========================================================================
 
-# Arguments
-readonly ARGS="$@"
-# Arguments number
-readonly ARGNUM="$#"
 # Default values
 export HOST_NAME="localhost"
 export PCS_LOG_LEVEL="Info"
