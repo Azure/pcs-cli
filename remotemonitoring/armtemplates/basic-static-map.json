@@ -135,6 +135,13 @@
                 "description": "The name of Azure IoT Hub"
             }
         },
+        "iotHubConnectionString": {
+            "type": "string",
+            "defaultValue": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
+            "metadata": {
+                "description": "Connection string of existing IoT Hub"
+            }
+        },
         "iotHubSku": {
             "type": "string",
             "defaultValue": "S1",
@@ -584,7 +591,7 @@
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
-                "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
+                "[variables('iotHubResourceId')]",
                 "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]"
             ],
             "properties": {
@@ -598,7 +605,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"static\"')]"
+                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', parameters('iotHubConnectionString'), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', 'messages/events', ' \"', 'Endpoint=sb://iothub-ns-pcs2-hub-273777-928cc9a630.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=bYMF8BlnVHF7sNkCClzzGsSCbxLPAaamiGmFXNTA8jw=', '\" ', '4', ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"static\"')]"
                 }
             }
         }
@@ -610,7 +617,7 @@
         },
         "iotHubConnectionString": {
             "type": "string",
-            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
+            "value": "[parameters('iotHubConnectionString')]"
         },
         "documentDBConnectionString" : {
             "type": "string",
