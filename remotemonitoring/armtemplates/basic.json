@@ -135,6 +135,13 @@
                 "description": "The name of Azure IoT Hub"
             }
         },
+        "iotHubConnectionString": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Connection string of existing IoT Hub"
+            }
+        },
         "iotHubSku": {
             "type": "string",
             "defaultValue": "S1",
@@ -608,7 +615,6 @@
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
-                "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
                 "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
                 "[resourceId('Microsoft.BingMaps/mapApis', variables('bingMapsName'))]"
             ],
@@ -623,7 +629,10 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"', listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey, '\"')]"
+                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', if(not(empty(parameters('
+iotHubConnectionString'))), parameters('iotHubConnectionString'), concat('HostName=', reference(variables('iotHu
+bResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(vari
+ables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', 'messages/events', ' \"', 'Endpoint=sb://iothub-ns-pcs2-hub-273777-928cc9a630.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=keyGoesHere=', '\" ', '4', ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"', listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey, '\"')]"
                 }
             }
         }
@@ -635,7 +644,7 @@
         },
         "iotHubConnectionString": {
             "type": "string",
-            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
+            "value": "[if(not(empty(parameters('iotHubConnectionString'))), parameters('iotHubConnectionString'), concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey))]"
         },
         "documentDBConnectionString" : {
             "type": "string",
