@@ -433,10 +433,6 @@
             "type": "string",
             "value": "[resourceGroup().name]"
         },
-        "iotHubHostName": {
-            "type": "string",
-            "value": "[parameters('iotHubName')]"
-        },
         "iotHubConnectionString": {
             "type": "string",
             "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
