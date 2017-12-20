@@ -290,7 +290,7 @@ export class DeploymentManager implements IDeploymentManager {
                             if (error) {
                                 sshClient.end();
                                 reject(error);
-                                clearInterval(timer); 
+                                clearInterval(timer);
                                 return;
                             }
                             sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {

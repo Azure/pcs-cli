@@ -8,7 +8,7 @@ import * as os from 'os';
 import * as util from 'util';
 import * as uuid from 'uuid';
 import * as forge from 'node-forge';
-import * as momemt from 'moment';
+import * as moment from 'moment';
 
 import { exec } from 'child_process';
 import { ChoiceType, prompt } from 'inquirer';
@@ -320,7 +320,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '', baseUri);
     const startDate = new Date(Date.now());
     let endDate = new Date(startDate.toISOString());
-    const m = momemt(endDate);
+    const m = moment(endDate);
     m.add(1, 'years');
     endDate = new Date(m.toISOString());
     const identifierUris = [ homepage ];
@@ -395,7 +395,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     });
 }
 
-// After creating the new application the propogation takes sometime and hence we need to try
+// After creating the new application the propagation takes some time and hence we need to try
 // multiple times until the role assignment is successful or it fails after max try.
 function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
                                        appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
