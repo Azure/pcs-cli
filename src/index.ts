@@ -70,8 +70,8 @@ const program = new Command(packageJson.name)
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
-    .option('-p, --servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
-    .option('--secret <secret>', 'Service Principal Secret')
+    .option('--servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
+    .option('--servicePrincipalSecret <servicePrincipalSecret>', 'Service Principal Secret')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -114,8 +114,8 @@ const program = new Command(packageJson.name)
     .parse(process.argv);
 
 if (!program.args[0] || program.args[0] === '-t') {
-    if (program.servicePrincipalId && !program.secret) {
-        console.log('If service principal is provided then secret is required');
+    if (program.servicePrincipalId && !program.servicePrincipalSecret) {
+        console.log('If service principal is provided then servicePrincipalSecret is required');
     } else {
         main();
     }
@@ -335,7 +335,7 @@ function createServicePrincipal(azureWebsiteName: string,
     const identifierUris = [ homepage ];
     const replyUrls = [ homepage ];
     const newServicePrincipalSecret: string = uuid.v4();
-    const existingServicePrincipalSecret: string = program.secret;
+    const existingServicePrincipalSecret: string = program.servicePrincipalSecret;
     // Allowing Graph API to sign in and read user profile for newly created application
     const requiredResourceAccess = [{
         resourceAccess: [
@@ -376,7 +376,7 @@ function createServicePrincipal(azureWebsiteName: string,
         return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
     })
     .then((sp: any) => {
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || (program.servicePrincipalId && program.secret)) {
+        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || (program.servicePrincipalId && program.servicePrincipalSecret)) {
             return sp.appId;
         }
 
