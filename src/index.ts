@@ -70,6 +70,8 @@ const program = new Command(packageJson.name)
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('--servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
+    .option('--servicePrincipalSecret <servicePrincipalSecret>', 'Service Principal Secret')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -112,7 +114,11 @@ const program = new Command(packageJson.name)
     .parse(process.argv);
 
 if (!program.args[0] || program.args[0] === '-t') {
-    main();
+    if (program.servicePrincipalId && !program.servicePrincipalSecret) {
+        console.log('If service principal is provided then servicePrincipalSecret is required');
+    } else {
+        main();
+    }
 } else if (program.args[0] === 'login') {
     login();
 } else if (program.args[0] === 'logout') {
@@ -203,7 +209,7 @@ function main() {
                     deployUI.start('Registering application in the Azure Active Directory');
                     return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                 })
-                .then(({appId, domainName, objectId, servicePrincipalSecret}) => {
+                .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
                     if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.options.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
@@ -212,6 +218,7 @@ function main() {
                         answers.appId = appId;
                         answers.aadAppUrl = appUrl;
                         answers.deploymentSku = program.sku;
+                        answers.servicePrincipalId = servicePrincipalId;
                         answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
@@ -310,9 +317,11 @@ function getCachedAuthResponse(): any {
     }
 }
 
-function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
+function createServicePrincipal(azureWebsiteName: string, 
+                                subscriptionId: string,
                                 options: DeviceTokenCredentialsOptions):
-                                Promise<{appId: string, domainName: string, objectId: string, servicePrincipalSecret: string}> {
+                                Promise<{appId: string, domainName: string, objectId: string,
+                                    servicePrincipalId: string, servicePrincipalSecret: string}> {
     const homepage = getWebsiteUrl(azureWebsiteName);
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
@@ -325,7 +334,8 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     endDate = new Date(m.toISOString());
     const identifierUris = [ homepage ];
     const replyUrls = [ homepage ];
-    const servicePrincipalSecret: string = uuid.v4();
+    const newServicePrincipalSecret: string = uuid.v4();
+    const existingServicePrincipalSecret: string = program.servicePrincipalSecret;
     // Allowing Graph API to sign in and read user profile for newly created application
     const requiredResourceAccess = [{
         resourceAccess: [
@@ -349,7 +359,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
                 endDate,
                 keyId: uuid.v1(),
                 startDate,
-                value: servicePrincipalSecret
+                value: newServicePrincipalSecret
             }
         ],
         replyUrls,
@@ -366,7 +376,7 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
     })
     .then((sp: any) => {
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || (program.servicePrincipalId && program.servicePrincipalSecret)) {
             return sp.appId;
         }
 
@@ -377,15 +387,19 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         return graphClient.domains.list()
         .then((domains: any[]) => {
             let domainName: string = '';
+            const servicePrincipalId = program.servicePrincipalId ? program.servicePrincipalId : appId;
+            const servicePrincipalSecret = existingServicePrincipalSecret ? existingServicePrincipalSecret : newServicePrincipalSecret;
             domains.forEach((value: any) => {
                 if (value.isDefault) {
                     domainName = value.name;
                 }
             });
+                
             return {
                 appId,
                 domainName,
                 objectId,
+                servicePrincipalId,
                 servicePrincipalSecret
             };
         });
