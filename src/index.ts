@@ -64,49 +64,54 @@ let answers: Answers = {};
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
+    .option('-t, --type <type>', 'Solution Type: remotemonitoring, remotemonitoring-local',
+            /^(remotemonitoring|remotemonitoring-local|test)$/i,
+            'remotemonitoring')
+    .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
-    .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('-r, --runtime <runtime>', 'Microservices runtime (only for Remote Monitoring): dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
-            );
+        );
         console.log(
             `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
-            );
+        );
         console.log(
-            `    Example for executing a basic deployment:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
-            );
+            `    Example for deploying Remote Monitoring Basic:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
+        );
         console.log(
-            `    Example for executing a standard deployment:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
-            );
+            `    Example for deploying Remote Monitoring Standard:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
+        );
+        console.log(
+            `    Example for deploying Remote Monitoring for local development:  ${chalk.green('pcs -t remotemonitoring-local')}.`
+        );
         console.log();
         console.log(
             '  Commands:'
-            );
+        );
         console.log();
         console.log(
             '    login:         Log in to access Azure subscriptions.'
-            );
+        );
         console.log(
             '    logout:        Log out to remove access to Azure subscriptions.'
-                );
+        );
         console.log();
         console.log(
             `    For further documentation, please visit:`
         );
         console.log(
             `    ${chalk.cyan(gitHubUrl)}`
-            );
+        );
         console.log(
             `    If you have any problems please file an issue:`
-            );
+        );
         console.log(
             `    ${chalk.cyan(gitHubIssuesUrl)}`
-            );
+        );
         console.log();
     })
     .parse(process.argv);
@@ -179,7 +184,7 @@ function main() {
                         throw new Error(errorMessage);
                     }
                     cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
-                    deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, solutionType, program.sku);
+                    deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, program.type, program.sku);
                     return deploymentManager.getLocations();
                 })
                 .then((locations: string[]) => {

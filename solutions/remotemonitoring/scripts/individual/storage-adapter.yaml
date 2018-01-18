@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: storage-adapter
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: storage-adapter
+    spec:
+      containers:
+      - name: storage-adapter-pod
+        image: azureiotpcs/pcs-storage-adapter-{runtime}:testing
+        ports:
+        - containerPort: 9022
+        env:
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_PORT
+          value: "9022"
+        - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storage-adapter-svc
+  labels:
+    app: storage-adapter
+spec:
+  type: NodePort
+  ports:
+  - port: 9022
+  selector:
+    app: storage-adapter

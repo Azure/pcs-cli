@@ -28,7 +28,7 @@ const MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN = 2;
 
 export interface IDeploymentManager {
     submit(answers: Answers | undefined): Promise<any>;
-    getLocations(): Promise<string[]>;
+    getLocations(): Promise<string[] | undefined>;
 }
 
 export class DeploymentManager implements IDeploymentManager {
@@ -49,17 +49,16 @@ export class DeploymentManager implements IDeploymentManager {
         this._client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
     }
 
-    public getLocations(): Promise<string[]> {
+    public getLocations(): Promise<string[] | undefined> {
         // Currently IotHub is not supported in all the regions so using it to get the available locations
         return this._client.providers.get('Microsoft.Devices')
         .then((providers: ResourceModels.Provider) => {
             if (providers.resourceTypes) {
                 const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
                 if (resourceType && resourceType.length) {
-                    return resourceType[0].locations || [];
+                    return resourceType[0].locations;
                 }
             }
-            return [];
         });
     }
 
@@ -69,9 +68,11 @@ export class DeploymentManager implements IDeploymentManager {
         }
 
         const location = answers.location;
-        const deployment: Deployment = { properties: {
+        const deployment: Deployment = {
+            properties: {
             mode: 'Incremental',
-        }};
+            }
+        };
         const deployUI = DeployUI.instance;
         const deploymentName = 'deployment-' + answers.solutionName;
         let deploymentProperties: any = null;
@@ -82,102 +83,112 @@ export class DeploymentManager implements IDeploymentManager {
             // TODO: Explore if it makes sense to add more tags, e.g. Language(Java/.Net), version etc
             tags: { IotSolutionType: this._solutionType },
         };
-        const parametersFileName = this._sku + '-parameters.json';
+
         const environment = this._options.environment;
         let portalUrl = 'https://portal.azure.com';
         let storageEndpointSuffix: string;
         let azureVMFQDNSuffix: string;
         let activeDirectoryEndpointUrl: string;
 
-        return this._client.resources.list({filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\''})
-        .then((resources: ResourceModels.ResourceListResult) => {
-            // using static map for China environment by default since Bing Map resource is not available.
-            if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
-                this._sku += '-static-map';
-            } else {
-                resources.forEach((resource: ResourceModels.GenericResource) => {
-                    if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
-                        freeBingMapResourceCount++;
+        return this._client.resources.list({ filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\'' })
+            .then((resources: ResourceModels.ResourceListResult) => {
+
+                if (this._solutionType === 'remotemonitoring') {
+                    // using static map for China environment by default since Bing Map resource is not available.
+                    if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
+                        this._sku += '-static-map';
+                    } else {
+                        resources.forEach((resource: ResourceModels.GenericResource) => {
+                            if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
+                                freeBingMapResourceCount++;
+                            }
+                        });
+                        if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
+                            this._sku += '-static-map';
+                        }
                     }
-                });
-                if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                    this._sku += '-static-map';
+
+                    const armTemplatePath = __dirname + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
+                    this._template = require(armTemplatePath + this._sku + '.json');
+                    this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
+                } else {
+                    const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
+                    this._template = require(armTemplatePath + 'template.json');
+                    this._parameters = require(armTemplatePath + 'parameters.json');
                 }
-            }
-            const solutionFileName = this._sku + '.json';
-            try {
-                const armTemplatePath = __dirname + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
-                this._template = require(armTemplatePath + solutionFileName);
-                this._parameters = require(armTemplatePath + parametersFileName);
-                // Change the default suffix for basic sku based on current environment
-                if (environment) {
-                    switch (environment.name) {
-                        case AzureEnvironment.AzureChina.name:
-                            azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
-                            break;
-                        case AzureEnvironment.AzureGermanCloud.name:
-                            azureVMFQDNSuffix = 'cloudapp.azure.de';
-                            break;
-                        case AzureEnvironment.AzureUSGovernment.name:
-                            azureVMFQDNSuffix = 'cloudapp.azure.us';
-                            break;
-                        default:
-                            // use default parameter values of global azure environment
-                            azureVMFQDNSuffix = 'cloudapp.azure.com';
+
+                try {
+                    // Change the default suffix for basic sku based on current environment
+                    if (environment) {
+                        switch (environment.name) {
+                            case AzureEnvironment.AzureChina.name:
+                                azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
+                                break;
+                            case AzureEnvironment.AzureGermanCloud.name:
+                                azureVMFQDNSuffix = 'cloudapp.azure.de';
+                                break;
+                            case AzureEnvironment.AzureUSGovernment.name:
+                                azureVMFQDNSuffix = 'cloudapp.azure.us';
+                                break;
+                            default:
+                                // use default parameter values of global azure environment
+                                azureVMFQDNSuffix = 'cloudapp.azure.com';
+                        }
+                        storageEndpointSuffix = environment.storageEndpointSuffix;
+                        activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
+                        if (storageEndpointSuffix.startsWith('.')) {
+                            storageEndpointSuffix = storageEndpointSuffix.substring(1);
+                        }
+                        if (answers.deploymentSku === 'basic') {
+                            this._parameters.storageEndpointSuffix = { value: storageEndpointSuffix };
+                            this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
+                            this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
+                        }
                     }
-                    storageEndpointSuffix = environment.storageEndpointSuffix;
-                    activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
-                    if (storageEndpointSuffix.startsWith('.')) {
-                        storageEndpointSuffix = storageEndpointSuffix.substring(1);
-                    }
-                    if (answers.deploymentSku === 'basic') {
-                        this._parameters.storageEndpointSuffix =  { value: storageEndpointSuffix };
-                        this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
-                        this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
-                    }
+                    this.setupParameters(answers);
+                } catch (ex) {
+                    throw new Error('Could not find template or parameters file, Exception:');
                 }
-                this.setupParameters(answers);
-            } catch (ex) {
-                throw new Error('Could not find template or parameters file: ' + ex.name + ': ' + ex.message);
-            }
-            deployment.properties.parameters = this._parameters;
-            deployment.properties.template = this._template;
-            return deployment;
-        })
-        .then((properties: Deployment) => {
-            deployUI.start('Creating resource group');
-            return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup);
-        })
-        .then((result: ResourceGroup) => {
-            resourceGroup = result;
-            if (environment && environment.portalUrl) {
-                portalUrl = environment.portalUrl;
-            }
-            resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
-            deployUI.stop({message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}`});
-            deployUI.start('Running validation before deploying resources');
-            return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
-        })
-        .then((validationResult: DeploymentValidateResult) => {
-            if (validationResult.error) {
-                const status = {
-                    err: 'Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2)
+
+                deployment.properties.parameters = this._parameters;
+                deployment.properties.template = this._template;
+                return deployment;
+            })
+            .then((properties: Deployment) => {
+                deployUI.start('Creating resource group');
+                return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup);
+            })
+            .then((result: ResourceGroup) => {
+                resourceGroup = result;
+                if (environment && environment.portalUrl) {
+                    portalUrl = environment.portalUrl;
+                }
+                resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
+                console.log('Resources are being deployed at ' + resourceGroupUrl);
+                deployUI.stop({ message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}` });
+                deployUI.start('Running validation before deploying resources');
+                return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
+            })
+            .then((validationResult: DeploymentValidateResult) => {
+                if (validationResult.error) {
+                    const status = {
+                        err: 'Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2)
+                    };
+                    deployUI.stop(status);
+                    throw new Error(JSON.stringify(validationResult.error));
+                }
+                const options = {
+                    client: this._client,
+                    deploymentName,
+                    resourceGroupName: answers.solutionName,
+                    totalResources: deployment.properties.template.resources.length as number
                 };
-                deployUI.stop(status);
-                throw new Error(JSON.stringify(validationResult.error));
-            }
-            const options = {
-                client: this._client,
-                deploymentName,
-                resourceGroupName: answers.solutionName,
-                totalResources: deployment.properties.template.resources.length as number
-            };
-            deployUI.start('', options);
-            return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
-        })
-        .then((res: DeploymentExtended) => {
-            deployUI.stop();
-            deploymentProperties = res.properties;
+                deployUI.start('', options);
+                return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
+            })
+            .then((res: DeploymentExtended) => {
+                deployUI.stop();
+                deploymentProperties = res.properties;
 
             if (answers.deploymentSku === 'standard') {
                 deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
@@ -253,9 +264,9 @@ export class DeploymentManager implements IDeploymentManager {
         })
         .catch((error: Error) => {
             let err = error.toString();
+            console.log(err);
             if (err.includes('Entry not found in cache.')) {
-                err = 'Session expired, Please run pcs login again. \n\
-                Resources are being deployed at ' + resourceGroupUrl;
+            	err = 'Session expired, Please run pcs login again.';
             }
             deployUI.stop({err});
         });
@@ -373,26 +384,26 @@ export class DeploymentManager implements IDeploymentManager {
             const timer = setInterval(
                 () => {
                     fetch.default(req)
-                    .then((value: fetch.Response) => {
-                        return value.json();
-                    })
-                    .then((body: any) => {
-                        if (body.Status.includes('Alive') || retryCount > MAX_RETRY) {
-                            clearInterval(timer);
-                            if (retryCount > MAX_RETRY) {
-                                resolve(false);
-                            } else {
-                                resolve(true);
+                        .then((value: fetch.Response) => {
+                            return value.json();
+                        })
+                        .then((body: any) => {
+                            if (body.Status.includes('Alive') || retryCount > MAX_RETRY) {
+                                clearInterval(timer);
+                                if (retryCount > MAX_RETRY) {
+                                    resolve(false);
+                                } else {
+                                    resolve(true);
+                                }
                             }
-                        }
-                    })
-                    .catch((error: any) => {
-                        // Continue
-                        if (retryCount > MAX_RETRY) {
-                            clearInterval(timer);
-                            resolve(false);
-                        }
-                    });
+                        })
+                        .catch((error: any) => {
+                            // Continue
+                            if (retryCount > MAX_RETRY) {
+                                clearInterval(timer);
+                                resolve(false);
+                            }
+                        });
                     retryCount++;
                 },
                 10000);
