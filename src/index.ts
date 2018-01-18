@@ -64,10 +64,10 @@ let answers: Answers = {};
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .option('-t, --type <type>', 'Solution Type: remotemonitoring, remotemonitoring-local',
-            /^(remotemonitoring|remotemonitoring-local|test)$/i,
+    .option('-t, --type <type>', 'Solution Type: remotemonitoring',
+            /^(remotemonitoring|test)$/i,
             'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
+    .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or local', /^(basic|standard|local)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
@@ -86,7 +86,7 @@ const program = new Command(packageJson.name)
             `    Example for deploying Remote Monitoring Standard:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
         );
         console.log(
-            `    Example for deploying Remote Monitoring for local development:  ${chalk.green('pcs -t remotemonitoring-local')}.`
+            `    Example for deploying Remote Monitoring for local development:  ${chalk.green('pcs -t remotemonitoring -s local')}.`
         );
         console.log();
         console.log(

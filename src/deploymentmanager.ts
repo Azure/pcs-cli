@@ -52,14 +52,14 @@ export class DeploymentManager implements IDeploymentManager {
     public getLocations(): Promise<string[] | undefined> {
         // Currently IotHub is not supported in all the regions so using it to get the available locations
         return this._client.providers.get('Microsoft.Devices')
-        .then((providers: ResourceModels.Provider) => {
-            if (providers.resourceTypes) {
-                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
-                if (resourceType && resourceType.length) {
-                    return resourceType[0].locations;
+            .then((providers: ResourceModels.Provider) => {
+                if (providers.resourceTypes) {
+                    const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
+                    if (resourceType && resourceType.length) {
+                        return resourceType[0].locations;
+                    }
                 }
-            }
-        });
+            });
     }
 
     public submit(answers: Answers): Promise<any> {
@@ -70,7 +70,7 @@ export class DeploymentManager implements IDeploymentManager {
         const location = answers.location;
         const deployment: Deployment = {
             properties: {
-            mode: 'Incremental',
+                mode: 'Incremental',
             }
         };
         const deployUI = DeployUI.instance;
@@ -94,6 +94,10 @@ export class DeploymentManager implements IDeploymentManager {
             .then((resources: ResourceModels.ResourceListResult) => {
 
                 if (this._solutionType === 'remotemonitoring') {
+
+                    const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
+                    this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
+
                     // using static map for China environment by default since Bing Map resource is not available.
                     if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
                         this._sku += '-static-map';
@@ -108,15 +112,13 @@ export class DeploymentManager implements IDeploymentManager {
                         }
                     }
 
-                    const armTemplatePath = __dirname + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
                     this._template = require(armTemplatePath + this._sku + '.json');
-                    this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
+                    
                 } else {
                     const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
                     this._template = require(armTemplatePath + 'template.json');
                     this._parameters = require(armTemplatePath + 'parameters.json');
                 }
-
                 try {
                     // Change the default suffix for basic sku based on current environment
                     if (environment) {
@@ -190,86 +192,86 @@ export class DeploymentManager implements IDeploymentManager {
                 deployUI.stop();
                 deploymentProperties = res.properties;
 
-            if (answers.deploymentSku === 'standard') {
-                deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
-                return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
-            }
-            return Promise.resolve('');
-        })
-        .then((kubeConfigPath: string) => {
-            if (answers.deploymentSku === 'standard') {
-                deployUI.stop({message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}`});
-                const outputs = deploymentProperties.outputs;
-                const config = new Config();
-                config.AADTenantId = answers.aadTenantId;
-                config.AADLoginURL = activeDirectoryEndpointUrl;
-                config.ApplicationId = answers.appId;
-                config.AzureStorageAccountKey = outputs.storageAccountKey.value;
-                config.AzureStorageAccountName = outputs.storageAccountName.value;
-                config.AzureStorageEndpointSuffix = storageEndpointSuffix;
-                // If we are under the plan limi then we should have received a query key
-                if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                    config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
+                if (answers.deploymentSku === 'standard') {
+                    deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
+                    return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
                 }
-                config.DNS = outputs.agentFQDN.value;
-                config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
-                config.EventHubEndpoint = outputs.eventHubEndpoint.value;
-                config.EventHubName = outputs.eventHubName.value;
-                config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
-                config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
-                config.LoadBalancerIP = outputs.loadBalancerIp.value;
-                config.Runtime = answers.runtime;
-                config.TLS = answers.certData;
-                const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
-                deployUI.start('Setting up Kubernetes');
-                return k8sMananger.setupAll();
-            }
-            return Promise.resolve();
-        })
-        .then(() => {
-            const webUrl = deploymentProperties.outputs.azureWebsite.value;
-            deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
-            return this.waitForWebsiteToBeReady(webUrl);
-        })
-        .then((done: boolean) => {
-            const directoryPath = process.cwd() + path.sep + 'deployments';
-            if (!fs.existsSync(directoryPath)) {
-                fs.mkdirSync(directoryPath);
-            }
-            const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
-            const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
-
-            if (deploymentProperties.outputs.azureWebsite) {
-                const webUrl = deploymentProperties.outputs.azureWebsite.value;
-                const status = {
-                    message: `Solution: ${chalk.cyan(answers.solutionName)} is deployed at ${chalk.cyan(webUrl)}`
-                };
-                if (!done) {
-                    status.message += `\n${chalk.yellow('Website not yet available, please refer to troubleshooting guide here:')}\n` +
-                    `${chalk.cyan(troubleshootingGuide)}`;
+                return Promise.resolve('');
+            })
+            .then((kubeConfigPath: string) => {
+                if (answers.deploymentSku === 'standard') {
+                    deployUI.stop({message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}`});
+                    const outputs = deploymentProperties.outputs;
+                    const config = new Config();
+                    config.AADTenantId = answers.aadTenantId;
+                    config.AADLoginURL = activeDirectoryEndpointUrl;
+                    config.ApplicationId = answers.appId;
+                    config.AzureStorageAccountKey = outputs.storageAccountKey.value;
+                    config.AzureStorageAccountName = outputs.storageAccountName.value;
+                    config.AzureStorageEndpointSuffix = storageEndpointSuffix;
+                    // If we are under the plan limi then we should have received a query key
+                    if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
+                        config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
+                    }
+                    config.DNS = outputs.agentFQDN.value;
+                    config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                    config.EventHubEndpoint = outputs.eventHubEndpoint.value;
+                    config.EventHubName = outputs.eventHubName.value;
+                    config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
+                    config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
+                    config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                    config.Runtime = answers.runtime;
+                    config.TLS = answers.certData;
+                    const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
+                    deployUI.start('Setting up Kubernetes');
+                    return k8sMananger.setupAll();
                 }
-                deployUI.stop(status);
-                const output = {
-                    aadAppUrl: answers.aadAppUrl,
-                    resourceGroupUrl,
-                    troubleshootingGuide,
-                    website: deploymentProperties.outputs.azureWebsite.value,
-                };
-                fs.writeFileSync(fileName, JSON.stringify(output, null, 2));
-                console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
                 return Promise.resolve();
-            } else {
-                return Promise.reject('Azure website url not found in deployment output');
-            }
-        })
-        .catch((error: Error) => {
-            let err = error.toString();
-            console.log(err);
-            if (err.includes('Entry not found in cache.')) {
-            	err = 'Session expired, Please run pcs login again.';
-            }
-            deployUI.stop({err});
-        });
+            })
+            .then(() => {
+                const webUrl = deploymentProperties.outputs.azureWebsite.value;
+                deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
+                return this.waitForWebsiteToBeReady(webUrl);
+            })
+            .then((done: boolean) => {
+                const directoryPath = process.cwd() + path.sep + 'deployments';
+                if (!fs.existsSync(directoryPath)) {
+                    fs.mkdirSync(directoryPath);
+                }
+                const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
+                const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
+
+                if (deploymentProperties.outputs.azureWebsite) {
+                    const webUrl = deploymentProperties.outputs.azureWebsite.value;
+                    const status = {
+                        message: `Solution: ${chalk.cyan(answers.solutionName)} is deployed at ${chalk.cyan(webUrl)}`
+                    };
+                    if (!done) {
+                        status.message += `\n${chalk.yellow('Website not yet available, please refer to troubleshooting guide here:')}\n` +
+                        `${chalk.cyan(troubleshootingGuide)}`;
+                    }
+                    deployUI.stop(status);
+                    const output = {
+                        aadAppUrl: answers.aadAppUrl,
+                        resourceGroupUrl,
+                        troubleshootingGuide,
+                        website: deploymentProperties.outputs.azureWebsite.value,
+                    };
+                    fs.writeFileSync(fileName, JSON.stringify(output, null, 2));
+                    console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
+                    return Promise.resolve();
+                } else {
+                    return Promise.reject('Azure website url not found in deployment output');
+                }
+            })
+            .catch((error: Error) => {
+                let err = error.toString();
+                console.log(err);
+                if (err.includes('Entry not found in cache.')) {
+                    err = 'Session expired, Please run pcs login again.';
+                }
+                deployUI.stop({ err });
+            });
     }
 
     private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<string> {
@@ -296,38 +298,38 @@ export class DeploymentManager implements IDeploymentManager {
                     sshClient.removeAllListeners();
 
                     sshClient
-                    .on('ready', (message: any) => {
-                        sshClient.sftp( (error: Error, sftp: SFTPWrapper) => {
-                            if (error) {
-                                sshClient.end();
-                                reject(error);
-                                clearInterval(timer); 
-                                return;
-                            }
-                            sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {
-                                sshClient.end();
-                                clearInterval(timer);
-                                if (err) {
-                                    reject(err);
+                        .on('ready', (message: any) => {
+                            sshClient.sftp((error: Error, sftp: SFTPWrapper) => {
+                                if (error) {
+                                    sshClient.end();
+                                    reject(error);
+                                    clearInterval(timer);
                                     return;
                                 }
-                                resolve(localKubeConfigPath);
+                                sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {
+                                    sshClient.end();
+                                    clearInterval(timer);
+                                    if (err) {
+                                        reject(err);
+                                        return;
+                                    }
+                                    resolve(localKubeConfigPath);
+                                });
                             });
-                        });
-                    })
-                    .on('error', (err: Error) => {
-                        if (retryCount++ > MAX_RETRY) {
-                            clearInterval(timer);
-                            reject(err);
-                        }
-                    })
-                    .on('timeout', () => {
-                        if (retryCount++ > MAX_RETRY) {
-                            clearInterval(timer);
-                            reject(new Error('Failed after maximum number of tries'));
-                        }
-                    })
-                    .connect(config);
+                        })
+                        .on('error', (err: Error) => {
+                            if (retryCount++ > MAX_RETRY) {
+                                clearInterval(timer);
+                                reject(err);
+                            }
+                        })
+                        .on('timeout', () => {
+                            if (retryCount++ > MAX_RETRY) {
+                                clearInterval(timer);
+                                reject(new Error('Failed after maximum number of tries'));
+                            }
+                        })
+                        .connect(config);
                 },
                 5000);
         });

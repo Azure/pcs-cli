@@ -1,15 +1,10 @@
-#!/usr/bin/env bash
-# Copyright (c) Microsoft. All rights reserved.
-# Note: Windows Bash doesn't support shebang extra params
-set -e
+#!/usr/bin/env bash -e
 
 # Build the CLI
 
 APP_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )/"
 cd $APP_HOME
 
-npm install
-git co package-lock.json
 npm install
 npm start
 
