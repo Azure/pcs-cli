@@ -96,10 +96,13 @@ cd ${APP_PATH}
 
 # ========================================================================
 
-# Docker compose file
+# Docker compose files
 
 DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.yml"
 wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
+
+CUSTOMCONFIG_EXAMPLE_SOURCE="${REPOSITORY}/device-simulation-appsettings.ini"
+wget $CUSTOMCONFIG_EXAMPLE_SOURCE -O device-simulation-appsettings.ini
 
 # ========================================================================
 
