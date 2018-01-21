@@ -72,12 +72,22 @@ install_docker_ce() {
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
     apt-get update
     # Install Docker CE
-    apt-get -y --force-yes --no-install-recommends install docker-ce
+    apt-get -y --force-yes --no-install-recommends install docker-ce python-pip python-setuptools
+    # Install Docker Compose
+    pip install docker-compose
     # Test
     docker run --rm hello-world
 }
 
 install_docker_ce
+
+# ========================================================================
+
+# Network tuning
+
+sysctl -w net.ipv4.ip_local_port_range="1024 65535"
+sysctl -w net.ipv4.tcp_max_syn_backlog=4096
+sysctl -w net.core.somaxconn=1024
 
 # ========================================================================
 

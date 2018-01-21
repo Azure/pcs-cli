@@ -1,4 +1,4 @@
-version: '2'
+version: "3"
 
 services:
   apigateway-svc:
@@ -34,6 +34,10 @@ services:
       - PCS_SUBSCRIPTION_ID
       - PCS_RESOURCE_GROUP
       - PCS_IOHUB_NAME
+    sysctls:
+      - net.ipv4.ip_local_port_range="1024 65535"
+      - net.ipv4.tcp_max_syn_backlog=4096
+      - net.core.somaxconn=1024
     # How one could mount custom device models. The path depends on
     # the Docker Compose version, see first line in this file.
     #
