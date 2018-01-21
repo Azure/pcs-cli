@@ -174,7 +174,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/solutions/devicesimulation/single-vm/setup.sh",
+            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/dluc-simple/solutions/devicesimulation/single-vm/setup.sh",
             "metadata": {
                 "description": "The URL of the script to setup a single VM deployment"
             }
@@ -390,7 +390,7 @@
                             "destinationPortRange": "22",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
-                            "access": "Deny",
+                            "access": "Allow",
                             "priority": 101,
                             "direction": "Inbound"
                         }
@@ -542,36 +542,13 @@
             }
         },
         {
-            "comments": "Docker extension used to run the microservices",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'), '/', 'DockerExtension')]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
-            ],
-            "apiVersion": "[variables('computeApiVersion')]",
-            "location": "[variables('location')]",
-            "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "DockerExtension",
-                "typeHandlerVersion": "1.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "azure-environment": "[if(endsWith(reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0], '.cn'), 'AzureChinaCloud', '')]"
-                }
-            },
-            "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
-            }
-        },
-        {
             "comments": "One time script execution to prepare the VM environment",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('vmName'), '/', 'scriptextensions')]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
                 "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
-                "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]"
+                "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]"
             ],
             "apiVersion": "[variables('computeApiVersion')]",
             "location": "[variables('location')]",

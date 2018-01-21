@@ -13,7 +13,7 @@ CERTS="${APP_PATH}/certs"
 CERT="${CERTS}/tls.crt"
 PKEY="${CERTS}/tls.key"
 
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/solutions/devicesimulation/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/dluc-simple/solutions/devicesimulation/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # ========================================================================
@@ -56,24 +56,28 @@ done
 
 # ========================================================================
 
-# Configure Docker registry based on host name
-# ToDo: we may need to add similar parameter to AzureGermanCloud and AzureUSGovernment
-config_for_azure_china() {
-    set +e
-    local host_name=$1
-    if (echo $host_name | grep -c  "\.cn$") ; then
-        # If the host name has .cn suffix, dockerhub in China will be used to avoid slow network traffic failure.
-        local config_file='/etc/docker/daemon.json'
-        echo "{\"registry-mirrors\": [\"https://registry.docker-cn.com\"]}" > ${config_file}
-        service docker restart
+### Install Docker
 
-        # Rewrite the AAD issuer in Azure China environment
-        export PCS_AUTH_ISSUER="https://sts.chinacloudapi.cn/$2/"
-    fi
+install_docker_ce() {
+    apt-get update
+    # Remove old packages if installed
+    set +e
+    apt-get remove docker docker-engine docker.io
     set -e
+    # Install dependencies to work over HTTPS
+    apt-get install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+    # Install Docker's GPG key
+    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
+    # Add repository
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+    apt-get update
+    # Install Docker CE
+    apt-get install docker-ce
+    # Test
+    docker run hello-world
 }
 
-config_for_azure_china $HOST_NAME $PCS_WEBUI_AUTH_AAD_TENANT
+install_docker_ce
 
 # ========================================================================
 
