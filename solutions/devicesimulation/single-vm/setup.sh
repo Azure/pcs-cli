@@ -65,7 +65,7 @@ install_docker_ce() {
     apt-get remove docker docker-engine docker.io
     set -e
     # Install dependencies to work over HTTPS
-    apt-get install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+    apt-get -y --force-yes --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common
     # Install Docker's GPG key
     curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
     # Add repository
