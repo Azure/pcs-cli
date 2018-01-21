@@ -72,9 +72,9 @@ install_docker_ce() {
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
     apt-get update
     # Install Docker CE
-    apt-get install docker-ce
+    apt-get -y --force-yes --no-install-recommends install docker-ce
     # Test
-    docker run hello-world
+    docker run --rm hello-world
 }
 
 install_docker_ce
