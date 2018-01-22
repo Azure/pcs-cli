@@ -13,9 +13,8 @@
   ],
   "main": "./publish/index.js",
   "scripts": {
-    "start": "npm run build && npm test && npm run copy && npm run copysolutions",
-    "copy": "copyfiles ./remotemonitoring/**/*.* ./publish/",
-    "copysolutions": "copyfiles ./solutions/**/*.* ./publish/",
+    "start": "npm run build && npm test && npm run copy",
+    "copy": "copyfiles ./solutions/**/*.* ./publish/",
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -c tslint.json --type-check -p tsconfig.json 'src/**/*.{ts,tsx}'",
     "pretest": "npm run lint",

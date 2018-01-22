@@ -92,12 +92,9 @@ export class DeploymentManager implements IDeploymentManager {
 
         return this._client.resources.list({ filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\'' })
             .then((resources: ResourceModels.ResourceListResult) => {
-
                 if (this._solutionType === 'remotemonitoring') {
-
                     const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
                     this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
-
                     // using static map for China environment by default since Bing Map resource is not available.
                     if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
                         this._sku += '-static-map';
@@ -111,9 +108,7 @@ export class DeploymentManager implements IDeploymentManager {
                             this._sku += '-static-map';
                         }
                     }
-
                     this._template = require(armTemplatePath + this._sku + '.json');
-                    
                 } else {
                     const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
                     this._template = require(armTemplatePath + 'template.json');
