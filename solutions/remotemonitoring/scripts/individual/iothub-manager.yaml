@@ -1,0 +1,73 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iothub-manager
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: iothub-manager
+    spec:
+      containers:
+      - name: iothub-manager-pod
+        image: azureiotpcs/iothub-manager-{runtime}:testing
+        ports:
+        - containerPort: 9002
+        env:
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_PORT
+          value: "9002"
+        - name: PCS_IOTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothub.connstring
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iothub-manager-svc
+  labels:
+    app: iothub-manager
+spec:
+  type: NodePort
+  ports:
+  - port: 9002
+  selector:
+    app: iothub-manager

@@ -1,0 +1,71 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: device-simulation
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: device-simulation
+    spec:
+      containers:
+      - name: device-simulation-pod
+        image: azureiotpcs/device-simulation-dotnet:testing
+        ports:
+        - containerPort: 9003
+        env:
+        - name: PCS_IOTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothub.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-simulation-svc
+  labels:
+    app: device-simulation
+spec:
+  type: NodePort
+  ports:
+  - port: 9003
+  selector:
+    app: device-simulation
