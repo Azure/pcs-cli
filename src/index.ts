@@ -35,7 +35,7 @@ const solutionType: string = 'remotemonitoring';
 enum solutionSkus {
     basic,
     standard,
-    test
+    local
 }
 
 enum environments {
