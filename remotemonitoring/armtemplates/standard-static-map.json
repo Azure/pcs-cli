@@ -54,6 +54,13 @@
                 "description": "The name of Azure IoT Hub"
             }
         },
+        "iotHubConnectionString": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Connection string of existing IoT Hub"
+            }
+        },
         "iotHubSku": {
             "type": "string",
             "defaultValue": "S2",
@@ -396,13 +403,9 @@
             "type": "string",
             "value": "[resourceGroup().name]"
         },
-        "iotHubHostName": {
-            "type": "string",
-            "value": "[parameters('iotHubName')]"
-        },
         "iotHubConnectionString": {
             "type": "string",
-            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
+            "value": "[if(not(empty(parameters('iotHubConnectionString'))), parameters('iotHubConnectionString'), concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey))]"
         },
         "documentDBConnectionString": {
             "type": "string",

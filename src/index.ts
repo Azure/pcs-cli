@@ -8,7 +8,7 @@ import * as os from 'os';
 import * as util from 'util';
 import * as uuid from 'uuid';
 import * as forge from 'node-forge';
-import * as momemt from 'moment';
+import * as moment from 'moment';
 
 import { exec } from 'child_process';
 import { ChoiceType, prompt } from 'inquirer';
@@ -49,6 +49,7 @@ const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in l
 /* tslint:disable */
 const invalidPasswordMessage = 'The supplied password must be between 12-72 characters long and must satisfy at least 3 of password complexity requirements from the following: 1) Contains an uppercase character\n2) Contains a lowercase character\n3) Contains a numeric digit\n4) Contains a special character\n5) Control characters are not allowed';
 /* tslint:enable */
+const invalidIotHubConnectionStringMessage = 'The IoT Hub connection string must contain the keys HostName, SharedAccessKeyName and SharedAccessKey';
 
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/pcs-cli/issues/new';
@@ -329,7 +330,7 @@ function createServicePrincipal(azureWebsiteName: string,
     const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '', baseUri);
     const startDate = new Date(Date.now());
     let endDate = new Date(startDate.toISOString());
-    const m = momemt(endDate);
+    const m = moment(endDate);
     m.add(1, 'years');
     endDate = new Date(m.toISOString());
     const identifierUris = [ homepage ];
@@ -409,7 +410,7 @@ function createServicePrincipal(azureWebsiteName: string,
     });
 }
 
-// After creating the new application the propogation takes sometime and hence we need to try
+// After creating the new application the propagation takes some time and hence we need to try
 // multiple times until the role assignment is successful or it fails after max try.
 function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
                                        appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
@@ -534,6 +535,20 @@ function getDeploymentQuestions(locations: string[]) {
         questions.push(pwdQuestion('pwdFirstAttempt'));
         questions.push(pwdQuestion('pwdSecondAttempt', 'Confirm your password:'));
     }
+
+    questions.push({
+        default: '',
+        message: 'Enter IoT Hub connection string (leave empty to create a new one):',
+        name: 'iotHubConnectionString',
+        type: 'input',
+        validate: (iotHubConnectionString: string) => {
+            const keys = iotHubConnectionString.split(';').map((x) => x.split('=')[0]);
+            return !iotHubConnectionString ||
+                ['HostName', 'SharedAccessKeyName', 'SharedAccessKey'].every((x) => keys.includes(x)) ||
+                invalidIotHubConnectionStringMessage;
+        },
+    });
+
     return questions;
 }
 

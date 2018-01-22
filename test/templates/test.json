@@ -44,6 +44,13 @@
                 "description": "The name of Azure IoT Hub"
             }
         },
+        "iotHubConnectionString": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Connection string of existing IoT Hub"
+            }
+        },
         "iotHubSku": {
             "type": "string",
             "defaultValue": "S1",

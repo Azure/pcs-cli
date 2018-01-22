@@ -84,17 +84,13 @@ the Remote Monitoring WebApp
 
 1. `pcs -t remotemonitoring -s standard`
 2. Follow the on-screen prompts
-3. The results of the deployment will be saved to a file named {deployment-name}-output.json 
+3. The results of the deployment will be saved to a file named {deployment-name}-output.json
 
 **Sample output format:**
 ```json
 "resourceGroup" : {
     "type": "string",
     "value": "{myResourceGroupName}"
-},
-"iotHubHostName": {
-    "type": "string",
-    "value": "{myIoTHubHostName}"
 },
 "iotHubConnectionString": {
     "type": "string",

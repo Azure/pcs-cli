@@ -135,6 +135,11 @@ export class DeploymentManager implements IDeploymentManager {
                         this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
                         this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
                     }
+
+                    if (answers.iotHubConnectionString) {
+                        this._template.resources = this._template.resources.filter((x) => x.type !== 'Microsoft.Devices/Iothubs');
+                        this._parameters.iotHubConnectionString = { value: answers.iotHubConnectionString };
+                    }
                 }
                 this.setupParameters(answers);
             } catch (ex) {
@@ -290,7 +295,7 @@ export class DeploymentManager implements IDeploymentManager {
                             if (error) {
                                 sshClient.end();
                                 reject(error);
-                                clearInterval(timer); 
+                                clearInterval(timer);
                                 return;
                             }
                             sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {
