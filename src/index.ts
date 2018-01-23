@@ -35,7 +35,7 @@ const solutionType: string = 'remotemonitoring';
 enum solutionSkus {
     basic,
     standard,
-    test
+    local
 }
 
 enum environments {
@@ -65,7 +65,7 @@ let answers: Answers = {};
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
     .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|test)$/i, 'basic')
+    .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|local)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
@@ -198,13 +198,26 @@ function main() {
                     return ans;
                 })
                 .then((ans: Answers) => {
-                    answers.adminPassword = ans.pwdFirstAttempt;
-                    answers.sshFilePath = ans.sshFilePath;
-                    deployUI.start('Registering application in the Azure Active Directory');
-                    return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
+                    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
+                        return Promise.resolve({
+                            appId: '', 
+                            domainName: '',
+                            objectId: '',
+                            servicePrincipalSecret: '' });
+                    } else {
+                        answers.adminPassword = ans.pwdFirstAttempt;
+                        answers.sshFilePath = ans.sshFilePath;
+                        deployUI.start('Registering application in the Azure Active Directory');
+                        return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
+                    }
                 })
                 .then(({appId, domainName, objectId, servicePrincipalSecret}) => {
-                    if (appId && servicePrincipalSecret) {
+                    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
+                        cachedAuthResponse.options.tokenAudience = null;
+                        answers.deploymentSku = program.sku;
+                        answers.runtime = program.runtime;
+                        return deploymentManager.submit(answers);
+                    } else if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.options.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
                         deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
@@ -356,19 +369,36 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         requiredResourceAccess
     };
     let objectId: string = '';
-    return graphClient.applications.create(applicationCreateParameters)
-    .then((result: any) => {
-        const servicePrincipalCreateParameters = {
-            accountEnabled: true,
-            appId: result.appId
-        };
-        objectId = result.objectId;
-        return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
-    })
-    .then((sp: any) => {
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-            return sp.appId;
-        }
+    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard] && program.servicePrincipal !== undefined && program.secret !== undefined) {
+        let domain: string = '';
+        graphClient.applications.patch(program.servicePrincipal, applicationCreateParameters);
+        return graphClient.domains.list()
+            .then((domains: any[]) => {
+                domains.forEach((value: any) => {
+                    if (value.isDefault) {
+                        domain = value.name;
+                    }
+                });
+                return Promise.resolve({
+                    appId: program.servicePrincipal, 
+                    domainName: domain,
+                    objectId: '',
+                    servicePrincipalSecret: program.secret });
+        });
+    } else {
+        return graphClient.applications.create(applicationCreateParameters)
+        .then((result: any) => {
+            const servicePrincipalCreateParameters = {
+                accountEnabled: true,
+                appId: result.appId
+            };
+            objectId = result.objectId;
+            return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
+        })
+        .then((sp: any) => {
+            if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
+                return sp.appId;
+            }
 
         // Create role assignment only for standard deployment since ACS requires it
         return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
@@ -468,40 +498,42 @@ function getDeploymentQuestions(locations: string[]) {
         type: 'list',
     });
 
-    questions.push({
-        default: (): any => {
-            return answers.solutionName;
-        },
-        message: 'Enter prefix for ' + getDomain() + ':',
-        name: 'azureWebsiteName',
-        type: 'input',
-        validate: (value: string) => {
-            if (!value.match(Questions.websiteHostNameRegex)) {
-                return 'Please enter a valid prefix for azure website.\n' +
-                       'Valid characters are: ' +
-                       'alphanumeric (A-Z, a-z, 0-9), ' +
-                       'and hyphen(-)';
+    if (program.sku.toLowerCase() !== solutionSkus[solutionSkus.local]) {
+        questions.push({
+            default: (): any => {
+                return answers.solutionName;
+            },
+            message: 'Enter prefix for ' + getDomain() + ':',
+            name: 'azureWebsiteName',
+            type: 'input',
+            validate: (value: string) => {
+                if (!value.match(Questions.websiteHostNameRegex)) {
+                    return 'Please enter a valid prefix for azure website.\n' +
+                        'Valid characters are: ' +
+                        'alphanumeric (A-Z, a-z, 0-9), ' +
+                        'and hyphen(-)';
+                }
+                return checkUrlExists(value, answers.subscriptionId);
             }
-            return checkUrlExists(value, answers.subscriptionId);
-        }
-    });
+        });
 
-    questions.push({
-        message: 'Enter a user name for the virtual machine:',
-        name: 'adminUsername',
-        type: 'input',
-        validate: (userName: string) => {
-            const pass: RegExpMatchArray | null = userName.match(Questions.userNameRegex);
-            const notAllowedUserNames = Questions.notAllowedUserNames.filter((u: string) => {
-                return u === userName;
-            });
-            if (pass && notAllowedUserNames.length === 0) {
-                return true;
-            }
+        questions.push({
+            message: 'Enter a user name for the virtual machine:',
+            name: 'adminUsername',
+            type: 'input',
+            validate: (userName: string) => {
+                const pass: RegExpMatchArray | null = userName.match(Questions.userNameRegex);
+                const notAllowedUserNames = Questions.notAllowedUserNames.filter((u: string) => {
+                    return u === userName;
+                });
+                if (pass && notAllowedUserNames.length === 0) {
+                    return true;
+                }
 
-            return invalidUsernameMessage;
-        },
-    });
+                return invalidUsernameMessage;
+            },
+        });
+    }
 
         // Only add ssh key file option for standard deployment
     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
@@ -516,7 +548,7 @@ function getDeploymentQuestions(locations: string[]) {
                 return fs.existsSync(sshFilePath);
             },
         });
-    } else {
+    } else if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
         questions.push(pwdQuestion('pwdFirstAttempt'));
         questions.push(pwdQuestion('pwdSecondAttempt', 'Confirm your password:'));
     }
