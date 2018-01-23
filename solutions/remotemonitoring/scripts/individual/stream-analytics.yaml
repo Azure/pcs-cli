@@ -1,0 +1,116 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: telemetry-agent
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: telemetry-agent
+    spec:
+      containers:
+      - name: telemetry-agent-pod
+        image: azureiotpcs/telemetry-agent-{runtime}:testing
+        ports:
+        - containerPort: 9023
+        env:
+        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.webservice.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.webservice.url
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.account
+        - name: PCS_IOTHUBREACT_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.key
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.endpointsuffix
+        - name: PCS_IOTHUBREACT_HUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.name
+        - name: PCS_IOTHUBREACT_HUB_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.endpoint
+        - name: PCS_IOTHUBREACT_HUB_PARTITIONS
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.partitions
+        - name: PCS_IOTHUBREACT_ACCESS_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.access.connstring
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-agent-svc
+  labels:
+    app: telemetry-agent
+spec:
+  type: NodePort
+  ports:
+  - port: 9023
+  selector:
+    app: telemetry-agent

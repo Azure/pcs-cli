@@ -1,0 +1,61 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth-pod
+        image: azureiotpcs/pcs-auth-dotnet:testing
+        ports:
+        - containerPort: 9001
+        env:
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-svc
+  labels:
+    app: auth
+spec:
+  type: NodePort
+  ports:
+  - port: 9001
+  selector:
+    app: auth

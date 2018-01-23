@@ -105,7 +105,7 @@ export class K8sManager implements IK8sManager {
     }
 
     public deleteConfigMap(): Promise<any> {
-        const configPath = __dirname + path.sep + 'remotemonitoring/scripts/individual/deployment-configmap.yaml';
+        const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
         return this._api.deleteNamespacedConfigMap(configMap.metadata.name, this._namespace, configMap);
@@ -113,7 +113,7 @@ export class K8sManager implements IK8sManager {
 
     public deleteDeployment(): Promise<any> {
         const promises = new Array<Promise<any>>();
-        const allInOnePath = process.cwd() + path.sep + 'remotemonitoring/scripts/all-in-one.yaml';
+        const allInOnePath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/all-in-one.yaml';
         const data = fs.readFileSync(allInOnePath, 'UTF-8');
         const allInOne = jsyaml.safeLoadAll(data, (doc: any) => {
             doc.metadata.namespace = this._namespace;
@@ -183,7 +183,7 @@ export class K8sManager implements IK8sManager {
     }
 
     public setupConfigMap(): Promise<any> {
-        const configPath = process.cwd() + path.sep + 'remotemonitoring/scripts/individual/deployment-configmap.yaml';
+        const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
@@ -209,7 +209,7 @@ export class K8sManager implements IK8sManager {
 
     public setupDeployment(): Promise<any> {
         const promises = new Array<Promise<any>>();
-        const allInOnePath = process.cwd() + path.sep + 'remotemonitoring/scripts/all-in-one.yaml';
+        const allInOnePath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/all-in-one.yaml';
         const data = fs.readFileSync(allInOnePath, 'UTF-8');
         const allInOne = jsyaml.safeLoadAll(data, (doc: any) => {
             doc.metadata.namespace = this._namespace;

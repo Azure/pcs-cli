@@ -64,55 +64,66 @@ let answers: Answers = {};
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .option('-t, --type <type>', 'Solution Type: remotemonitoring', /^(remotemonitoring|test)$/i, 'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type: basic, standard, or test', /^(basic|standard|local)$/i, 'basic')
+    .option('-t, --type <type>', 'Solution Type: remotemonitoring',
+            /^(remotemonitoring|test)$/i,
+            'remotemonitoring')
+    .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or local', /^(basic|standard|local)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('--servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
+    .option('--servicePrincipalSecret <servicePrincipalSecret>', 'Service Principal Secret')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
-            );
+        );
         console.log(
             `    Default value for ${chalk.green('-s, --sku')} is ${chalk.green('basic')}.`
-            );
+        );
         console.log(
-            `    Example for executing a basic deployment:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
-            );
+            `    Example for deploying Remote Monitoring Basic:  ${chalk.green('pcs -t remotemonitoring -s basic')}.`
+        );
         console.log(
-            `    Example for executing a standard deployment:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
-            );
+            `    Example for deploying Remote Monitoring Standard:  ${chalk.green('pcs -t remotemonitoring -s standard')}.`
+        );
+        console.log(
+            `    Example for deploying Remote Monitoring for local development:  ${chalk.green('pcs -t remotemonitoring -s local')}.`
+        );
         console.log();
         console.log(
             '  Commands:'
-            );
+        );
         console.log();
         console.log(
             '    login:         Log in to access Azure subscriptions.'
-            );
+        );
         console.log(
             '    logout:        Log out to remove access to Azure subscriptions.'
-                );
+        );
         console.log();
         console.log(
             `    For further documentation, please visit:`
         );
         console.log(
             `    ${chalk.cyan(gitHubUrl)}`
-            );
+        );
         console.log(
             `    If you have any problems please file an issue:`
-            );
+        );
         console.log(
             `    ${chalk.cyan(gitHubIssuesUrl)}`
-            );
+        );
         console.log();
     })
     .parse(process.argv);
 
 if (!program.args[0] || program.args[0] === '-t') {
-    main();
+    if (program.servicePrincipalId && !program.servicePrincipalSecret) {
+        console.log('If service principal is provided then servicePrincipalSecret is required');
+    } else {
+        main();
+    }
 } else if (program.args[0] === 'login') {
     login();
 } else if (program.args[0] === 'logout') {
@@ -179,7 +190,7 @@ function main() {
                         throw new Error(errorMessage);
                     }
                     cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
-                    deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, solutionType, program.sku);
+                    deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, program.type, program.sku);
                     return deploymentManager.getLocations();
                 })
                 .then((locations: string[]) => {
@@ -211,7 +222,7 @@ function main() {
                         return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                     }
                 })
-                .then(({appId, domainName, objectId, servicePrincipalSecret}) => {
+                .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
                         cachedAuthResponse.options.tokenAudience = null;
                         answers.deploymentSku = program.sku;
@@ -225,6 +236,7 @@ function main() {
                         answers.appId = appId;
                         answers.aadAppUrl = appUrl;
                         answers.deploymentSku = program.sku;
+                        answers.servicePrincipalId = servicePrincipalId;
                         answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
@@ -323,9 +335,11 @@ function getCachedAuthResponse(): any {
     }
 }
 
-function createServicePrincipal(azureWebsiteName: string, subscriptionId: string,
+function createServicePrincipal(azureWebsiteName: string, 
+                                subscriptionId: string,
                                 options: DeviceTokenCredentialsOptions):
-                                Promise<{appId: string, domainName: string, objectId: string, servicePrincipalSecret: string}> {
+                                Promise<{appId: string, domainName: string, objectId: string,
+                                    servicePrincipalId: string, servicePrincipalSecret: string}> {
     const homepage = getWebsiteUrl(azureWebsiteName);
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
@@ -338,7 +352,8 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
     endDate = new Date(m.toISOString());
     const identifierUris = [ homepage ];
     const replyUrls = [ homepage ];
-    const servicePrincipalSecret: string = uuid.v4();
+    const newServicePrincipalSecret: string = uuid.v4();
+    const existingServicePrincipalSecret: string = program.servicePrincipalSecret;
     // Allowing Graph API to sign in and read user profile for newly created application
     const requiredResourceAccess = [{
         resourceAccess: [
@@ -362,43 +377,26 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
                 endDate,
                 keyId: uuid.v1(),
                 startDate,
-                value: servicePrincipalSecret
+                value: newServicePrincipalSecret
             }
         ],
         replyUrls,
         requiredResourceAccess
     };
     let objectId: string = '';
-    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard] && program.servicePrincipal !== undefined && program.secret !== undefined) {
-        let domain: string = '';
-        graphClient.applications.patch(program.servicePrincipal, applicationCreateParameters);
-        return graphClient.domains.list()
-            .then((domains: any[]) => {
-                domains.forEach((value: any) => {
-                    if (value.isDefault) {
-                        domain = value.name;
-                    }
-                });
-                return Promise.resolve({
-                    appId: program.servicePrincipal, 
-                    domainName: domain,
-                    objectId: '',
-                    servicePrincipalSecret: program.secret });
-        });
-    } else {
-        return graphClient.applications.create(applicationCreateParameters)
-        .then((result: any) => {
-            const servicePrincipalCreateParameters = {
-                accountEnabled: true,
-                appId: result.appId
-            };
-            objectId = result.objectId;
-            return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
-        })
-        .then((sp: any) => {
-            if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                return sp.appId;
-            }
+    return graphClient.applications.create(applicationCreateParameters)
+    .then((result: any) => {
+        const servicePrincipalCreateParameters = {
+            accountEnabled: true,
+            appId: result.appId
+        };
+        objectId = result.objectId;
+        return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
+    })
+    .then((sp: any) => {
+        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || program.sku.toLowerCase() === solutionSkus[solutionSkus.local] || (program.servicePrincipalId && program.servicePrincipalSecret)) {
+            return sp.appId;
+        }
 
         // Create role assignment only for standard deployment since ACS requires it
         return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
@@ -407,15 +405,19 @@ function createServicePrincipal(azureWebsiteName: string, subscriptionId: string
         return graphClient.domains.list()
         .then((domains: any[]) => {
             let domainName: string = '';
+            const servicePrincipalId = program.servicePrincipalId ? program.servicePrincipalId : appId;
+            const servicePrincipalSecret = existingServicePrincipalSecret ? existingServicePrincipalSecret : newServicePrincipalSecret;
             domains.forEach((value: any) => {
                 if (value.isDefault) {
                     domainName = value.name;
                 }
             });
+                
             return {
                 appId,
                 domainName,
                 objectId,
+                servicePrincipalId,
                 servicePrincipalSecret
             };
         });

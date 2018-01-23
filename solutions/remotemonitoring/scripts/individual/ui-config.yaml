@@ -1,0 +1,88 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: config
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: config
+    spec:
+      containers:
+      - name: config-pod
+        image: azureiotpcs/pcs-config-{runtime}:testing
+        ports:
+        - containerPort: 9005
+        env:
+        - name: PCS_CONFIG_WEBSERVICE_PORT
+          value: "9005"
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
+        - name: PCS_DEVICESIMULATION_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: devicesimulation.webservice.url
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.webservice.url
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
+        - name: PCS_BINGMAP_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: bing.map.key
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-svc
+  labels:
+    app: config
+spec:
+  type: NodePort
+  ports:
+  - port: 9005
+  selector:
+    app: config

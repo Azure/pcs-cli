@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: remote-monitoring-webui
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: remote-monitoring-webui
+    spec:
+      containers:
+      - name: remote-monitoring-webui-pod
+        image: azureiotpcs/pcs-remote-monitoring-webui:testing
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: webui-config-volume
+            mountPath: /app/build/webui-config.js
+            subPath: webui-config.js
+            readOnly: true
+      volumes:
+        - name: webui-config-volume
+          configMap:
+            name: deployment-configmap
+            items:
+            - key: webui-config.js
+              path: webui-config.js
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-monitoring-webui-svc
+  labels:
+    app: remote-monitoring-webui
+spec:
+  type: NodePort
+  ports:
+  - port: 9000
+    targetPort: 80
+  selector:
+    app: remote-monitoring-webui

@@ -1,0 +1,809 @@
+# Ingress - Start
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: remotemonitoring
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/rewrite-target: /
+    ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - "{DNS}"
+    secretName: tls-certificate
+  rules:
+  - host: "{DNS}"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: remote-monitoring-webui-svc
+          servicePort: 9000
+      - path: /auth
+        backend:
+          serviceName: auth-svc
+          servicePort: 9001
+      - path: /iothubmanager
+        backend:
+          serviceName: iothub-manager-svc
+          servicePort: 9002
+      - path: /devicesimulation
+        backend:
+          serviceName: device-simulation-svc
+          servicePort: 9003
+      - path: /telemetry
+        backend:
+          serviceName: telemetry-svc
+          servicePort: 9004
+      - path: /config
+        backend:
+          serviceName: config-svc
+          servicePort: 9005
+# Ingress - End
+
+---
+
+# Nginx-Ingress LoadBalancer - Start
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {loadBalancerIP}
+  ports:
+    - port: 80
+      name: http
+    - port: 443
+      name: https
+  selector:
+    k8s-app: nginx-ingress-lb
+# Nginx-Ingress LoadBalancer - End
+
+---
+
+# Default-Http-Backend - Start
+kind: Service
+apiVersion: v1
+metadata:
+  name: default-http-backend
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: default-http-backend
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: default-http-backend
+spec:
+  replicas: 1
+  selector:
+    app: default-http-backend
+  template:
+    metadata:
+      labels:
+        app: default-http-backend
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: default-http-backend
+        # Any image is permissable as long as:
+        # 1. It serves a 404 page at /
+        # 2. It serves 200 on a /healthz endpoint
+        image: gcr.io/google_containers/defaultbackend:1.0
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 10m
+            memory: 20Mi
+          requests:
+            cpu: 10m
+            memory: 20Mi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-ingress-controller
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        k8s-app: nginx-ingress-lb
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: nginx-ingress-controller
+          image: gcr.io/google_containers/nginx-ingress-controller:0.8.3
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 18080
+              scheme: HTTP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 18080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          args:
+            - /nginx-ingress-controller
+            - --default-backend-service=$(POD_NAMESPACE)/default-http-backend
+            - --default-ssl-certificate=$(POD_NAMESPACE)/tls-certificate
+          # Use downward API
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          volumeMounts:
+            - name: nginx-template-volume
+              mountPath: /etc/nginx/template
+              readOnly: true
+      volumes:
+        - name: nginx-template-volume
+          configMap:
+            name: deployment-configmap
+            items:
+            - key: nginx.tmpl
+              path: nginx.tmpl
+# Default-Http-Backend - Start
+
+---
+
+# Device Simulation - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: device-simulation
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: device-simulation
+    spec:
+      containers:
+      - name: device-simulation-pod
+        image: azureiotpcs/device-simulation-dotnet:testing
+        ports:
+        - containerPort: 9003
+        env:
+        - name: PCS_IOTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothub.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-simulation-svc
+  labels:
+    app: device-simulation
+spec:
+  type: NodePort
+  ports:
+  - port: 9003
+  selector:
+    app: device-simulation
+# Device Simulation - End
+
+---
+
+# IotHub Manager - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iothub-manager
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: iothub-manager
+    spec:
+      containers:
+      - name: iothub-manager-pod
+        image: azureiotpcs/iothub-manager-{runtime}:testing
+        ports:
+        - containerPort: 9002
+        env:
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_PORT
+          value: "9002"
+        - name: PCS_IOTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothub.connstring
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iothub-manager-svc
+  labels:
+    app: iothub-manager
+spec:
+  type: NodePort
+  ports:
+  - port: 9002
+  selector:
+    app: iothub-manager
+# IotHub Manager - End
+
+---
+
+# Telemetry - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: telemetry
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: telemetry
+    spec:
+      containers:
+      - name: telemetry-pod
+        image: azureiotpcs/telemetry-{runtime}:testing
+        ports:
+        - containerPort: 9004
+        env:
+        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-svc
+  labels:
+    app: telemetry
+spec:
+  type: NodePort
+  ports:
+  - port: 9004
+  selector:
+    app: telemetry
+# Telemetry - End
+
+---
+
+# Storage Adapter - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: storage-adapter
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: storage-adapter
+    spec:
+      containers:
+      - name: storage-adapter-pod
+        image: azureiotpcs/pcs-storage-adapter-{runtime}:testing
+        ports:
+        - containerPort: 9022
+        env:
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_PORT
+          value: "9022"
+        - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storage-adapter-svc
+  labels:
+    app: storage-adapter
+spec:
+  type: NodePort
+  ports:
+  - port: 9022
+  selector:
+    app: storage-adapter
+# Storage Adapter - End
+
+---
+
+# Telemetry Agent - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: telemetry-agent
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: telemetry-agent
+    spec:
+      containers:
+      - name: telemetry-agent-pod
+        image: azureiotpcs/telemetry-agent-{runtime}:testing
+        ports:
+        - containerPort: 9023
+        env:
+        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.webservice.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.webservice.url
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.account
+        - name: PCS_IOTHUBREACT_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.key
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.endpointsuffix
+        - name: PCS_IOTHUBREACT_HUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.name
+        - name: PCS_IOTHUBREACT_HUB_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.endpoint
+        - name: PCS_IOTHUBREACT_HUB_PARTITIONS
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.partitions
+        - name: PCS_IOTHUBREACT_ACCESS_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.access.connstring
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-agent-svc
+  labels:
+    app: telemetry-agent
+spec:
+  type: NodePort
+  ports:
+  - port: 9023
+  selector:
+    app: telemetry-agent
+# Telemetry Agent - End
+
+---
+
+# PCS Config - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: config
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: config
+    spec:
+      containers:
+      - name: config-pod
+        image: azureiotpcs/pcs-config-{runtime}:testing
+        ports:
+        - containerPort: 9005
+        env:
+        - name: PCS_CONFIG_WEBSERVICE_PORT
+          value: "9005"
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: storageadapter.webservice.url
+        - name: PCS_DEVICESIMULATION_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: devicesimulation.webservice.url
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.webservice.url
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
+        - name: PCS_BINGMAP_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: bing.map.key
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-svc
+  labels:
+    app: config
+spec:
+  type: NodePort
+  ports:
+  - port: 9005
+  selector:
+    app: config
+# PCS Config - End
+
+---
+
+# Auth - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth-pod
+        image: azureiotpcs/pcs-auth-dotnet:testing
+        ports:
+        - containerPort: 9001
+        env:
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-svc
+  labels:
+    app: auth
+spec:
+  type: NodePort
+  ports:
+  - port: 9001
+  selector:
+    app: auth
+# Auth - End
+
+---
+
+# Remote Monitoring WebUI - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: remote-monitoring-webui
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: remote-monitoring-webui
+    spec:
+      containers:
+      - name: remote-monitoring-webui-pod
+        image: azureiotpcs/pcs-remote-monitoring-webui:testing
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: webui-config-volume
+            mountPath: /app/build/webui-config.js
+            subPath: webui-config.js
+            readOnly: true
+      volumes:
+        - name: webui-config-volume
+          configMap:
+            name: deployment-configmap
+            items:
+            - key: webui-config.js
+              path: webui-config.js
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-monitoring-webui-svc
+  labels:
+    app: remote-monitoring-webui
+spec:
+  type: NodePort
+  ports:
+  - port: 9000
+    targetPort: 80
+  selector:
+    app: remote-monitoring-webui
+# Remote Monitoring WebUI - End

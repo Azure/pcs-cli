@@ -203,13 +203,6 @@
             "metadata": {
                 "description": "The storage SKU name"
             }
-        },
-        "bingMapsLocation": {
-            "type": "string",
-            "defaultValue": "westus",
-            "metadata": {
-                "description": "Bing Maps region"
-            }
         }
     },
     "variables": {
@@ -232,15 +225,28 @@
         "mastersEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-mgmt')]",
         "orchestratorType": "Kubernetes",
         "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
+        "servicePrincipalClientId": "[parameters('servicePrincipalClientId')]",
+        "servicePrincipalClientSecret": "[parameters('servicePrincipalSecret')]",
+        "useServicePrincipalDictionary": {
+            "DCOS": 0,
+            "Swarm": 0,
+            "Kubernetes": 1
+        },
+        "useServicePrincipal": "[variables('useServicePrincipalDictionary')[variables('orchestratorType')]]",
+        "servicePrincipalFields": [
+            null,
+            {
+                "ClientId": "[parameters('servicePrincipalClientId')]",
+                "Secret": "[parameters('servicePrincipalSecret')]"
+            }
+        ],
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
         "branch": "master",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
-        "storageApiVersion": "2017-06-01",
-        "bingMapsName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-map')]",
-        "bingMapsVersion": "2016-08-18"
+        "storageApiVersion": "2017-06-01"
     },
     "resources": [
         {
@@ -380,10 +386,7 @@
                         ]
                     }
                 },
-                "servicePrincipalProfile": {
-                    "ClientId": "[parameters('servicePrincipalClientId')]",
-                    "Secret": "[parameters('servicePrincipalSecret')]"
-                }
+                "servicePrincipalProfile": "[variables('servicePrincipalFields')[variables('useServicePrincipal')]]"
             }
         },
         {
@@ -398,22 +401,6 @@
             "sku": {
                 "name": "[parameters('storageSkuName')]"
             }
-        },
-        {
-            "apiVersion": "[variables('bingMapsVersion')]",
-            "type": "Microsoft.BingMaps/mapApis",
-            "name": "[variables('bingMapsName')]",
-            "location": "[parameters('bingMapsLocation')]",
-            "plan": {
-                "publisher": "bingmaps",
-                "product": "mapapis",
-                "name": "internal1",
-                "promotionCode": null
-            },
-            "tags": {
-                "IotSuiteType": "[variables('solutionType')]"
-            },
-            "properties": {}
         }
     ],
     "outputs": {
@@ -480,10 +467,6 @@
         "storageAccountKey": {
             "type": "string",
             "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
-        },
-        "mapApiQueryKey": {
-            "type": "string",
-            "value": "[listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey]"
         }
     }
 }
