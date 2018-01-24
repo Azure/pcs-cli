@@ -98,7 +98,7 @@ export class DeploymentManager implements IDeploymentManager {
                     // using static map for China environment by default since Bing Map resource is not available.
                     if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
                         this._sku += '-static-map';
-                    } else {
+                    } else if (answers.deploymentSku !== 'local') {
                         resources.forEach((resource: ResourceModels.GenericResource) => {
                             if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
                                 freeBingMapResourceCount++;
@@ -191,6 +191,8 @@ export class DeploymentManager implements IDeploymentManager {
                     deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
                     return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
                 }
+
+                this.printEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
                 return Promise.resolve('');
             })
             .then((kubeConfigPath: string) => {
@@ -224,9 +226,12 @@ export class DeploymentManager implements IDeploymentManager {
                 return Promise.resolve();
             })
             .then(() => {
+                if (answers.deploymentSku !== 'local') {
                 const webUrl = deploymentProperties.outputs.azureWebsite.value;
                 deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
                 return this.waitForWebsiteToBeReady(webUrl);
+                }
+                return Promise.resolve(true);
             })
             .then((done: boolean) => {
                 const directoryPath = process.cwd() + path.sep + 'deployments';
@@ -236,7 +241,9 @@ export class DeploymentManager implements IDeploymentManager {
                 const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
                 const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
 
-                if (deploymentProperties.outputs.azureWebsite) {
+                if (answers.deploymentSku === 'local') {
+                    return Promise.resolve();
+                } else if (deploymentProperties.outputs.azureWebsite) {
                     const webUrl = deploymentProperties.outputs.azureWebsite.value;
                     const status = {
                         message: `Solution: ${chalk.cyan(answers.solutionName)} is deployed at ${chalk.cyan(webUrl)}`
@@ -405,6 +412,25 @@ export class DeploymentManager implements IDeploymentManager {
                 },
                 10000);
         });
+    }
+
+    private printEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
+        const data = [] as string[];
+        data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
+        data.push('PCS_IOTHUB_CONNSTRING=' + outputs.iotHubConnectionString.value);
+        data.push('PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
+        data.push('PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
+        data.push('PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
+        data.push('PCS_IOTHUBREACT_HUB_ENDPOINT=Endpoint=' + outputs.eventHubEndpoint.value);
+        data.push('PCS_IOTHUBREACT_HUB_PARTITIONS=' + outputs.eventHubPartitions.value);
+        data.push('PCS_IOTHUBREACT_HUB_NAME=' + outputs.eventHubName.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
+        data.push('PCS_AUTH_REQUIRED=false');
+        data.push('PCS_BINGMAP_KEY=static');
+       
+        console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }
 }
 
