@@ -214,6 +214,7 @@ function main() {
                             appId: '', 
                             domainName: '',
                             objectId: '',
+                            servicePrincipalId: '',
                             servicePrincipalSecret: '' });
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
@@ -394,7 +395,8 @@ function createServicePrincipal(azureWebsiteName: string,
         return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
     })
     .then((sp: any) => {
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || program.sku.toLowerCase() === solutionSkus[solutionSkus.local] || (program.servicePrincipalId && program.servicePrincipalSecret)) {
+        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic] || program.sku.toLowerCase() === solutionSkus[solutionSkus.local] ||
+         (program.servicePrincipalId && program.servicePrincipalSecret)) {
             return sp.appId;
         }
 

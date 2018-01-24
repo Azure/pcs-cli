@@ -98,7 +98,7 @@ export class DeploymentManager implements IDeploymentManager {
                     // using static map for China environment by default since Bing Map resource is not available.
                     if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
                         this._sku += '-static-map';
-                    } else {
+                    } else if (answers.deploymentSku !== 'local') {
                         resources.forEach((resource: ResourceModels.GenericResource) => {
                             if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
                                 freeBingMapResourceCount++;
@@ -146,7 +146,6 @@ export class DeploymentManager implements IDeploymentManager {
                 } catch (ex) {
                     throw new Error('Could not find template or parameters file, Exception:');
                 }
-
 
                 deployment.properties.parameters = this._parameters;
                 deployment.properties.template = this._template;
@@ -227,9 +226,12 @@ export class DeploymentManager implements IDeploymentManager {
                 return Promise.resolve();
             })
             .then(() => {
+                if (answers.deploymentSku !== 'local') {
                 const webUrl = deploymentProperties.outputs.azureWebsite.value;
                 deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
                 return this.waitForWebsiteToBeReady(webUrl);
+                }
+                return Promise.resolve(true);
             })
             .then((done: boolean) => {
                 const directoryPath = process.cwd() + path.sep + 'deployments';
@@ -239,7 +241,9 @@ export class DeploymentManager implements IDeploymentManager {
                 const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
                 const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
 
-                if (deploymentProperties.outputs.azureWebsite) {
+                if (answers.deploymentSku === 'local') {
+                    return Promise.resolve();
+                } else if (deploymentProperties.outputs.azureWebsite) {
                     const webUrl = deploymentProperties.outputs.azureWebsite.value;
                     const status = {
                         message: `Solution: ${chalk.cyan(answers.solutionName)} is deployed at ${chalk.cyan(webUrl)}`
