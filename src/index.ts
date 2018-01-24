@@ -210,6 +210,7 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
+                        // For local deployment we don't need to create Application in AAD hence skipping the creation by resolving empty promise
                         return Promise.resolve({
                             appId: '', 
                             domainName: '',
