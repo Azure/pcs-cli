@@ -235,7 +235,7 @@
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "branch": "master",
+        "branch": "1.0.0-preview.5",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
         "storageApiVersion": "2017-06-01",
