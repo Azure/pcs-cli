@@ -11,7 +11,7 @@ CERT="${CERTS}/tls.crt"
 PKEY="${CERTS}/tls.key"
 
 # TODO: move files to Remote Monitoring repositories
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/master/remotemonitoring/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/master/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # ========================================================================
