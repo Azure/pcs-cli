@@ -84,6 +84,7 @@
     "inquirer": "4.0.0",
     "js-yaml": "3.10.0",
     "json-loader": "0.5.4",
+    "moment": "2.21.0",
     "ms-rest": "2.2.0",
     "ms-rest-azure": "2.4.4",
     "node-fetch": "1.7.3",
