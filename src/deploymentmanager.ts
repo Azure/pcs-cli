@@ -192,7 +192,9 @@ export class DeploymentManager implements IDeploymentManager {
                     return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
                 }
 
-                this.printEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                if (answers.deploymentSku === 'local') {
+                    this.printEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                }
                 return Promise.resolve('');
             })
             .then((kubeConfigPath: string) => {
@@ -227,9 +229,9 @@ export class DeploymentManager implements IDeploymentManager {
             })
             .then(() => {
                 if (answers.deploymentSku !== 'local') {
-                const webUrl = deploymentProperties.outputs.azureWebsite.value;
-                deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
-                return this.waitForWebsiteToBeReady(webUrl);
+                    const webUrl = deploymentProperties.outputs.azureWebsite.value;
+                    deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
+                    return this.waitForWebsiteToBeReady(webUrl);
                 }
                 return Promise.resolve(true);
             })
