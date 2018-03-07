@@ -13,6 +13,7 @@ export class Config {
     public EventHubPartitions: string;
     public IoTHubConnectionString: string;
     public LoadBalancerIP: string;
+    public ReleaseVersion: string;
     public Runtime: string;
     public TLS: {cert: string, key: string, fingerPrint: string};
     public WebUIConfig: { 

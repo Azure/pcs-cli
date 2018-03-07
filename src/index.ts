@@ -225,24 +225,22 @@ function main() {
                     }
                 })
                 .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
+                    cachedAuthResponse.options.tokenAudience = null;
+                    answers.deploymentSku = program.sku;
+                    answers.runtime = program.runtime;
+                    answers.version = packageJson.version;
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        cachedAuthResponse.options.tokenAudience = null;
-                        answers.deploymentSku = program.sku;
-                        answers.runtime = program.runtime;
                         return deploymentManager.submit(answers);
                     } else if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.options.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
                         deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
-                        cachedAuthResponse.options.tokenAudience = null;
                         answers.appId = appId;
                         answers.aadAppUrl = appUrl;
-                        answers.deploymentSku = program.sku;
                         answers.servicePrincipalId = servicePrincipalId;
                         answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
-                        answers.runtime = program.runtime;
                         answers.domainName = domainName;
                         return deploymentManager.submit(answers);
                     } else {

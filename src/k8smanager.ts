@@ -228,6 +228,9 @@ export class K8sManager implements IK8sManager {
                     if (imageName.includes('{runtime}')) {
                         doc.spec.template.spec.containers[0].image = imageName.replace('{runtime}', this._config.Runtime);
                     }
+                    if (imageName.includes('{version}')) {
+                        doc.spec.template.spec.containers[0].image = imageName.replace('{version}', this._config.ReleaseVersion);
+                    }
                     promises.push(this._betaApi.createNamespacedDeployment(this._namespace, doc));
                     break;
                 case 'Ingress':

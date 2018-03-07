@@ -219,6 +219,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
                     config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                    config.ReleaseVersion = answers.version;
                     config.Runtime = answers.runtime;
                     config.TLS = answers.certData;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
@@ -379,6 +380,9 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.microServiceRuntime) {
             this._parameters.microServiceRuntime.value = answers.runtime;
+        }
+        if (this._parameters.pcsReleaseVersion) {
+            this._parameters.pcsReleaseVersion = answers.version;
         }
     }
 
