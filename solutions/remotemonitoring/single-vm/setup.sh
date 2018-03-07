@@ -36,6 +36,7 @@ export PCS_WEBUI_AUTH_AAD_APPID="$6"
 export PCS_WEBUI_AUTH_AAD_INSTANCE="$7"
 export PCS_APPLICATION_SECRET=$(cat /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9-,./;:[]\(\)_=^!~' | fold -w 64 | head -n 1)
 export PCS_RELEASE_VERSION="${19}"
+export PCS_DOCKER_TAG="${20}"
 
 # TODO: move files to Remote Monitoring repositories
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/$PCS_RELEASE_VERSION/solutions/remotemonitoring/single-vm"
@@ -155,7 +156,7 @@ echo "export PCS_IOTHUBREACT_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""
 echo "export PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX}\"" >> ${ENVVARS}
 echo "export PCS_BINGMAP_KEY=\"${PCS_BINGMAP_KEY}\""                                                     >> ${ENVVARS}
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
-echo "export PCS_RELEASE_VERSION=\"${PCS_RELEASE_VERSION}\""                                             >> ${ENVVARS}
+echo "export PCS_RELEASE_VERSION=\"${PCS_DOCKER_TAG}\""                                                  >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
