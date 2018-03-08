@@ -39,7 +39,7 @@ export PCS_RELEASE_VERSION="${19}"
 export PCS_DOCKER_TAG="${20}"
 
 # TODO: move files to Remote Monitoring repositories
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/$PCS_RELEASE_VERSION/solutions/remotemonitoring/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/cli-release-agnostic/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # TODO: remove temporary fix when projects have moved to use PCS_APPLICATION_SECRET
