@@ -5,6 +5,7 @@ WEBUICONFIG="${APP_PATH}/webui-config.js"
 WEBUICONFIG_SAFE="${APP_PATH}/webui-config.js.safe"
 WEBUICONFIG_UNSAFE="${APP_PATH}/webui-config.js.unsafe"
 ENVVARS="${APP_PATH}/env-vars"
+ENV="${APP_PATH}/.env"
 DOCKERCOMPOSE="${APP_PATH}/docker-compose.yml"
 CERTS="${APP_PATH}/certs"
 CERT="${CERTS}/tls.crt"
@@ -172,4 +173,9 @@ echo "export PCS_CORS_WHITELIST=\"\""                                           
 
 # ========================================================================
 
-nohup /app/start.sh > /dev/null 2>&1&
+# Environment variables for Docker compose
+ENV=".env"
+touch ${ENV} && chmod 440 ${ENV}
+echo "PCS_RELEASE_VERSION=\"${PCS_DOCKER_TAG}\""                                                         >> ${ENV}   
+
+nohup . /app/start.sh > /dev/null 2>&1&
