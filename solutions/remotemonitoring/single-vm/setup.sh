@@ -79,6 +79,7 @@ cd ${APP_PATH}
 # Note: the "APP_RUNTIME" var needs to be defined before getting here
 DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.${APP_RUNTIME}.yml"
 wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
+sed -i 's/${PCS_RELEASE_VERSION}/'${PCS_DOCKER_TAG}'/g' ${DOCKERCOMPOSE}
 
 # ========================================================================
 
