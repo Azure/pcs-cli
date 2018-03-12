@@ -78,7 +78,7 @@ cd ${APP_PATH}
 # Note: the "APP_RUNTIME" var needs to be defined before getting here
 DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.${APP_RUNTIME}.yml"
 wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
-sed -i 's/${PCS_RELEASE_VERSION}/'${PCS_DOCKER_TAG}'/g' ${DOCKERCOMPOSE}
+sed -i 's/${PCS_DOCKER_TAG}/'${PCS_DOCKER_TAG}'/g' ${DOCKERCOMPOSE}
 
 # ========================================================================
 
@@ -157,7 +157,7 @@ echo "export PCS_IOTHUBREACT_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""
 echo "export PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX}\"" >> ${ENVVARS}
 echo "export PCS_BINGMAP_KEY=\"${PCS_BINGMAP_KEY}\""                                                     >> ${ENVVARS}
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
-echo "export PCS_RELEASE_VERSION=\"${PCS_DOCKER_TAG}\""                                                  >> ${ENVVARS}
+echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                  >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

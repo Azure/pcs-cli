@@ -212,7 +212,7 @@ export class DeploymentManager implements IDeploymentManager {
                     if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
                         config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
                     }
-                    config.DockerTag = answers.DockerTag;
+                    config.DockerTag = answers.dockerTag;
                     config.DNS = outputs.agentFQDN.value;
                     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
                     config.EventHubEndpoint = outputs.eventHubEndpoint.value;

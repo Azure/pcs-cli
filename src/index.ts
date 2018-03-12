@@ -232,8 +232,8 @@ function main() {
                     answers.runtime = program.runtime;
                     if (program.versionOverride === 'master') {
                         // In order to run latest code verion override to master is required
-                            answers.version = program.versionOverride;
-                            answers.dockerTag = 'testing';
+                        answers.version = program.versionOverride;
+                        answers.dockerTag = 'testing';
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to master and then try to get the version number from package.json

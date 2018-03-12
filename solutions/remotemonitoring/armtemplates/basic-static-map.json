@@ -292,7 +292,7 @@
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "branch": "1.0.0-preview.5",
+        "branch": "[parameters('pcsReleaseVersion')]",
         "hostingPlanName": "[parameters('azureWebsiteName')]"
     },
     "resources": [
