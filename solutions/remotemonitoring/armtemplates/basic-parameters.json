@@ -31,5 +31,8 @@
     },
     "pcsReleaseVersion": {
       "value": "{Added through command line interface}"
+    },
+    "dockerTag": {
+      "value": "{Added through command line interface}"
     }
 }

@@ -212,6 +212,7 @@ export class DeploymentManager implements IDeploymentManager {
                     if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
                         config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
                     }
+                    config.DockerTag = answers.DockerTag;
                     config.DNS = outputs.agentFQDN.value;
                     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
                     config.EventHubEndpoint = outputs.eventHubEndpoint.value;
@@ -219,7 +220,6 @@ export class DeploymentManager implements IDeploymentManager {
                     config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
                     config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
-                    config.ReleaseVersion = answers.version;
                     config.Runtime = answers.runtime;
                     config.TLS = answers.certData;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
@@ -383,6 +383,9 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.pcsReleaseVersion) {
             this._parameters.pcsReleaseVersion.value = answers.version;
+        }
+        if (this._parameters.dockerTag) {
+            this._parameters.dockerTag.value = answers.dockerTag;
         }
     }
 

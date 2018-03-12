@@ -7,13 +7,13 @@ export class Config {
     public AzureStorageEndpointSuffix: string;
     public BingMapApiQueryKey: string;
     public DocumentDBConnectionString: string;
+    public DockerTag: string;
     public DNS: string;
     public EventHubEndpoint: string;
     public EventHubName: string;
     public EventHubPartitions: string;
     public IoTHubConnectionString: string;
     public LoadBalancerIP: string;
-    public ReleaseVersion: string;
     public Runtime: string;
     public TLS: {cert: string, key: string, fingerPrint: string};
     public WebUIConfig: { 
