@@ -82,8 +82,8 @@ wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
 
 # HTTPS certificates
 mkdir -p ${CERTS}
-touch ${CERT} && chmod 554 ${CERT}
-touch ${PKEY} && chmod 554 ${PKEY}
+touch ${CERT} && chmod 444 ${CERT}
+touch ${PKEY} && chmod 444 ${PKEY}
 # Always have quotes around the certificate and key value to preserve the formatting
 echo "${PCS_CERTIFICATE}"      > ${CERT}
 echo "${PCS_CERTIFICATE_KEY}"  > ${PKEY}
