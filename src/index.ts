@@ -58,6 +58,7 @@ const cacheFilePath: string = pcsTmpDir + path.sep + 'cache.json';
 const defaultSshPublicKeyPath = os.homedir() + path.sep + '.ssh' + path.sep + 'id_rsa.pub';
 
 const MAX_RETRYCOUNT = 36;
+const RELEASE_VERSION_PATTERN: RegExp = /((\d*\.){2}(\d*\-preview.)(\d*))(\.\d*)*$/;
 
 let cachedAuthResponse: any;
 let answers: Answers = {};
@@ -74,6 +75,7 @@ const program = new Command(packageJson.name)
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .option('--servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
     .option('--servicePrincipalSecret <servicePrincipalSecret>', 'Service Principal Secret')
+    .option('--versionOverride <versionOverride>', 'Version override to run against master branch')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -225,24 +227,36 @@ function main() {
                     }
                 })
                 .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
+                    cachedAuthResponse.options.tokenAudience = null;
+                    answers.deploymentSku = program.sku;
+                    answers.runtime = program.runtime;
+                    if (program.versionOverride === 'master') {
+                        // In order to run latest code verion override to master is required
+                        answers.version = program.versionOverride;
+                        answers.dockerTag = 'testing';
+                    } else {
+                        // For a released version the docker tag and version should be same
+                        // Default to master and then try to get the version number from package.json
+                        answers.verion = 'master';
+                        const list = RELEASE_VERSION_PATTERN.exec(packageJson.version);
+                        if (list) {
+                            answers.version = list[1];
+                        }
+                        answers.dockerTag = answers.version;
+                    }
+
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        cachedAuthResponse.options.tokenAudience = null;
-                        answers.deploymentSku = program.sku;
-                        answers.runtime = program.runtime;
                         return deploymentManager.submit(answers);
                     } else if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.options.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
                         deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
-                        cachedAuthResponse.options.tokenAudience = null;
                         answers.appId = appId;
                         answers.aadAppUrl = appUrl;
-                        answers.deploymentSku = program.sku;
                         answers.servicePrincipalId = servicePrincipalId;
                         answers.servicePrincipalSecret = servicePrincipalSecret;
                         answers.certData = createCertificate();
                         answers.aadTenantId = cachedAuthResponse.options.domain;
-                        answers.runtime = program.runtime;
                         answers.domainName = domainName;
                         return deploymentManager.submit(answers);
                     } else {

@@ -7,6 +7,7 @@ export class Config {
     public AzureStorageEndpointSuffix: string;
     public BingMapApiQueryKey: string;
     public DocumentDBConnectionString: string;
+    public DockerTag: string;
     public DNS: string;
     public EventHubEndpoint: string;
     public EventHubName: string;
