@@ -32,7 +32,7 @@ services:
     volumes:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
-  auth
+  auth:
     image: azureiotpcs/pcs-auth-dotnet:${PCS_DOCKER_TAG}
     networks:
       - default_net
