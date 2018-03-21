@@ -11,7 +11,8 @@ user's subscription.
 This CLI has the ability to deploy two configurations of PCS solutions:
 
 1. Basic - deploys all resources to a single VM.
-2. Standard - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
+1. Standard - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
+1. Local - deploys resources to be used for running and debugging microservices locally.
 
 Dependencies
 ============
@@ -24,7 +25,7 @@ The command line interface depends on:
 The purpose of the basic deployment is to demo the capabilities of the system
 and requires minimal setup, deploying all resources to a single VM.
 
-Basic deployment provisions following resources:
+### Basic deployment provisions following resources:
 
 1. [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
 2. [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-dotnet)
@@ -43,7 +44,7 @@ and [Kubernetes](https://kubernetes.io/) for orchestration. It would be nice to 
 [kubectl](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for running commands on kubernetes
 in addition to ```pcs```.
 
-Standard deployment provisions following resources:
+### Standard deployment provisions following resources:
 
 1. [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
 2. [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-dotnet)
@@ -52,10 +53,19 @@ Standard deployment provisions following resources:
    1. [Azure Storage](https://azure.microsoft.com/en-us/services/storage/)
    2. [Three instances of Azure Virtual Machine with Docker](https://azure.microsoft.com/en-us/services/virtual-machines/)
 
+## Local deployment provisions following resources:
+
+1. [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
+2. [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-dotnet)
+3. [Azure Storage](https://azure.microsoft.com/en-us/services/storage/)
+
 How to use the CLI
 ==================
+## Using package published to npm
+ `npm install -g iot-solutions`
+## For developers making changes to the cli
 ## Clone the CLI repository
-1. `git clone https://github.com/Azure/pcs-cli.git`
+`git clone https://github.com/Azure/pcs-cli.git`
 
 ## Install CLI
 In locally cloned directory run
@@ -65,7 +75,6 @@ In locally cloned directory run
 
 
 ## Basic Deployment
-
 ### Deploy Azure Resources
 
 1. If you haven't logged in with your Azure account from the command prompt run `pcs login`.
@@ -115,12 +124,18 @@ the Remote Monitoring WebApp
 1. Go to {azurewebitesurl}/hubmanager/v1/status to see HubManager microservice status
 1. Go to {azurewebitesurl}/devices/v1/status to see Devices microservice status
 
+## Local
+Please look [here](https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/wiki/Running-the-Remote-Monitoring-Solution-Locally) for more information for using this option
+1. `pcs -s local`
+1. Follow onscreen prompts to start the deployment
+
 Configuration
 =============
 
 ## Kubernetes Dashboard
 
-To view Kubernetes dashboard, run the following command, which will start a local
+1. Go to ~\{HOMEDIR}\.kube\config-{solutionname}-cluster and rename it to ~\{HOMEDIR}\.kube\config. Please take a backup of your ~\{HOMEDIR}\.kube\config file if it exists
+1. To view Kubernetes dashboard, run the following command, which will start a local
 web proxy for your cluster (it will start a local server at http://127.0.0.1:8001/ui):
 
 `kubectl proxy`
