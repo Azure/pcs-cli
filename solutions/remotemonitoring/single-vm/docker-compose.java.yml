@@ -3,7 +3,7 @@ version: '2'
 # TODO: remove APPLICATION_SECRET
 services:
   reverseproxy:
-    image: azureiotpcs/remote-monitoring-nginx:testing
+    image: azureiotpcs/remote-monitoring-nginx:${PCS_DOCKER_TAG}
     networks:
       - default_net
     ports:
@@ -20,7 +20,7 @@ services:
       - /app/certs:/app/certs:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:testing
+    image: azureiotpcs/pcs-remote-monitoring-webui:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:
@@ -32,8 +32,8 @@ services:
     volumes:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
-  auth:
-    image: azureiotpcs/pcs-auth-dotnet:testing
+  auth
+    image: azureiotpcs/pcs-auth-dotnet:${PCS_DOCKER_TAG}
     networks:
       - default_net
     environment:
@@ -45,7 +45,7 @@ services:
       - APPLICATION_SECRET
 
   iothubmanager:
-    image: azureiotpcs/iothub-manager-java:testing
+    image: azureiotpcs/iothub-manager-java:${PCS_DOCKER_TAG}
     networks:
       - default_net
     environment:
@@ -60,7 +60,7 @@ services:
       - APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:testing
+    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:
@@ -79,7 +79,7 @@ services:
     #  - ./my-device-models:/app/data:ro
 
   telemetry:
-    image: azureiotpcs/telemetry-java:testing
+    image: azureiotpcs/telemetry-java:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:
@@ -95,7 +95,7 @@ services:
       - APPLICATION_SECRET
 
   config:
-    image: azureiotpcs/pcs-config-java:testing
+    image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:
@@ -117,7 +117,7 @@ services:
       - APPLICATION_SECRET
 
   storageadapter:
-    image: azureiotpcs/pcs-storage-adapter-java:testing
+    image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}
     networks:
       - default_net
     environment:
@@ -130,7 +130,7 @@ services:
       - APPLICATION_SECRET
 
   telemetryagent:
-    image: azureiotpcs/telemetry-agent-java:testing
+    image: azureiotpcs/telemetry-agent-java:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:

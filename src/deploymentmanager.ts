@@ -212,6 +212,7 @@ export class DeploymentManager implements IDeploymentManager {
                     if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
                         config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
                     }
+                    config.DockerTag = answers.dockerTag;
                     config.DNS = outputs.agentFQDN.value;
                     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
                     config.EventHubEndpoint = outputs.eventHubEndpoint.value;
@@ -379,6 +380,12 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.microServiceRuntime) {
             this._parameters.microServiceRuntime.value = answers.runtime;
+        }
+        if (this._parameters.pcsReleaseVersion) {
+            this._parameters.pcsReleaseVersion.value = answers.version;
+        }
+        if (this._parameters.dockerTag) {
+            this._parameters.dockerTag.value = answers.dockerTag;
         }
     }
 
