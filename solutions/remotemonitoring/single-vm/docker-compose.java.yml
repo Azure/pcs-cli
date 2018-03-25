@@ -4,6 +4,8 @@ version: '2'
 services:
   reverseproxy:
     image: azureiotpcs/remote-monitoring-nginx:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     ports:
       - "80:10080"
       - "443:10443"
@@ -19,6 +21,8 @@ services:
 
   webui:
     image: azureiotpcs/pcs-remote-monitoring-webui:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - auth
       - iothubmanager
@@ -30,6 +34,8 @@ services:
 
   auth:
     image: azureiotpcs/pcs-auth-dotnet:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     environment:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
@@ -40,6 +46,8 @@ services:
 
   iothubmanager:
     image: azureiotpcs/iothub-manager-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     environment:
       - PCS_IOTHUB_CONNSTRING
       # TODO: the dependency on config is temporary
@@ -53,6 +61,8 @@ services:
 
   devicesimulation:
     image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - storageadapter
     environment:
@@ -70,6 +80,8 @@ services:
 
   telemetry:
     image: azureiotpcs/telemetry-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - storageadapter
     environment:
@@ -84,6 +96,8 @@ services:
 
   config:
     image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - storageadapter
       - devicesimulation
@@ -104,6 +118,8 @@ services:
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     environment:
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AUTH_ISSUER
@@ -115,6 +131,8 @@ services:
 
   telemetryagent:
     image: azureiotpcs/telemetry-agent-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - telemetry
       - iothubmanager
@@ -136,3 +154,12 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
       - APPLICATION_SECRET
+
+networks:
+  default_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+       - subnet: 172.18.0.0/16
+         gateway: 172.18.0.1
