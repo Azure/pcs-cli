@@ -75,7 +75,7 @@ const program = new Command(packageJson.name)
     .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .option('--servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
     .option('--servicePrincipalSecret <servicePrincipalSecret>', 'Service Principal Secret')
-    .option('--versionOverride <versionOverride>', 'Version override to run against master branch')
+    .option('--versionOverride <versionOverride>', 'Current accepted value is "master"')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
