@@ -8,6 +8,7 @@ services:
     depends_on:
       - webui-svc
       - devicesimulation-svc
+      - diagnostics-svc
     volumes:
       - /app/certs:/app/certs:ro
 
@@ -15,6 +16,7 @@ services:
     image: azureiotpcs/device-simulation-webui:millennium
     depends_on:
       - devicesimulation-svc
+      - diagnostics-svc
     volumes:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
@@ -22,6 +24,7 @@ services:
     image: azureiotpcs/device-simulation-dotnet:millennium
     depends_on:
       - storageadapter-svc
+      - diagnostics-svc
     environment:
       - PCS_LOG_LEVEL
       - PCS_IOTHUB_CONNSTRING
@@ -60,3 +63,13 @@ services:
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
+
+  diagnostics-svc:
+    image: azureiotpcs/pcs-diagnostics-dotnet:millennium
+    environment:
+      - PCS_LOG_LEVEL
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
+      - PCS_AUTH_REQUIRED
+      - PCS_CORS_WHITELIST
+      - PCS_DEPLOYMENT_ID
