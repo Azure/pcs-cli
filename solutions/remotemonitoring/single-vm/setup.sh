@@ -67,6 +67,36 @@ config_for_azure_china() {
 config_for_azure_china $HOST_NAME $5
 
 # ========================================================================
+# Configure SSH to not use weak HostKeys, algorithms, ciphers and MAC algorithms.
+# Comment out the option if exists or ignore it.
+switch_off() {
+    local key=$1
+    local value=$2
+    local config_path=$3
+    sed -i "s~#*$key\s*$value~#$key $value~g" $config_path
+}
+
+# Change existing option if found or append specified key value pair.
+switch_on() {
+    local key=$1
+    local value=$2
+    local config_path=$3
+    grep -q "$key" $config_path && sed -i -e "s/$key.*/$key $value/g" $config_path || sed -i -e "\$a$key $value" $config_path
+}
+
+config_ssh() {
+    local config_path="${1:-/etc/ssh/sshd_config}"
+    switch_off 'HostKey' '/etc/ssh/ssh_host_dsa_key' $config_path
+    switch_off 'HostKey' '/etc/ssh/ssh_host_ecdsa_key' $config_path
+    switch_on 'KexAlgorithms' 'curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256' $config_path
+    switch_on 'Ciphers' 'chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr' $config_path
+    switch_on 'MACs' 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-ripemd160-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,hmac-ripemd160,umac-128@openssh.com' $config_path
+    service ssh restart
+}
+
+config_ssh
+
+# ========================================================================
 
 mkdir -p ${APP_PATH}
 chmod ugo+rX ${APP_PATH}
