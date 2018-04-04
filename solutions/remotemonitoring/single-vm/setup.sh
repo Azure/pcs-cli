@@ -69,6 +69,7 @@ config_for_azure_china $HOST_NAME $5
 # ========================================================================
 
 mkdir -p ${APP_PATH}
+chmod ugo+rX ${APP_PATH}
 cd ${APP_PATH}
 
 # ========================================================================
@@ -84,8 +85,8 @@ sed -i 's/${PCS_DOCKER_TAG}/'${PCS_DOCKER_TAG}'/g' ${DOCKERCOMPOSE}
 
 # HTTPS certificates
 mkdir -p ${CERTS}
-touch ${CERT} && chmod 550 ${CERT}
-touch ${PKEY} && chmod 550 ${PKEY}
+touch ${CERT} && chmod 444 ${CERT}
+touch ${PKEY} && chmod 444 ${PKEY}
 # Always have quotes around the certificate and key value to preserve the formatting
 echo "${PCS_CERTIFICATE}"      > ${CERT}
 echo "${PCS_CERTIFICATE_KEY}"  > ${PKEY}
