@@ -7,8 +7,8 @@ services:
     networks:
       - default_net
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:10080"
+      - "443:10443"
     depends_on:
       - webui
       - auth
