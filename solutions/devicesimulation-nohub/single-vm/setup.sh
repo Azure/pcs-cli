@@ -50,7 +50,7 @@ while [ "$#" -gt 0 ]; do
         --aad-appid)               PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
         --aad-tenant)              PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
         --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
-        --deployment-id)           PCS_SOLUTION_ID="$2" ;;
+        --solution-id)           PCS_SOLUTION_ID="$2" ;;
     esac
     shift
 done

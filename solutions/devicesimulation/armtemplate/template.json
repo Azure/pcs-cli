@@ -219,6 +219,12 @@
                 "description": "The Azure Active Directory domain used by the Azure Subscription where the solution is deployed"
             }
         },
+        "subscriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": "ID of the Azure Subscription where the solution is deployed"
+            }
+        },
         "solutionId": {
             "type": "string",
             "metadata": {
