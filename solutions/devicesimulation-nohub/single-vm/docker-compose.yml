@@ -72,4 +72,4 @@ services:
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
-      - PCS_SOLUTION_ID
+      - PCS_DEPLOYMENT_ID

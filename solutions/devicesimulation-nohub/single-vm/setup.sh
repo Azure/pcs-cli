@@ -50,7 +50,7 @@ while [ "$#" -gt 0 ]; do
         --aad-appid)               PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
         --aad-tenant)              PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
         --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
-        --solution-id)           PCS_SOLUTION_ID="$2" ;;
+        --deployment-d)            PCS_DEPLOYMENT_ID="$2" ;;
     esac
     shift
 done
@@ -156,7 +156,7 @@ echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                    
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
 echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
-echo "export PCS_SOLUTION_ID=\"${PCS_SOLUTION_ID}\""                                                     >> ${ENVVARS}
+echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                     >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
