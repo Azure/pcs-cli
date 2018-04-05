@@ -41,7 +41,7 @@ The Standard deployment offers a production ready deployment that can be
 scaled up or down as needed. It uses
 [Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)
 and [Kubernetes](https://kubernetes.io/) for orchestration. It would be nice to have installed
-[kubectl](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for running commands on kubernetes
+[kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for running commands on kubernetes
 in addition to ```pcs```.
 
 ### Standard deployment provisions following resources:
