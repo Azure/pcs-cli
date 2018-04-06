@@ -261,13 +261,6 @@
             "metadata": {
                 "description": "The certficate key that needs to be updated to the VM"
             }
-        },
-        "bingMapsLocation": {
-            "type": "string",
-            "defaultValue": "westus",
-            "metadata": {
-                "description": "Bing Maps region"
-            }
         }
     },
     "variables": {
@@ -301,8 +294,9 @@
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
         "branch": "[parameters('pcsReleaseVersion')]",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
-        "bingMapsName": "[concat(parameters('solutionName'), '-map')]",
-        "bingMapsVersion": "2016-08-18"
+        "azureMapsName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-map')]",
+        "azureMapsVersion": "2017-01-01-preview",
+        "azureMapsPricingSpec": "S0"
     },
     "resources": [
         {
@@ -412,19 +406,14 @@
             }
         },
         {
-            "apiVersion": "[variables('bingMapsVersion')]",
-            "type": "Microsoft.BingMaps/mapApis",
-            "name": "[variables('bingMapsName')]",
-            "location": "[parameters('bingMapsLocation')]",
-            "plan": {
-                "publisher": "bingmaps",
-                "product": "mapapis",
-                "name": "internal1",
-                "promotionCode": null
+            "comments": "Azure Maps service",
+            "type": "Microsoft.LocationBasedServices/accounts",
+            "sku": {
+                "name": "[variables('azureMapsPricingSpec')]"
             },
-            "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
-            },
+            "name": "[variables('azureMapsName')]",
+            "apiVersion": "[variables('azureMapsVersion')]",
+            "location": "global",
             "properties": {}
         },
         {
@@ -624,7 +613,7 @@
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
                 "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
                 "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
-                "[resourceId('Microsoft.BingMaps/mapApis', variables('bingMapsName'))]"
+                "[resourceId('Microsoft.LocationBasedServices/accounts', variables('azureMapsName'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -637,7 +626,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"', listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey, '\" ', parameters('pcsReleaseVersion'), ' ', parameters('pcsDockerTag'))]"
+                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\" ', parameters('pcsReleaseVersion'), ' ', parameters('pcsDockerTag'))]"
                 }
             }
         }
@@ -659,9 +648,9 @@
             "type": "string",
             "value": "[concat('https://', reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0])]"
         },
-        "mapApiQueryKey": {
+        "azureMapsKey": {
             "type": "string",
-            "value": "[listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey]"
+            "value": "[listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey]"
         },
         "vmFQDN": {
             "type": "string",

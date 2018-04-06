@@ -77,7 +77,6 @@ export class DeploymentManager implements IDeploymentManager {
         const deploymentName = 'deployment-' + answers.solutionName;
         let deploymentProperties: any = null;
         let resourceGroupUrl: string;
-        let freeBingMapResourceCount: number = 0;
         let resourceGroup: ResourceGroup = {
             location,
             // TODO: Explore if it makes sense to add more tags, e.g. Language(Java/.Net), version etc
@@ -90,71 +89,56 @@ export class DeploymentManager implements IDeploymentManager {
         let azureVMFQDNSuffix: string;
         let activeDirectoryEndpointUrl: string;
 
-        return this._client.resources.list({ filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\'' })
-            .then((resources: ResourceModels.ResourceListResult) => {
-                if (this._solutionType === 'remotemonitoring') {
-                    const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
-                    this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
-                    // using static map for China environment by default since Bing Map resource is not available.
-                    if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
-                        this._sku += '-static-map';
-                    } else if (answers.deploymentSku !== 'local') {
-                        resources.forEach((resource: ResourceModels.GenericResource) => {
-                            if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
-                                freeBingMapResourceCount++;
-                            }
-                        });
-                        if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                            this._sku += '-static-map';
-                        }
-                    }
-                    this._template = require(armTemplatePath + this._sku + '.json');
-                } else {
-                    const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
-                    this._template = require(armTemplatePath + 'template.json');
-                    this._parameters = require(armTemplatePath + 'parameters.json');
+        if (this._solutionType === 'remotemonitoring') {
+            const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
+            this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
+            // using static map for China environment by default since Azure Maps resource is not available.
+            if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
+                this._sku += '-static-map';
+            }
+            this._template = require(armTemplatePath + this._sku + '.json');
+        } else {
+            const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
+            this._template = require(armTemplatePath + 'template.json');
+            this._parameters = require(armTemplatePath + 'parameters.json');
+        }
+        try {
+            // Change the default suffix for basic sku based on current environment
+            if (environment) {
+                switch (environment.name) {
+                    case AzureEnvironment.AzureChina.name:
+                        azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
+                        break;
+                    case AzureEnvironment.AzureGermanCloud.name:
+                        azureVMFQDNSuffix = 'cloudapp.azure.de';
+                        break;
+                    case AzureEnvironment.AzureUSGovernment.name:
+                        azureVMFQDNSuffix = 'cloudapp.azure.us';
+                        break;
+                    default:
+                        // use default parameter values of global azure environment
+                        azureVMFQDNSuffix = 'cloudapp.azure.com';
                 }
-                try {
-                    // Change the default suffix for basic sku based on current environment
-                    if (environment) {
-                        switch (environment.name) {
-                            case AzureEnvironment.AzureChina.name:
-                                azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
-                                break;
-                            case AzureEnvironment.AzureGermanCloud.name:
-                                azureVMFQDNSuffix = 'cloudapp.azure.de';
-                                break;
-                            case AzureEnvironment.AzureUSGovernment.name:
-                                azureVMFQDNSuffix = 'cloudapp.azure.us';
-                                break;
-                            default:
-                                // use default parameter values of global azure environment
-                                azureVMFQDNSuffix = 'cloudapp.azure.com';
-                        }
-                        storageEndpointSuffix = environment.storageEndpointSuffix;
-                        activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
-                        if (storageEndpointSuffix.startsWith('.')) {
-                            storageEndpointSuffix = storageEndpointSuffix.substring(1);
-                        }
-                        if (answers.deploymentSku === 'basic') {
-                            this._parameters.storageEndpointSuffix = { value: storageEndpointSuffix };
-                            this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
-                            this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
-                        }
-                    }
-                    this.setupParameters(answers);
-                } catch (ex) {
-                    throw new Error('Could not find template or parameters file, Exception:');
+                storageEndpointSuffix = environment.storageEndpointSuffix;
+                activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
+                if (storageEndpointSuffix.startsWith('.')) {
+                    storageEndpointSuffix = storageEndpointSuffix.substring(1);
                 }
+                if (answers.deploymentSku === 'basic') {
+                    this._parameters.storageEndpointSuffix = { value: storageEndpointSuffix };
+                    this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
+                    this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
+                }
+            }
+            this.setupParameters(answers);
+        } catch (ex) {
+            throw new Error('Could not find template or parameters file, Exception:');
+        }
 
-                deployment.properties.parameters = this._parameters;
-                deployment.properties.template = this._template;
-                return deployment;
-            })
-            .then((properties: Deployment) => {
-                deployUI.start('Creating resource group');
-                return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup);
-            })
+        deployment.properties.parameters = this._parameters;
+        deployment.properties.template = this._template;
+        deployUI.start('Creating resource group');
+        return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
                 if (environment && environment.portalUrl) {
@@ -208,10 +192,8 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                     config.AzureStorageAccountName = outputs.storageAccountName.value;
                     config.AzureStorageEndpointSuffix = storageEndpointSuffix;
-                    // If we are under the plan limi then we should have received a query key
-                    if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                        config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
-                    }
+                    // If we are under the plan limit then we should have received a query key
+                    config.AzureMapsKey = outputs.azureMapsKey.value;
                     config.DockerTag = answers.dockerTag;
                     config.DNS = outputs.agentFQDN.value;
                     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
@@ -437,7 +419,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
         data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
         data.push('PCS_AUTH_REQUIRED=false');
-        data.push('PCS_BINGMAP_KEY=static');
+        data.push('PCS_AZUREMAPS_KEY=static');
        
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }

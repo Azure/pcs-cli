@@ -63,8 +63,8 @@ data:
   security.cors.whitelist: ""
   security.application.secret: "{Application secret}"
 
-  # Bing map query key
-  bing.map.key: "{BingMapApiQueryKey}"
+  # Azure maps key
+  azure.maps.key: "{AzureMapsKey}"
 
   # Nginx Template
   nginx.tmpl: |

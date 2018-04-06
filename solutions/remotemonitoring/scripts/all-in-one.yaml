@@ -644,11 +644,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothubmanager.webservice.url
-        - name: PCS_BINGMAP_KEY
+        - name: PCS_AZUREMAPS_KEY
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: bing.map.key
+              key: azure.maps.key
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:

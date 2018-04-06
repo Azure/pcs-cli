@@ -189,7 +189,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
         configMap.data['security.auth.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
         configMap.data['security.application.secret'] = this.genPassword();
-        configMap.data['bing.map.key'] = this._config.BingMapApiQueryKey ? this._config.BingMapApiQueryKey : '';
+        configMap.data['azure.maps.key'] = this._config.AzureMapsKey ? this._config.AzureMapsKey : '';
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
         configMap.data['iothubreact.hub.name'] = this._config.EventHubName;
