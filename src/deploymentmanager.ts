@@ -384,8 +384,8 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.pcsReleaseVersion) {
             this._parameters.pcsReleaseVersion.value = answers.version;
         }
-        if (this._parameters.dockerTag) {
-            this._parameters.dockerTag.value = answers.dockerTag;
+        if (this._parameters.pcsDockerTag) {
+            this._parameters.pcsDockerTag.value = answers.dockerTag;
         }
     }
 
