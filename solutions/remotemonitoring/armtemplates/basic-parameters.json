@@ -32,7 +32,7 @@
     "pcsReleaseVersion": {
       "value": "{Added through command line interface}"
     },
-    "dockerTag": {
+    "pcsDockerTag": {
       "value": "{Added through command line interface}"
     }
 }
