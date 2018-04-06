@@ -228,7 +228,7 @@
         "deploymentId": {
             "type": "string",
             "metadata": {
-                "description": "Unique Id of the solution."
+                "description": "Unique Id of the deployment."
             }
         }
     },

@@ -73,3 +73,4 @@ services:
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_DEPLOYMENT_ID
+      - PCS_SOLUTION_TYPE
