@@ -22,9 +22,6 @@ type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
 const MAX_RETRY = 36;
 const KUBEDIR = os.homedir() + path.sep + '.kube';
-// We are using BingMap APIs with plan = internal1
-// It only allows to have 2 apis per subscription
-const MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN = 2;
 
 export interface IDeploymentManager {
     submit(answers: Answers | undefined): Promise<any>;
