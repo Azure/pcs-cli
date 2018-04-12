@@ -194,7 +194,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: azureiotpcs/device-simulation-dotnet:testing
+        image: azureiotpcs/device-simulation-dotnet:1.0.0-preview.5
         ports:
         - containerPort: 9003
         env:
@@ -270,7 +270,7 @@ spec:
     spec:
       containers:
       - name: iothub-manager-pod
-        image: azureiotpcs/iothub-manager-{runtime}:testing
+        image: azureiotpcs/iothub-manager-{runtime}:1.0.0-preview.5
         ports:
         - containerPort: 9002
         env:
@@ -348,7 +348,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-{runtime}:testing
+        image: azureiotpcs/telemetry-{runtime}:1.0.0-preview.5
         ports:
         - containerPort: 9004
         env:
@@ -424,7 +424,7 @@ spec:
     spec:
       containers:
       - name: storage-adapter-pod
-        image: azureiotpcs/pcs-storage-adapter-{runtime}:testing
+        image: azureiotpcs/pcs-storage-adapter-{runtime}:1.0.0-preview.5
         ports:
         - containerPort: 9022
         env:
@@ -497,7 +497,7 @@ spec:
     spec:
       containers:
       - name: telemetry-agent-pod
-        image: azureiotpcs/telemetry-agent-{runtime}:testing
+        image: azureiotpcs/telemetry-agent-{runtime}:1.0.0-preview.5
         ports:
         - containerPort: 9023
         env:
@@ -618,7 +618,7 @@ spec:
     spec:
       containers:
       - name: config-pod
-        image: azureiotpcs/pcs-config-{runtime}:testing
+        image: azureiotpcs/pcs-config-{runtime}:1.0.0-preview.5
         ports:
         - containerPort: 9005
         env:
@@ -711,7 +711,7 @@ spec:
     spec:
       containers:
       - name: auth-pod
-        image: azureiotpcs/pcs-auth-dotnet:testing
+        image: azureiotpcs/pcs-auth-dotnet:1.0.0-preview.5
         ports:
         - containerPort: 9001
         env:
@@ -777,7 +777,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/pcs-remote-monitoring-webui:testing
+        image: azureiotpcs/pcs-remote-monitoring-webui:1.0.0-preview.5
         ports:
         - containerPort: 80
         volumeMounts:
