@@ -82,7 +82,7 @@ services:
   config-svc:
     image: azureiotpcs/pcs-config-dotnet:millennium
     depends_on:
-      - storageadapter
+      - storageadapter-svc
     environment:
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
       - PCS_BINGMAP_KEY
