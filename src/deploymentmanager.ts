@@ -105,7 +105,8 @@ export class DeploymentManager implements IDeploymentManager {
                             }
                         });
                         if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                            this._sku += '-static-map';
+                            console.log('using static map');
+                            // this._sku += '-static-map';
                         }
                     }
                     this._template = require(armTemplatePath + this._sku + '.json');
@@ -186,7 +187,7 @@ export class DeploymentManager implements IDeploymentManager {
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
                 deploymentProperties = res.properties;
-
+                
                 if (answers.deploymentSku === 'standard') {
                     deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
                     return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
@@ -436,9 +437,9 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
         data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
         data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
+        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.eventHubConnectionString.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_BINGMAP_KEY=static');
-       
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }
 }

@@ -128,6 +128,58 @@
                 "description": "When documentDB consistencyLevel is set to BoundedStaleness, then this value is required, else it can be ignored."
             }
         },
+        "eventHubName": {
+            "type": "string",
+            "defaultValue": "[concat('eventhub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]", 
+            "metadata": {
+                "description": "The name of the Event Hub"
+            }
+        },
+        "eventHubRetentionInDays": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "The event hub message retention in days"
+            }
+        },
+        "eventHubPartitionCount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+                "description": "The event hub partition count"
+            }
+        },
+        "eventHubNamespaceName": {
+            "type": "string",
+            "defaultValue": "[concat('eventhubnamespace-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]", 
+            "metadata": {
+                "description": "The name of the Event Hub"
+            }
+        },
+        "eventHubSkuTier": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Basic", "Standard"
+            ],
+            "metadata": {
+                "description": "The Azure Event Hub SKU Tier"
+            }
+        },
+        "eventHubSkuCapacity": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "The Azure Event Hub SKU Capacity"
+            }
+        },
+        "eventHubAuthorizationName": {
+            "type": "string",
+            "defaultValue": "[concat('iothubroutes_', parameters('iotHubName'))]",
+            "metadata": {
+                "description": "Authorization Rule Name for Event Hub endpoint in Iot Hub"
+            }
+        },
         "iotHubName": {
             "type": "string",
             "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
@@ -274,10 +326,18 @@
         "location": "[resourceGroup().location]",
         "documentDBApiVersion": "2016-03-19",
         "documentDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
+        "eventHubApiVersion": "2017-04-01",
+        "eventHubKeyName": "RootManageSharedAccessKey",
+        "eventHubKeyResource": "[resourceId('Microsoft.EventHub/namespaces/AuthorizationRules', parameters('eventHubNamespaceName'), variables('eventHubKeyName'))]",
+        "eventHubNamespaceResourceId": "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]",
+        "eventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
+        "eventHubRouteKeyResource": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/AuthorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('eventHubAuthorizationName'))]",
         "iotHubApiVersion": "2017-01-19",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
         "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
+        "iotHubDefaultEndpoint": "events",
+        "deviceNotificationRouteName": "DeviceNotifications",
         "storageApiVersion": "2017-06-01",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
         "computeApiVersion": "2017-03-30",
@@ -392,6 +452,58 @@
                     "maxIntervalInSeconds": "[parameters('docDBMaxIntervalInSeconds')]"
                 }
             }
+        }, {
+            "comments": "Azure Event Hub Namespace",
+            "apiVersion": "[variables('eventHubApiVersion')]",
+            "type": "Microsoft.EventHub/namespaces",
+            "name": "[parameters('eventHubNamespaceName')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[parameters('solutionType')]"
+            },
+            "sku": {
+                "name": "[parameters('eventHubSkuTier')]",
+                "tier": "[parameters('eventHubSkuTier')]",
+                "capacity": "[parameters('eventHubSkuCapacity')]"
+            },
+            "properties": {
+                "isAutoInflateEnabled": false,
+                "maximumThroughputUnits": 0
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Azure Event Hub",
+            "type": "Microsoft.EventHub/namespaces/eventhubs",
+            "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'))]",
+            "apiVersion": "[variables('eventHubApiVersion')]",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "messageRetentionInDays": "[parameters('eventHubRetentionInDays')]",
+                "partitionCount": "[parameters('eventHubPartitionCount')]",
+                "status": "Active"
+            },
+            "dependsOn": [
+                "[variables('eventHubNamespaceResourceId')]"
+            ]
+        },        
+        {
+            "comments": "Event Hub Authorization for Iot Hub",
+            "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+            "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'), '/', parameters('eventHubAuthorizationName'))]",
+            "apiVersion":  "[variables('eventHubApiVersion')]",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "rights": [
+                    "Send"
+                ]
+            },
+            "dependsOn": [
+                "[variables('eventHubNamespaceResourceId')]",
+                "[variables('eventHubResourceId')]"
+            ]
         },
         {
             "comments": "Azure IoT Hub",
@@ -408,8 +520,52 @@
                 "capacity": 1
             },
             "properties": {
-                "location": "[variables('location')]"
-            }
+                "location": "[variables('location')]",
+                "routing": {
+                    "endpoints": {
+                        "eventHubs": [
+                            {
+                                "connectionString": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.servicebus.windows.net/;SharedAccessKeyName=', parameters('eventHubAuthorizationName'), ';SharedAccessKey=', listkeys(variables('eventHubRouteKeyResource'), variables('eventHubApiVersion')).primaryKey, ';EntityPath=',  parameters('eventHubName'))]",
+                                "name": "[variables('deviceNotificationRouteName')]",
+                                "subscriptionId": "[subscription().subscriptionId]",
+                                "resourceGroup": "[resourceGroup().name]"
+                            }
+                        ]
+                    },
+                    "routes": [
+                        {
+                            "name": "TwinRoute",
+                            "source": "TwinChangeEvents",
+                            "condition": "true",
+                            "endpointNames": [
+                                "[variables('deviceNotificationRouteName')]"
+                            ],
+                            "isEnabled": true
+                        },
+                        {
+                            "name": "LifecycleRoute",
+                            "source": "DeviceLifecycleEvents",
+                            "condition": "true",
+                            "endpointNames": [
+                                "[variables('deviceNotificationRouteName')]"
+                            ],
+                            "isEnabled": true
+                        }
+                    ],
+                    "fallbackRoute": {
+                        "name": "$fallback",
+                        "source": "DeviceMessages",
+                        "condition": "true",
+                        "endpointNames": [
+                            "[variables('iotHubDefaultEndpoint')]"
+                        ],
+                        "isEnabled": true
+                    }
+                }
+            },
+            "dependsOn": [
+                "[variables('eventHubResourceId')]"
+            ]
         },
         {
             "apiVersion": "[variables('bingMapsVersion')]",
@@ -624,7 +780,8 @@
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
                 "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
                 "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
-                "[resourceId('Microsoft.BingMaps/mapApis', variables('bingMapsName'))]"
+                "[resourceId('Microsoft.BingMaps/mapApis', variables('bingMapsName'))]",
+                "[variables('eventHubNamespaceResourceId')]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -637,7 +794,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"', listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey, '\" ', parameters('pcsReleaseVersion'), ' ', parameters('pcsDockerTag'))]"
+                    "commandToExecute": "[concat('sh setup.sh ', variables('vmFQDN') , ' ', parameters('solutionWebAppPort'), ' ', parameters('microServiceRuntime'), ' ', parameters('microServiceVersion'), ' ',  parameters('aadTenantId'), ' ', parameters('aadClientId'), ' ', parameters('aadInstance'), ' \"', concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey), '\" \"', concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';'), '\" ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, ' ', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, ' ', parameters('storageName'), ' ', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' \"', parameters('storageEndpointSuffix'), '\" \"', parameters('remoteEndpointCertificate'), '\" \"', parameters('remoteEndpointCertificateKey'), '\" \"', listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey, '\" ', parameters('pcsReleaseVersion'), ' ', parameters('pcsDockerTag'), ' \"', concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.servicebus.windows.net/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResource'), variables('eventHubApiVersion')).primaryKey), '\"')]"
                 }
             }
         }
@@ -646,6 +803,10 @@
         "resourceGroup" : {
             "type": "string",
             "value": "[resourceGroup().name]"
+        },
+        "eventHubConnectionString": {
+            "type": "string",
+            "value": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.servicebus.windows.net/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResource'), variables('eventHubApiVersion')).primaryKey)]"
         },
         "iotHubConnectionString": {
             "type": "string",
