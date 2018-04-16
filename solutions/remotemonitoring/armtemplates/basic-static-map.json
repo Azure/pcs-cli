@@ -464,7 +464,6 @@
             },
             "dependsOn": []
         },
-
         {
             "comments": "Azure Event Hub",
             "type": "Microsoft.EventHub/namespaces/eventhubs",

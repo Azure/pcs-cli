@@ -452,7 +452,8 @@
                     "maxIntervalInSeconds": "[parameters('docDBMaxIntervalInSeconds')]"
                 }
             }
-        }, {
+        }, 
+        {
             "comments": "Azure Event Hub Namespace",
             "apiVersion": "[variables('eventHubApiVersion')]",
             "type": "Microsoft.EventHub/namespaces",

@@ -105,8 +105,7 @@ export class DeploymentManager implements IDeploymentManager {
                             }
                         });
                         if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                            console.log('using static map');
-                            // this._sku += '-static-map';
+                            this._sku += '-static-map';
                         }
                     }
                     this._template = require(armTemplatePath + this._sku + '.json');
@@ -223,6 +222,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
                     config.Runtime = answers.runtime;
                     config.TLS = answers.certData;
+                    config.EventHubConnectionString = outputs.eventHubConnectionString.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -259,6 +259,7 @@ export class DeploymentManager implements IDeploymentManager {
                     deployUI.stop(status);
                     const output = {
                         aadAppUrl: answers.aadAppUrl,
+                        eventHubEndpoint: deploymentProperties.outputs.eventHubConnectionString.value,
                         resourceGroupUrl,
                         troubleshootingGuide,
                         website: deploymentProperties.outputs.azureWebsite.value,
