@@ -203,13 +203,6 @@
             "metadata": {
                 "description": "The storage SKU name"
             }
-        },
-        "bingMapsLocation": {
-            "type": "string",
-            "defaultValue": "westus",
-            "metadata": {
-                "description": "Bing Maps region"
-            }
         }
     },
     "variables": {
@@ -239,8 +232,9 @@
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
         "storageApiVersion": "2017-06-01",
-        "bingMapsName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-map')]",
-        "bingMapsVersion": "2016-08-18"
+        "azureMapsName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-map')]",
+        "azureMapsVersion": "2017-01-01-preview",
+        "azureMapsPricingSpec": "S0"
     },
     "resources": [
         {
@@ -400,19 +394,14 @@
             }
         },
         {
-            "apiVersion": "[variables('bingMapsVersion')]",
-            "type": "Microsoft.BingMaps/mapApis",
-            "name": "[variables('bingMapsName')]",
-            "location": "[parameters('bingMapsLocation')]",
-            "plan": {
-                "publisher": "bingmaps",
-                "product": "mapapis",
-                "name": "internal1",
-                "promotionCode": null
+            "comments": "Azure Maps service",
+            "type": "Microsoft.LocationBasedServices/accounts",
+            "sku": {
+                "name": "[variables('azureMapsPricingSpec')]"
             },
-            "tags": {
-                "IotSuiteType": "[variables('solutionType')]"
-            },
+            "name": "[variables('azureMapsName')]",
+            "apiVersion": "[variables('azureMapsVersion')]",
+            "location": "global",
             "properties": {}
         }
     ],
@@ -481,9 +470,9 @@
             "type": "string",
             "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
         },
-        "mapApiQueryKey": {
+        "azureMapsKey": {
             "type": "string",
-            "value": "[listSecrets(variables('bingMapsName'), variables('bingMapsVersion')).QueryKey]"
+            "value": "[listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey]"
         }
     }
 }
