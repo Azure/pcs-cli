@@ -229,7 +229,8 @@
             "type": "string",
             "metadata": {
                 "description": "Unique Id of the deployment."
-            }
+            },
+            "defaultValue": "Undefined"
         }
     },
     "variables": {
