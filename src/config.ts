@@ -5,7 +5,7 @@ export class Config {
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
-    public BingMapApiQueryKey: string;
+    public AzureMapsKey: string;
     public DocumentDBConnectionString: string;
     public DockerTag: string;
     public DNS: string;
