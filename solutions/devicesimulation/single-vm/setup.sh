@@ -158,7 +158,7 @@ echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                      
 echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
-echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                          >> ${ENVVARS}
+echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
