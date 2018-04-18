@@ -78,6 +78,7 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_DEPLOYMENT_ID
       - PCS_SOLUTION_TYPE
+      - PCS_DIAGNOSTICS_ENDPOINT_URL
 
   config-svc:
     image: azureiotpcs/pcs-config-dotnet:millennium
