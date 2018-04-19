@@ -126,6 +126,11 @@ export class DeploymentManager implements IDeploymentManager {
                     this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
                     this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
                 }
+                let serviceBusEndpointSuffix = 'servicebus.windows.net';
+                if (environment.name === AzureEnvironment.AzureChina.name) {
+                    serviceBusEndpointSuffix = 'servicebus.chinacloudapi.cn';
+                }
+                this._parameters.serviceBusEndpointSuffix = { value: serviceBusEndpointSuffix };
             }
             this.setupParameters(answers);
         } catch (ex) {
@@ -167,7 +172,7 @@ export class DeploymentManager implements IDeploymentManager {
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
                 deploymentProperties = res.properties;
-
+                
                 if (answers.deploymentSku === 'standard') {
                     deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
                     return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
@@ -201,6 +206,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
                     config.Runtime = answers.runtime;
                     config.TLS = answers.certData;
+                    config.EventHubConnectionString = outputs.eventHubConnectionString.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -415,6 +421,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
         data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
         data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
+        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.eventHubConnectionString.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
        

@@ -24,4 +24,5 @@ export class Config {
             appId: string
         }
     };
+    public EventHubConnectionString: string;
 }
