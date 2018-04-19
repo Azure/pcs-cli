@@ -161,6 +161,18 @@
                 "description": "Events that arrive outside the delay window will be dropped or adjusted based on the value selected"
             }
         },
+        "streamingJobQuery": {
+            "type": "object",
+            "defaultValue": {
+                "applyRuleFilterJsUdf": "function main(record) {\r\n let ruleFunction = new Function('record', record.__rulefilterjs);\r\n return ruleFunction(record);\r\n }",
+                "flattenMeasurementsJsUdf": "function main(record) {\r\n \r\n let flatRecord = {\r\n '__deviceid': record.__deviceid,\r\n '__ruleid': record.__ruleid\r\n };\r\n \r\n record.measurements.forEach(function (item) {\r\n flatRecord[item.measurementname] = {\r\n 'avg': item.avg,\r\n 'max': item.max,\r\n 'min': item.min,\r\n 'count': item.count\r\n };\r\n });\r\n \r\n return flatRecord;\r\n }",
+                "removeUnusedPropertiesJsUdf": "function main(record) {\r\n if (record) {\r\n record.IoTHub && delete record.IoTHub;\r\n record.PartitionId && delete record.PartitionId;\r\n record.EventEnqueuedUtcTime && delete record.EventEnqueuedUtcTime;\r\n record.EventProcessedUtcTime && delete record.EventProcessedUtcTime;\r\n }\r\n return record;\r\n }",
+                "transformQuery": "WITH TelemetryAndRules AS \r\n( \r\n    SELECT  \r\n        T.IotHub.ConnectionDeviceId as __deviceid,\r\n        T.PartitionId as __partitionid,\r\n        T.EventEnqueuedUtcTime as __receivedtime,\r\n        R.Id as __ruleid,\r\n        R.AggregationWindow,\r\n        Conditions.ArrayValue.Field as MeasurementName,\r\n        GetRecordPropertyValue(T, Conditions.ArrayValue.Field) as MeasurementValue\r\n    FROM\r\n        DeviceTelemetry T PARTITION BY PartitionId TIMESTAMP BY T.EventEnqueuedUtcTime\r\n        JOIN DeviceGroups G ON T.IoTHub.ConnectionDeviceId = G.DeviceId\r\n        JOIN Rules R ON R.GroupId = G.GroupId\r\n        CROSS APPLY GetArrayElements(R.Conditions) AS Conditions\r\n),\r\nWindowAggregates5Min AS (\r\n    SELECT\r\n        TA.__deviceid,\r\n        TA.__ruleid,\r\n        TA.__partitionid,\r\n        TA.MeasurementName,\r\n        AVG(TA.MeasurementValue),\r\n        MAX(TA.MeasurementValue),\r\n        MIN(TA.MeasurementValue),\r\n        COUNT(TA.MeasurementValue),\r\n        MAX(DATEDIFF(millisecond, '1970-01-01T00:00:00Z', TA.__receivedtime)) as __lastReceivedTime\r\n    FROM\r\n        TelemetryAndRules TA PARTITION BY __partitionid\r\n    WHERE\r\n        TA.AggregationWindow='tumblingwindow5minutes'\r\n    GROUP BY\r\n        TA.__deviceid,\r\n        TA.__ruleid, \r\n        TA.__partitionid,\r\n        TA.MeasurementName,\r\n        TumblingWindow(minute, 5)\r\n),\r\nGroupAggregatedMeasurements AS (\r\n    SELECT\r\n        WA.__deviceid,\r\n        WA.__ruleid,\r\n        WA.__partitionid,\r\n        WA.__lastReceivedTime,\r\n        Collect() AS Measurements\r\n    FROM\r\n        WindowAggregates5Min WA PARTITION BY __partitionid\r\n    GROUP BY \r\n        WA.__deviceid,\r\n        WA.__ruleid,\r\n        WA.__partitionid,\r\n        WA.__lastReceivedTime,\r\n        System.Timestamp\r\n),\r\nFlatAggregatedMeasurements AS (\r\n    SELECT\r\n        GA.__deviceid,\r\n        GA.__ruleid,\r\n        GA.__lastReceivedTime,\r\n        udf.flattenMeasurements(GA) AS __aggregates\r\n    FROM\r\n        GroupAggregatedMeasurements GA PARTITION BY __partitionid\r\n),\r\nCombineRuleFilters AS (\r\n    SELECT\r\n        FA.__deviceid,\r\n        FA.__ruleid,\r\n        FA.__aggregates,\r\n        FA.__lastReceivedTime,\r\n        R.Description as __description,\r\n        R.Severity as __severity,\r\n        R.__rulefilterjs as __rulefilterjs\r\n    FROM\r\n        FlatAggregatedMeasurements FA PARTITION BY __partitionid\r\n        JOIN Rules R ON FA.__ruleid=R.Id\r\n),\r\nApplyRuleFilters AS\r\n(\r\n    SELECT\r\n        CR.*\r\n    FROM\r\n        CombineRuleFilters CR PARTITION BY __partitionid\r\n    WHERE TRY_CAST(udf.applyRuleFilter(CR) AS bigint) = 1\r\n)\r\n\r\nSELECT\r\n    1 as [doc.schemaVersion], \r\n    'alarm' as [doc.schema], \r\n    'open' as [status], \r\n    '1Rule-1Device-NMessage' as [logic], \r\n    DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as created, \r\n    DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as modified, \r\n    AR.__description as [rule.description], \r\n    AR.__severity as [rule.severity], \r\n    AR.__ruleid as [rule.id], \r\n    AR.__deviceId as [device.id],\r\n    AR.__aggregates,\r\n    AR.__lastReceivedTime as [device.msg.received]\r\nINTO\r\n    Alarms\r\nFROM\r\n    ApplyRuleFilters AR PARTITION BY __partitionid\r\n\r\nSELECT\r\n        CONCAT(T.IoTHub.ConnectionDeviceId, ';', CAST(DATEDIFF(millisecond, '1970-01-01T00:00:00Z', T.EventEnqueuedUtcTime) AS nvarchar(max))) as id,\r\n        1 as [doc.schemaVersion],\r\n        'd2cmessage' as [doc.schema],\r\n        T.IoTHub.ConnectionDeviceId as [device.id],\r\n        'device-sensors;v1' as [device.msg.schema],\r\n        DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as [device.msg.created],\r\n        DATEDIFF(millisecond, '1970-01-01T00:00:00Z', T.EventEnqueuedUtcTime) as [device.msg.received],\r\n        udf.removeUnusedProperties(T) as Data\r\nINTO\r\n    Messages\r\nFROM\r\n    DeviceTelemetry T PARTITION BY PartitionId TIMESTAMP BY T.EventEnqueuedUtcTime\r\n"
+            },
+            "metadata": {
+                "description": "The query and udf functions for streamingjobs to process telemetry rules"
+            }
+        },
         "numberOfStreamingUnits": {
             "type": "int",
             "minValue": 1,
@@ -320,7 +332,7 @@
         "eventHubNamespaceResourceId": "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]",
         "eventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
         "eventHubRouteKeyResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/AuthorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('eventHubAuthorizationName'))]",
-        "iotHubVersion": "2016-02-03",
+        "iotHubApiVersion": "2016-02-03",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
         "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
@@ -493,7 +505,7 @@
         },
         {
             "comments": "Azure IoT Hub",
-            "apiVersion": "[variables('iotHubVersion')]",
+            "apiVersion": "[variables('iotHubApiVersion')]",
             "type": "Microsoft.Devices/Iothubs",
             "name": "[parameters('iotHubName')]",
             "location": "[variables('location')]",
@@ -555,7 +567,7 @@
         },
         {
             "comments": "Consumer Group of IoT Hub",
-            "apiVersion": "[variables('iotHubVersion')]",
+            "apiVersion": "[variables('iotHubApiVersion')]",
             "name": "[concat(parameters('iotHubName'), '/events/', variables('consumerGroupName'))]",
             "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
             "dependsOn": [
@@ -563,6 +575,7 @@
             ]
         },
         {
+            "comments": "Azure StreamAnalytics streamingjobs",
             "apiVersion": "[variables('streamAnalyticsApiVersion')]",
             "type": "Microsoft.StreamAnalytics/streamingjobs",
             "name": "[parameters('streamingJobsName')]",
@@ -588,7 +601,7 @@
                                 "properties": {
                                     "consumerGroupName": "[variables('consumerGroupName')]",
                                     "iotHubNamespace": "[parameters('iotHubName')]",
-                                    "sharedAccessPolicyKey": "[listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey]",
+                                    "sharedAccessPolicyKey": "[listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey]",
                                     "sharedAccessPolicyName": "[variables('iotHubKeyName')]",
                                     "endpoint": "messages/events"
                                 },
@@ -666,7 +679,7 @@
                             "datasource": {
                                 "type": "Microsoft.Storage/DocumentDB",
                                 "properties": {
-                                    "accountId": "[parameters('documentDBName')]",
+                                    "accountId": "[parameters('documentDbName')]",
                                     "accountKey": "[listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey]",
                                     "database": "[variables('streamingJobsOutputDBName')]",
                                     "collectionNamePattern": "alarms"
@@ -680,7 +693,7 @@
                             "datasource": {
                                 "type": "Microsoft.Storage/DocumentDB",
                                 "properties": {
-                                    "accountId": "[parameters('documentDBName')]",
+                                    "accountId": "[parameters('documentDbName')]",
                                     "accountKey": "[listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey]",
                                     "database": "[variables('streamingJobsOutputDBName')]",
                                     "collectionNamePattern": "messages"
@@ -695,74 +708,74 @@
                         "properties": {
                           "type": "Scalar",
                           "properties": {
-                            "inputs": [
-                              {
-                                "dataType": "record"
-                              }
-                            ],
-                            "output": {
-                              "dataType": "any"
-                            },
-                            "binding": {
-                              "type": "Microsoft.StreamAnalytics/JavascriptUdf",
-                              "properties": {
-                                "script": "function main(record) {\r\n \r\n let flatRecord = {\r\n '__deviceid': record.__deviceid,\r\n '__ruleid': record.__ruleid\r\n };\r\n \r\n record.measurements.forEach(function (item) {\r\n flatRecord[item.measurementname] = {\r\n 'avg': item.avg,\r\n 'max': item.max,\r\n 'min': item.min,\r\n 'count': item.count\r\n };\r\n });\r\n \r\n return flatRecord;\r\n }"
-                              }
-                            }
+                                "inputs": [
+                                    {
+                                        "dataType": "record"
+                                    }
+                                ],
+                                "output": {
+                                    "dataType": "any"
+                                },
+                                "binding": {
+                                    "type": "Microsoft.StreamAnalytics/JavascriptUdf",
+                                    "properties": {
+                                        "script": "[parameters('streamingJobQuery').flattenMeasurementsJsUdf]"
+                                    }
+                                }
                           }
                         }
                     },
                     {
                         "name": "applyRuleFilter",
                         "properties": {
-                          "type": "Scalar",
-                          "properties": {
-                            "inputs": [
-                              {
-                                "dataType": "record"
-                              }
-                            ],
-                            "output": {
-                              "dataType": "any"
-                            },
-                            "binding": {
-                              "type": "Microsoft.StreamAnalytics/JavascriptUdf",
-                              "properties": {
-                                "script": "function main(record) {\r\n let ruleFunction = new Function('record', record.__rulefilterjs);\r\n return ruleFunction(record);\r\n }"
-                              }
+                            "type": "Scalar",
+                            "properties": {
+                                "inputs": [
+                                    {
+                                        "dataType": "record"
+                                    }
+                                ],
+                                "output": {
+                                    "dataType": "any"
+                                },
+                                "binding": {
+                                    "type": "Microsoft.StreamAnalytics/JavascriptUdf",
+                                    "properties": {
+                                        "script": "[parameters('streamingJobQuery').applyRuleFilterJsUdf]"
+                                    }
+                                }
                             }
-                          }
                         }
                     },
                     {
                         "name": "removeUnusedProperties",
                         "properties": {
-                          "type": "Scalar",
-                          "properties": {
-                            "inputs": [
-                              {
-                                "dataType": "record"
-                              }
-                            ],
-                            "output": {
-                              "dataType": "any"
-                            },
-                            "binding": {
-                              "type": "Microsoft.StreamAnalytics/JavascriptUdf",
-                              "properties": {
-                                "script": "function main(record) {\r\n if (record) {\r\n record.IoTHub && delete record.IoTHub;\r\n record.PartitionId && delete record.PartitionId;\r\n record.EventEnqueuedUtcTime && delete record.EventEnqueuedUtcTime;\r\n record.EventProcessedUtcTime && delete record.EventProcessedUtcTime;\r\n }\r\n return record;\r\n }"
-                              }
+                            "type": "Scalar",
+                            "properties": {
+                                "inputs": [
+                                    {
+                                        "dataType": "record"
+                                    }
+                                ],
+                                "output": {
+                                    "dataType": "any"
+                                },
+                                "binding": {
+                                    "type": "Microsoft.StreamAnalytics/JavascriptUdf",
+                                    "properties": {
+                                        "script": "[parameters('streamingJobQuery').removeUnusedPropertiesJsUdf]"
+                                    }
+                                }
                             }
-                          }
                         }
                     }
                 ],
                 "transformation": {
                     "name": "Alarms",
                     "properties": {
-                        "query": "WITH TelemetryAndRules AS \r\n( \r\n    SELECT  \r\n        T.IotHub.ConnectionDeviceId as __deviceid,\r\n        T.PartitionId as __partitionid,\r\n        T.EventEnqueuedUtcTime as __receivedtime,\r\n        R.Id as __ruleid,\r\n        R.AggregationWindow,\r\n        Conditions.ArrayValue.Field as MeasurementName,\r\n        GetRecordPropertyValue(T, Conditions.ArrayValue.Field) as MeasurementValue\r\n    FROM\r\n        DeviceTelemetry T PARTITION BY PartitionId TIMESTAMP BY T.EventEnqueuedUtcTime\r\n        JOIN DeviceGroups G ON T.IoTHub.ConnectionDeviceId = G.DeviceId\r\n        JOIN Rules R ON R.GroupId = G.GroupId\r\n        CROSS APPLY GetArrayElements(R.Conditions) AS Conditions\r\n),\r\nWindowAggregates5Min AS (\r\n    SELECT\r\n        TA.__deviceid,\r\n        TA.__ruleid,\r\n        TA.__partitionid,\r\n        TA.MeasurementName,\r\n        AVG(TA.MeasurementValue),\r\n        MAX(TA.MeasurementValue),\r\n        MIN(TA.MeasurementValue),\r\n        COUNT(TA.MeasurementValue),\r\n        MAX(DATEDIFF(millisecond, '1970-01-01T00:00:00Z', TA.__receivedtime)) as __lastReceivedTime\r\n    FROM\r\n        TelemetryAndRules TA PARTITION BY __partitionid\r\n    WHERE\r\n        TA.AggregationWindow='tumblingwindow5minutes'\r\n    GROUP BY\r\n        TA.__deviceid,\r\n        TA.__ruleid, \r\n        TA.__partitionid,\r\n        TA.MeasurementName,\r\n        TumblingWindow(minute, 5)\r\n),\r\nGroupAggregatedMeasurements AS (\r\n    SELECT\r\n        WA.__deviceid,\r\n        WA.__ruleid,\r\n        WA.__partitionid,\r\n        WA.__lastReceivedTime,\r\n        Collect() AS Measurements\r\n    FROM\r\n        WindowAggregates5Min WA PARTITION BY __partitionid\r\n    GROUP BY \r\n        WA.__deviceid,\r\n        WA.__ruleid,\r\n        WA.__partitionid,\r\n        WA.__lastReceivedTime,\r\n        System.Timestamp\r\n),\r\nFlatAggregatedMeasurements AS (\r\n    SELECT\r\n        GA.__deviceid,\r\n        GA.__ruleid,\r\n        GA.__lastReceivedTime,\r\n        udf.flattenMeasurements(GA) AS __aggregates\r\n    FROM\r\n        GroupAggregatedMeasurements GA PARTITION BY __partitionid\r\n),\r\nCombineRuleFilters AS (\r\n    SELECT\r\n        FA.__deviceid,\r\n        FA.__ruleid,\r\n        FA.__aggregates,\r\n        FA.__lastReceivedTime,\r\n        R.Description as __description,\r\n        R.Severity as __severity,\r\n        R.__rulefilterjs as __rulefilterjs\r\n    FROM\r\n        FlatAggregatedMeasurements FA PARTITION BY __partitionid\r\n        JOIN Rules R ON FA.__ruleid=R.Id\r\n),\r\nApplyRuleFilters AS\r\n(\r\n    SELECT\r\n        CR.*\r\n    FROM\r\n        CombineRuleFilters CR PARTITION BY __partitionid\r\n    WHERE TRY_CAST(udf.applyRuleFilter(CR) AS bigint) = 1\r\n)\r\n\r\nSELECT\r\n    1 as [doc.schemaVersion], \r\n    'alarm' as [doc.schema], \r\n    'open' as [status], \r\n    '1Rule-1Device-NMessage' as [logic], \r\n    DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as created, \r\n    DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as modified, \r\n    AR.__description as [rule.description], \r\n    AR.__severity as [rule.severity], \r\n    AR.__ruleid as [rule.id], \r\n    AR.__deviceId as [device.id],\r\n    AR.__aggregates,\r\n    AR.__lastReceivedTime as [device.msg.received]\r\nINTO\r\n    Alarms\r\nFROM\r\n    ApplyRuleFilters AR PARTITION BY __partitionid\r\n\r\nSELECT\r\n        CONCAT(T.IoTHub.ConnectionDeviceId, ';', CAST(DATEDIFF(millisecond, '1970-01-01T00:00:00Z', T.EventEnqueuedUtcTime) AS nvarchar(max))) as id,\r\n        1 as [doc.schemaVersion],\r\n        'd2cmessage' as [doc.schema],\r\n        T.IoTHub.ConnectionDeviceId as [device.id],\r\n        'device-sensors;v1' as [device.msg.schema],\r\n        DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as [device.msg.created],\r\n        DATEDIFF(millisecond, '1970-01-01T00:00:00Z', T.EventEnqueuedUtcTime) as [device.msg.received],\r\n        udf.removeUnusedProperties(T) as Data\r\nINTO\r\n    Messages\r\nFROM\r\n    DeviceTelemetry T PARTITION BY PartitionId TIMESTAMP BY T.EventEnqueuedUtcTime\r\n",
+                        "query": "[parameters('streamingJobQuery').transformQuery]",
                         "streamingUnits": "[parameters('numberOfStreamingUnits')]"
-                  }
+                    }
                 }
             }
         },
@@ -839,7 +852,7 @@
         },
         "iotHubConnectionString": {
             "type": "string",
-            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]"
+            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
         },
         "documentDBConnectionString": {
             "type": "string",
