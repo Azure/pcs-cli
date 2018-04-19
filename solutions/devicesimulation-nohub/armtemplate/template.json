@@ -192,6 +192,20 @@
             "metadata": {
                 "description": "ID of the Azure Subscription where the solution is deployed"
             }
+        },
+        "deploymentId": {
+            "type": "string",
+            "metadata": {
+                "description": "Unique Id of the deployment."
+            },
+            "defaultValue": "Undefined"
+        },
+        "diagnosticsEndpointUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Diagnostics service endpoint url"
+            },
+            "defaultValue": "Undefined"
         }
     },
     "variables": {
