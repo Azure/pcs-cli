@@ -126,6 +126,11 @@ export class DeploymentManager implements IDeploymentManager {
                     this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
                     this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
                 }
+                let serviceBusEndpointSuffix = 'servicebus.windows.net';
+                if (environment.name === AzureEnvironment.AzureChina.name) {
+                    serviceBusEndpointSuffix = 'servicebus.chinacloudapi.cn';
+                }
+                this._parameters.serviceBusEndpointSuffix = { value: serviceBusEndpointSuffix };
             }
             this.setupParameters(answers);
         } catch (ex) {
