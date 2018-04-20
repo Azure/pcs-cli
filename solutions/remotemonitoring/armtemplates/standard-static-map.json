@@ -161,7 +161,7 @@
                 "description": "Events that arrive outside the delay window will be dropped or adjusted based on the value selected"
             }
         },
-        "streamingJobQuery": {
+        "streamingJobsQuery": {
             "type": "object",
             "defaultValue": {
                 "applyRuleFilterJsUdf": "function main(record) {\r\n let ruleFunction = new Function('record', record.__rulefilterjs);\r\n return ruleFunction(record);\r\n }",
@@ -621,7 +621,7 @@
                                     "container": "devicegroups",
                                     "dateFormat": "yyyy-MM-dd",
                                     "timeFormat": "HH-mm",
-                                    "pathPattern": "referenceinput/{date}/{time}/devicegroups.json",
+                                    "pathPattern": "referenceinput/{date}/{time}/devicegroups.csv",
                                     "storageAccounts": [
                                         {
                                             "accountKey": "[listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value]",
@@ -716,7 +716,7 @@
                                 "binding": {
                                     "type": "Microsoft.StreamAnalytics/JavascriptUdf",
                                     "properties": {
-                                        "script": "[parameters('streamingJobQuery').flattenMeasurementsJsUdf]"
+                                        "script": "[parameters('streamingJobsQuery').flattenMeasurementsJsUdf]"
                                     }
                                 }
                           }
@@ -738,7 +738,7 @@
                                 "binding": {
                                     "type": "Microsoft.StreamAnalytics/JavascriptUdf",
                                     "properties": {
-                                        "script": "[parameters('streamingJobQuery').applyRuleFilterJsUdf]"
+                                        "script": "[parameters('streamingJobsQuery').applyRuleFilterJsUdf]"
                                     }
                                 }
                             }
@@ -760,7 +760,7 @@
                                 "binding": {
                                     "type": "Microsoft.StreamAnalytics/JavascriptUdf",
                                     "properties": {
-                                        "script": "[parameters('streamingJobQuery').removeUnusedPropertiesJsUdf]"
+                                        "script": "[parameters('streamingJobsQuery').removeUnusedPropertiesJsUdf]"
                                     }
                                 }
                             }
@@ -770,7 +770,7 @@
                 "transformation": {
                     "name": "Alarms",
                     "properties": {
-                        "query": "[parameters('streamingJobQuery').transformQuery]",
+                        "query": "[parameters('streamingJobsQuery').transformQuery]",
                         "streamingUnits": "[parameters('numberOfStreamingUnits')]"
                     }
                 }

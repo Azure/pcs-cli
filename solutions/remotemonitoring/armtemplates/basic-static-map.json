@@ -225,19 +225,19 @@
                 "description": "The name of Azure StreamingJobs"
             }
         },
-        "streamingJobOutputStartMode": {
+        "streamingJobsOutputStartMode": {
             "type": "string",
-            "defaultValue": "LastOutputEventTime",
+            "defaultValue": "JobStartTime",
             "allowedValues": [
                 "JobStartTime",
                 "LastOutputEventTime",
                 "CustomTime"
             ],
             "metadata": {
-                "description": "The start behavior of Stream Analytics jobs immediately upon creation"
+                "description": "The start behavior of streamingjobs immediately upon creation"
             }
         },
-        "streamingJobEventsOutOfOrderPolicy": {
+        "streamingJobsEventsOutOfOrderPolicy": {
             "type": "string",
             "defaultValue": "Adjust",
             "allowedValues": [
@@ -246,6 +246,13 @@
             ],
             "metadata": {
                 "description": "Events that arrive outside the delay window will be dropped or adjusted based on the value selected"
+            }
+        },
+        "streamingJobsInputContainerName": {
+            "type": "string",
+            "defaultValue": "referenceinput",
+            "metadata": {
+                "description": "The container name of reference input for the streamingjobs"
             }
         },
         "streamingJobQuery": {
@@ -651,7 +658,7 @@
                     "name": "standard"
                 },
                 "eventsOutOfOrderMaxDelayInSeconds": 10,
-                "eventsOutOfOrderPolicy": "[parameters('streamingJobEventsOutOfOrderPolicy')]",
+                "eventsOutOfOrderPolicy": "[parameters('streamingJobsEventsOutOfOrderPolicy')]",
                 "inputs": [
                     {
                         "name": "DeviceTelemetry",
@@ -680,10 +687,10 @@
                         "properties": {
                             "datasource": {
                                 "properties": {
-                                    "container": "devicegroups",
+                                    "container": "[parameters('streamingJobsInputContainerName')]",
                                     "dateFormat": "yyyy-MM-dd",
                                     "timeFormat": "HH-mm",
-                                    "pathPattern": "referenceinput/{date}/{time}/devicegroups.json",
+                                    "pathPattern": "{date}/{time}/devicegroups.csv",
                                     "storageAccounts": [
                                         {
                                             "accountKey": "[listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value]",
@@ -708,10 +715,10 @@
                         "properties": {
                             "datasource": {
                                 "properties": {
-                                    "container": "rules",
+                                    "container": "[parameters('streamingJobsInputContainerName')]",
                                     "dateFormat": "yyyy-MM-dd",
                                     "timeFormat": "HH-mm",
-                                    "pathPattern": "referenceinput/{date}/{time}/rules.json",
+                                    "pathPattern": "{date}/{time}/rules.json",
                                     "storageAccounts": [
                                         {
                                             "accountKey": "[listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value]",
@@ -778,7 +785,7 @@
                                 "binding": {
                                     "type": "Microsoft.StreamAnalytics/JavascriptUdf",
                                     "properties": {
-                                        "script": "[parameters('streamingJobQuery').flattenMeasurementsJsUdf]"
+                                        "script": "[parameters('streamingJobsQuery').flattenMeasurementsJsUdf]"
                                     }
                                 }
                           }
@@ -800,7 +807,7 @@
                                 "binding": {
                                     "type": "Microsoft.StreamAnalytics/JavascriptUdf",
                                     "properties": {
-                                        "script": "[parameters('streamingJobQuery').applyRuleFilterJsUdf]"
+                                        "script": "[parameters('streamingJobsQuery').applyRuleFilterJsUdf]"
                                     }
                                 }
                             }
@@ -822,7 +829,7 @@
                                 "binding": {
                                     "type": "Microsoft.StreamAnalytics/JavascriptUdf",
                                     "properties": {
-                                        "script": "[parameters('streamingJobQuery').removeUnusedPropertiesJsUdf]"
+                                        "script": "[parameters('streamingJobsQuery').removeUnusedPropertiesJsUdf]"
                                     }
                                 }
                             }
@@ -832,7 +839,7 @@
                 "transformation": {
                     "name": "Alarms",
                     "properties": {
-                        "query": "[parameters('streamingJobQuery').transformQuery]",
+                        "query": "[parameters('streamingJobsQuery').transformQuery]",
                         "streamingUnits": "[parameters('numberOfStreamingUnits')]"
                     }
                 }
