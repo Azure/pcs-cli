@@ -410,7 +410,8 @@
             },
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
+                "[variables('documentDBResourceId')]"
             ],
             "properties": {
                 "sku": {
@@ -641,6 +642,10 @@
         "storageAccountKey": {
             "type": "string",
             "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+        },
+        "streamingJobsName": {
+            "type": "string",
+            "value": "[parameters('streamingJobsName')]"
         }
     }
 }

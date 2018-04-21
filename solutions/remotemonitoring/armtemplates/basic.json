@@ -665,7 +665,8 @@
             },
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
+                "[variables('documentDBResourceId')]"
             ],
             "properties": {
                 "sku": {
@@ -1107,6 +1108,10 @@
         "adminUsername": {
             "type": "string",
             "value": "[parameters('adminUsername')]"
+        },
+        "streamingJobsName": {
+            "type": "string",
+            "value": "[parameters('streamingJobsName')]"
         }
     }
 }

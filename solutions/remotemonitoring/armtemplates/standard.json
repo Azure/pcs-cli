@@ -592,7 +592,8 @@
             },
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
+                "[variables('documentDBResourceId')]"
             ],
             "properties": {
                 "sku": {
@@ -920,6 +921,10 @@
         "eventHubConnectionString": {
             "type": "string",
             "value": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey)]"
+        },
+        "streamingJobsName": {
+            "type": "string",
+            "value": "[parameters('streamingJobsName')]"
         }
     }
 }
