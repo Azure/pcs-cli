@@ -582,7 +582,7 @@
             ]
         },
         {
-            "comments": "Azure StreamAnalytics streamingjobs",
+            "comments": "Azure Stream Analytics streamingjobs",
             "apiVersion": "[variables('streamAnalyticsApiVersion')]",
             "type": "Microsoft.StreamAnalytics/streamingjobs",
             "name": "[parameters('streamingJobsName')]",

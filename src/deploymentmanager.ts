@@ -217,8 +217,9 @@ export class DeploymentManager implements IDeploymentManager {
                 return Promise.resolve();
             })
             .then(() => {
-                if (answers.deploymentSku !== 'local') {
-                    deployUI.start(`Waiting for streamingjobs to be started, this could take up to a few minutes.`);
+                // wait for streaming jobs to start if it is included in template and sku is not local
+                if (deploymentProperties.outputs.streamingJobsName || answers.deploymentSku !== 'local') {
+                    deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
                     deployUI.start(`${deploymentProperties.outputs.streamingJobsName.value}`);
                     return this.waitForStreamingJobsToStart(answers.solutionName, deploymentProperties.outputs.streamingJobsName.value);
                 }
@@ -424,7 +425,7 @@ export class DeploymentManager implements IDeploymentManager {
         return new Promise((resolve, reject) => {
             const timer = setInterval(
                 () => {
-                    // check streamingjobs state and start it if it is not running
+                    // check streaming jobs state and start it if it is not running
                     this._streamAnalyticsClient.streamingJobs.get(resourceGroupName, streamingJobsName)
                         .then((streamingJobs: any) => {
                             if (streamingJobs.jobState.toLowerCase() === 'running') {
@@ -434,9 +435,10 @@ export class DeploymentManager implements IDeploymentManager {
                                 clearInterval(timer);
                                 resolve(false);
                             } else if (['created', 'failed'].indexOf(streamingJobs.jobState.toLowerCase()) > -1) {
+                                // try to start streaming jobs if it is in 'Created' or 'Failed' state
                                 this._streamAnalyticsClient.streamingJobs.start(resourceGroupName, streamingJobsName)
                                     .catch((error: any) => {
-                                        // ignore error of connecting to Cosmos database when starting streamingjobs
+                                        // ignore error of connecting to Cosmos database when starting streaming jobs
                                     });
                             }
                         })
