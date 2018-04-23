@@ -6,6 +6,7 @@ import * as fetch from 'node-fetch';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
+import StreamAnalyticsManagementClient = require('azure-arm-streamanalytics');
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
@@ -36,6 +37,7 @@ export class DeploymentManager implements IDeploymentManager {
     private _parameters: any;
     private _subscriptionId: string;
     private _client: ResourceManagementClient;
+    private _streamAnalyticsClient: StreamAnalyticsManagementClient;
 
     constructor(options: DeviceTokenCredentialsOptions, subscriptionId: string, solutionType: string, sku: string) {
         this._options = options;
@@ -44,6 +46,7 @@ export class DeploymentManager implements IDeploymentManager {
         this._subscriptionId = subscriptionId;
         const baseUri = this._options.environment ? this._options.environment.resourceManagerEndpointUrl : undefined;
         this._client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
+        this._streamAnalyticsClient = new StreamAnalyticsManagementClient(new DeviceTokenCredentials(this._options), subscriptionId);
     }
 
     public getLocations(): Promise<string[] | undefined> {
@@ -172,7 +175,7 @@ export class DeploymentManager implements IDeploymentManager {
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
                 deploymentProperties = res.properties;
-                
+
                 if (answers.deploymentSku === 'standard') {
                     deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
                     return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
@@ -185,7 +188,7 @@ export class DeploymentManager implements IDeploymentManager {
             })
             .then((kubeConfigPath: string) => {
                 if (answers.deploymentSku === 'standard') {
-                    deployUI.stop({message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}`});
+                    deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                     const outputs = deploymentProperties.outputs;
                     const config = new Config();
                     config.AADTenantId = answers.aadTenantId;
@@ -214,6 +217,15 @@ export class DeploymentManager implements IDeploymentManager {
                 return Promise.resolve();
             })
             .then(() => {
+                // wait for streaming jobs to start if it is included in template and sku is not local
+                if (deploymentProperties.outputs.streamingJobsName || answers.deploymentSku !== 'local') {
+                    deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
+                    deployUI.start(`${deploymentProperties.outputs.streamingJobsName.value}`);
+                    return this.waitForStreamingJobsToStart(answers.solutionName, deploymentProperties.outputs.streamingJobsName.value);
+                }
+                return Promise.resolve(true);
+            })
+            .then(() => {
                 if (answers.deploymentSku !== 'local') {
                     const webUrl = deploymentProperties.outputs.azureWebsite.value;
                     deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
@@ -238,7 +250,7 @@ export class DeploymentManager implements IDeploymentManager {
                     };
                     if (!done) {
                         status.message += `\n${chalk.yellow('Website not yet available, please refer to troubleshooting guide here:')}\n` +
-                        `${chalk.cyan(troubleshootingGuide)}`;
+                            `${chalk.cyan(troubleshootingGuide)}`;
                     }
                     deployUI.stop(status);
                     const output = {
@@ -374,7 +386,7 @@ export class DeploymentManager implements IDeploymentManager {
         }
     }
 
-    private  waitForWebsiteToBeReady(url: string): Promise<boolean> {
+    private waitForWebsiteToBeReady(url: string): Promise<boolean> {
         const status: string = url + '/ssl-proxy-status';
         const req = new fetch.Request(status, { method: 'GET' });
         let retryCount = 0;
@@ -408,6 +420,41 @@ export class DeploymentManager implements IDeploymentManager {
         });
     }
 
+    private waitForStreamingJobsToStart(resourceGroupName: string, streamingJobsName: string): Promise<boolean> {
+        let retryCount = 0;
+        return new Promise((resolve, reject) => {
+            const timer = setInterval(
+                () => {
+                    // check streaming jobs state and start it if it is not running
+                    this._streamAnalyticsClient.streamingJobs.get(resourceGroupName, streamingJobsName)
+                        .then((streamingJobs: any) => {
+                            if (streamingJobs.jobState.toLowerCase() === 'running') {
+                                clearInterval(timer);
+                                resolve(true);
+                            } else if (retryCount > MAX_RETRY) {
+                                clearInterval(timer);
+                                resolve(false);
+                            } else if (['created', 'failed'].indexOf(streamingJobs.jobState.toLowerCase()) > -1) {
+                                // try to start streaming jobs if it is in 'Created' or 'Failed' state
+                                this._streamAnalyticsClient.streamingJobs.start(resourceGroupName, streamingJobsName)
+                                    .catch((error: any) => {
+                                        // ignore error of connecting to Cosmos database when starting streaming jobs
+                                    });
+                            }
+                        })
+                        .catch((error: any) => {
+                            // Continue
+                            if (retryCount > MAX_RETRY) {
+                                clearInterval(timer);
+                                resolve(false);
+                            }
+                        });
+                    retryCount++;
+                },
+                10000);
+        });
+    }
+
     private printEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
         const data = [] as string[];
         data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
@@ -424,7 +471,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.eventHubConnectionString.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
-       
+
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }
 }

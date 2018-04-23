@@ -77,6 +77,7 @@
     "azure-arm-authorization": "4.1.0",
     "azure-arm-compute": "4.0.0",
     "azure-arm-resource": "3.0.0-preview",
+    "azure-arm-streamanalytics": "1.0.0-preview",
     "azure-arm-website": "2.0.0-preview",
     "azure-graph": "2.2.0",
     "btoa": "1.1.2",

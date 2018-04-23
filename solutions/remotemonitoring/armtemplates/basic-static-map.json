@@ -218,6 +218,67 @@
                 "description": "The Azure IoT Hub tier"
             }
         },
+        "streamingJobsName": {
+            "type": "string",
+            "defaultValue": "[concat('streamingjobs-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "The name of Azure StreamingJobs"
+            }
+        },
+        "streamingJobsOutputStartMode": {
+            "type": "string",
+            "defaultValue": "JobStartTime",
+            "allowedValues": [
+                "JobStartTime",
+                "LastOutputEventTime",
+                "CustomTime"
+            ],
+            "metadata": {
+                "description": "The start behavior of streamingjobs immediately upon creation"
+            }
+        },
+        "streamingJobsEventsOutOfOrderPolicy": {
+            "type": "string",
+            "defaultValue": "Adjust",
+            "allowedValues": [
+                "Adjust",
+                "Drop"
+            ],
+            "metadata": {
+                "description": "Events that arrive outside the delay window will be dropped or adjusted based on the value selected"
+            }
+        },
+        "streamingJobsInputContainerName": {
+            "type": "string",
+            "defaultValue": "referenceinput",
+            "metadata": {
+                "description": "The container name of reference input for the streamingjobs"
+            }
+        },
+        "streamingJobQuery": {
+            "type": "object",
+            "defaultValue": {
+                "applyRuleFilterJsUdf": "function main(record) {\r\n let ruleFunction = new Function('record', record.__rulefilterjs);\r\n return ruleFunction(record);\r\n }",
+                "flattenMeasurementsJsUdf": "function main(record) {\r\n \r\n let flatRecord = {\r\n '__deviceid': record.__deviceid,\r\n '__ruleid': record.__ruleid\r\n };\r\n \r\n record.measurements.forEach(function (item) {\r\n flatRecord[item.measurementname] = {\r\n 'avg': item.avg,\r\n 'max': item.max,\r\n 'min': item.min,\r\n 'count': item.count\r\n };\r\n });\r\n \r\n return flatRecord;\r\n }",
+                "removeUnusedPropertiesJsUdf": "function main(record) {\r\n if (record) {\r\n record.IoTHub && delete record.IoTHub;\r\n record.PartitionId && delete record.PartitionId;\r\n record.EventEnqueuedUtcTime && delete record.EventEnqueuedUtcTime;\r\n record.EventProcessedUtcTime && delete record.EventProcessedUtcTime;\r\n }\r\n return record;\r\n }",
+                "transformQuery": "WITH TelemetryAndRules AS \r\n( \r\n    SELECT  \r\n        T.IotHub.ConnectionDeviceId as __deviceid,\r\n        T.PartitionId as __partitionid,\r\n        T.EventEnqueuedUtcTime as __receivedtime,\r\n        R.Id as __ruleid,\r\n        R.AggregationWindow,\r\n        Conditions.ArrayValue.Field as MeasurementName,\r\n        GetRecordPropertyValue(T, Conditions.ArrayValue.Field) as MeasurementValue\r\n    FROM\r\n        DeviceTelemetry T PARTITION BY PartitionId TIMESTAMP BY T.EventEnqueuedUtcTime\r\n        JOIN DeviceGroups G ON T.IoTHub.ConnectionDeviceId = G.DeviceId\r\n        JOIN Rules R ON R.GroupId = G.GroupId\r\n        CROSS APPLY GetArrayElements(R.Conditions) AS Conditions\r\n),\r\nWindowAggregates5Min AS (\r\n    SELECT\r\n        TA.__deviceid,\r\n        TA.__ruleid,\r\n        TA.__partitionid,\r\n        TA.MeasurementName,\r\n        AVG(TA.MeasurementValue),\r\n        MAX(TA.MeasurementValue),\r\n        MIN(TA.MeasurementValue),\r\n        COUNT(TA.MeasurementValue),\r\n        MAX(DATEDIFF(millisecond, '1970-01-01T00:00:00Z', TA.__receivedtime)) as __lastReceivedTime\r\n    FROM\r\n        TelemetryAndRules TA PARTITION BY __partitionid\r\n    WHERE\r\n        TA.AggregationWindow='tumblingwindow5minutes'\r\n    GROUP BY\r\n        TA.__deviceid,\r\n        TA.__ruleid, \r\n        TA.__partitionid,\r\n        TA.MeasurementName,\r\n        TumblingWindow(minute, 5)\r\n),\r\nGroupAggregatedMeasurements AS (\r\n    SELECT\r\n        WA.__deviceid,\r\n        WA.__ruleid,\r\n        WA.__partitionid,\r\n        WA.__lastReceivedTime,\r\n        Collect() AS Measurements\r\n    FROM\r\n        WindowAggregates5Min WA PARTITION BY __partitionid\r\n    GROUP BY \r\n        WA.__deviceid,\r\n        WA.__ruleid,\r\n        WA.__partitionid,\r\n        WA.__lastReceivedTime,\r\n        System.Timestamp\r\n),\r\nFlatAggregatedMeasurements AS (\r\n    SELECT\r\n        GA.__deviceid,\r\n        GA.__ruleid,\r\n        GA.__lastReceivedTime,\r\n        udf.flattenMeasurements(GA) AS __aggregates\r\n    FROM\r\n        GroupAggregatedMeasurements GA PARTITION BY __partitionid\r\n),\r\nCombineRuleFilters AS (\r\n    SELECT\r\n        FA.__deviceid,\r\n        FA.__ruleid,\r\n        FA.__aggregates,\r\n        FA.__lastReceivedTime,\r\n        R.Description as __description,\r\n        R.Severity as __severity,\r\n        R.__rulefilterjs as __rulefilterjs\r\n    FROM\r\n        FlatAggregatedMeasurements FA PARTITION BY __partitionid\r\n        JOIN Rules R ON FA.__ruleid=R.Id\r\n),\r\nApplyRuleFilters AS\r\n(\r\n    SELECT\r\n        CR.*\r\n    FROM\r\n        CombineRuleFilters CR PARTITION BY __partitionid\r\n    WHERE TRY_CAST(udf.applyRuleFilter(CR) AS bigint) = 1\r\n)\r\n\r\nSELECT\r\n    1 as [doc.schemaVersion], \r\n    'alarm' as [doc.schema], \r\n    'open' as [status], \r\n    '1Rule-1Device-NMessage' as [logic], \r\n    DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as created, \r\n    DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as modified, \r\n    AR.__description as [rule.description], \r\n    AR.__severity as [rule.severity], \r\n    AR.__ruleid as [rule.id], \r\n    AR.__deviceId as [device.id],\r\n    AR.__aggregates,\r\n    AR.__lastReceivedTime as [device.msg.received]\r\nINTO\r\n    Alarms\r\nFROM\r\n    ApplyRuleFilters AR PARTITION BY __partitionid\r\n\r\nSELECT\r\n        CONCAT(T.IoTHub.ConnectionDeviceId, ';', CAST(DATEDIFF(millisecond, '1970-01-01T00:00:00Z', T.EventEnqueuedUtcTime) AS nvarchar(max))) as id,\r\n        1 as [doc.schemaVersion],\r\n        'd2cmessage' as [doc.schema],\r\n        T.IoTHub.ConnectionDeviceId as [device.id],\r\n        'device-sensors;v1' as [device.msg.schema],\r\n        DATEDIFF(millisecond, '1970-01-01T00:00:00Z', System.Timestamp) as [device.msg.created],\r\n        DATEDIFF(millisecond, '1970-01-01T00:00:00Z', T.EventEnqueuedUtcTime) as [device.msg.received],\r\n        udf.removeUnusedProperties(T) as Data\r\nINTO\r\n    Messages\r\nFROM\r\n    DeviceTelemetry T PARTITION BY PartitionId TIMESTAMP BY T.EventEnqueuedUtcTime\r\n"
+            },
+            "metadata": {
+                "description": "The query and udf functions for streamingjobs to process telemetry rules"
+            }
+        },
+        "numberOfStreamingUnits": {
+            "type": "int",
+            "minValue": 1,
+            "maxValue": 48,
+            "defaultValue": 1,
+            "allowedValues": [
+              1, 3, 6, 12, 18, 24, 30, 36, 42, 48
+            ],
+            "metadata": {
+                "description": "Number of Streaming Units"
+              }
+        },
         "vmName": {
             "type": "string",
             "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
@@ -342,6 +403,9 @@
         "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
         "iotHubDefaultEndpoint": "events",
         "deviceNotificationRouteName": "DeviceNotifications",
+        "streamAnalyticsApiVersion": "2016-03-01",
+        "consumerGroupName": "streamingJobsConsumerGroup",
+        "streamingJobsOutputDBName": "pcs-iothub-stream",
         "storageApiVersion": "2017-06-01",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
         "computeApiVersion": "2017-03-30",
@@ -566,6 +630,221 @@
             "dependsOn": [
                 "[variables('eventHubResourceId')]"
             ]
+        },
+        {
+            "comments": "Consumer Group of IoT Hub",
+            "apiVersion": "[variables('iotHubApiVersion')]",
+            "name": "[concat(parameters('iotHubName'), '/events/', variables('consumerGroupName'))]",
+            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
+        },
+        {
+            "comments": "Azure Stream Analytics streamingjobs",
+            "apiVersion": "[variables('streamAnalyticsApiVersion')]",
+            "type": "Microsoft.StreamAnalytics/streamingjobs",
+            "name": "[parameters('streamingJobsName')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[parameters('solutionType')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
+                "[variables('documentDBResourceId')]"
+            ],
+            "properties": {
+                "sku": {
+                    "name": "standard"
+                },
+                "eventsOutOfOrderMaxDelayInSeconds": 10,
+                "eventsOutOfOrderPolicy": "[parameters('streamingJobsEventsOutOfOrderPolicy')]",
+                "inputs": [
+                    {
+                        "name": "DeviceTelemetry",
+                        "properties": {
+                            "datasource": {
+                                "properties": {
+                                    "consumerGroupName": "[variables('consumerGroupName')]",
+                                    "iotHubNamespace": "[parameters('iotHubName')]",
+                                    "sharedAccessPolicyKey": "[listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey]",
+                                    "sharedAccessPolicyName": "[variables('iotHubKeyName')]",
+                                    "endpoint": "messages/events"
+                                },
+                                "type": "Microsoft.Devices/IotHubs"
+                            },
+                            "serialization": {
+                                "properties": {
+                                    "encoding": "UTF8"
+                                },
+                                "type": "Json"
+                            },
+                            "type": "Stream"
+                        }
+                    },
+                    {
+                        "name": "DeviceGroups",
+                        "properties": {
+                            "datasource": {
+                                "properties": {
+                                    "container": "[parameters('streamingJobsInputContainerName')]",
+                                    "dateFormat": "yyyy-MM-dd",
+                                    "timeFormat": "HH-mm",
+                                    "pathPattern": "{date}/{time}/devicegroups.csv",
+                                    "storageAccounts": [
+                                        {
+                                            "accountKey": "[listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value]",
+                                            "accountName": "[parameters('storageName')]"
+                                        }
+                                    ]
+                                },
+                                "type": "Microsoft.Storage/Blob"
+                            },
+                            "serialization": {
+                                "properties": {
+                                    "fieldDelimiter": ",",
+                                    "encoding": "UTF8"
+                                },
+                                "type": "Csv"
+                            },
+                            "type": "Reference"
+                        }
+                    },
+                    {
+                        "name": "Rules",
+                        "properties": {
+                            "datasource": {
+                                "properties": {
+                                    "container": "[parameters('streamingJobsInputContainerName')]",
+                                    "dateFormat": "yyyy-MM-dd",
+                                    "timeFormat": "HH-mm",
+                                    "pathPattern": "{date}/{time}/rules.json",
+                                    "storageAccounts": [
+                                        {
+                                            "accountKey": "[listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value]",
+                                            "accountName": "[parameters('storageName')]"
+                                        }
+                                    ]
+                                },
+                                "type": "Microsoft.Storage/Blob"
+                            },
+                            "serialization": {
+                                "properties": {
+                                    "encoding": "UTF8"
+                                },
+                                "type": "Json"
+                            },
+                            "type": "Reference"
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "name": "Alarms",
+                        "properties": {
+                            "datasource": {
+                                "type": "Microsoft.Storage/DocumentDB",
+                                "properties": {
+                                    "accountId": "[parameters('documentDbName')]",
+                                    "accountKey": "[listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey]",
+                                    "database": "[variables('streamingJobsOutputDBName')]",
+                                    "collectionNamePattern": "alarms"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "Messages",
+                        "properties": {
+                            "datasource": {
+                                "type": "Microsoft.Storage/DocumentDB",
+                                "properties": {
+                                    "accountId": "[parameters('documentDbName')]",
+                                    "accountKey": "[listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey]",
+                                    "database": "[variables('streamingJobsOutputDBName')]",
+                                    "collectionNamePattern": "messages"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "functions": [
+                    {
+                        "name": "flattenMeasurements",
+                        "properties": {
+                          "type": "Scalar",
+                          "properties": {
+                                "inputs": [
+                                    {
+                                        "dataType": "record"
+                                    }
+                                ],
+                                "output": {
+                                    "dataType": "any"
+                                },
+                                "binding": {
+                                    "type": "Microsoft.StreamAnalytics/JavascriptUdf",
+                                    "properties": {
+                                        "script": "[parameters('streamingJobsQuery').flattenMeasurementsJsUdf]"
+                                    }
+                                }
+                          }
+                        }
+                    },
+                    {
+                        "name": "applyRuleFilter",
+                        "properties": {
+                            "type": "Scalar",
+                            "properties": {
+                                "inputs": [
+                                    {
+                                        "dataType": "record"
+                                    }
+                                ],
+                                "output": {
+                                    "dataType": "any"
+                                },
+                                "binding": {
+                                    "type": "Microsoft.StreamAnalytics/JavascriptUdf",
+                                    "properties": {
+                                        "script": "[parameters('streamingJobsQuery').applyRuleFilterJsUdf]"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "removeUnusedProperties",
+                        "properties": {
+                            "type": "Scalar",
+                            "properties": {
+                                "inputs": [
+                                    {
+                                        "dataType": "record"
+                                    }
+                                ],
+                                "output": {
+                                    "dataType": "any"
+                                },
+                                "binding": {
+                                    "type": "Microsoft.StreamAnalytics/JavascriptUdf",
+                                    "properties": {
+                                        "script": "[parameters('streamingJobsQuery').removeUnusedPropertiesJsUdf]"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "transformation": {
+                    "name": "Alarms",
+                    "properties": {
+                        "query": "[parameters('streamingJobsQuery').transformQuery]",
+                        "streamingUnits": "[parameters('numberOfStreamingUnits')]"
+                    }
+                }
+            }
         },
         {
             "comments": "Security rules used for the VM network interface",
@@ -811,6 +1090,10 @@
         "adminUsername": {
             "type": "string",
             "value": "[parameters('adminUsername')]"
+        },
+        "streamingJobsName": {
+            "type": "string",
+            "value": "[parameters('streamingJobsName')]"
         }
     }
 }
