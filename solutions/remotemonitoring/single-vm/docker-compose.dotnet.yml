@@ -156,9 +156,9 @@ services:
       - iothubmanager
       - config
     environment:
-      - PCS_TELEMETRY_WEBSERVICE_URL
-      - PCS_CONFIG_WEBSERVICE_URL
-      - PCS_IOTHUBMANAGER_WEBSERVICE_URL
+      - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1
+      - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1
+      - PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://iothubmanager:9002/v1
       - PCS_ASA_DATA_AZUREBLOB_ACCOUNT
       - PCS_ASA_DATA_AZUREBLOB_KEY
       - PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
