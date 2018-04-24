@@ -148,6 +148,28 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
 
+  asamanager:
+    image: azureiotpcs/asa-manager-dotnet:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
+    depends_on:
+      - iothubmanager
+      - config
+    environment:
+      - PCS_TELEMETRY_WEBSERVICE_URL
+      - PCS_CONFIG_WEBSERVICE_URL
+      - PCS_IOTHUBMANAGER_WEBSERVICE_URL
+      - PCS_ASA_DATA_AZUREBLOB_ACCOUNT
+      - PCS_ASA_DATA_AZUREBLOB_KEY
+      - PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
+      - PCS_EVENTHUB_CONNSTRING
+      - PCS_AUTH_REQUIRED
+      - PCS_CORS_WHITELIST
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
+      - PCS_APPLICATION_SECRET
+      - PCS_TWIN_READ_WRITE_ENABLED
+
 networks:
   default_net:
     driver: bridge

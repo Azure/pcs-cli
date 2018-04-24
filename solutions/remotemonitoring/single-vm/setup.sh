@@ -12,32 +12,45 @@ PKEY="${CERTS}/tls.key"
 
 # ========================================================================
 
-export HOST_NAME="${1:-localhost}"
-export APP_RUNTIME="${3:-dotnet}"
-export PCS_IOTHUB_CONNSTRING="$8"
-export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$9"
-export PCS_TELEMETRY_DOCUMENTDB_CONNSTRING="$9"
-export PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING="$9"
-export PCS_IOTHUBREACT_ACCESS_CONNSTRING="$8"
-export PCS_IOTHUBREACT_HUB_NAME="${10}"
-export PCS_IOTHUBREACT_HUB_ENDPOINT="${11}"
-export PCS_IOTHUBREACT_HUB_PARTITIONS="${12}"
-export PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT="${13}"
-export PCS_IOTHUBREACT_AZUREBLOB_KEY="${14}"
-export PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX="${15}"
-export PCS_CERTIFICATE="${16}"
-export PCS_CERTIFICATE_KEY="${17}"
-export PCS_AZUREMAPS_KEY="${18}"
-export PCS_AUTH_ISSUER="https://sts.windows.net/${5}/"
-export PCS_AUTH_AUDIENCE="$6"
+export HOST_NAME="localhost"
+export APP_RUNTIME="dotnet"
 export PCS_WEBUI_AUTH_TYPE="aad"
-export PCS_WEBUI_AUTH_AAD_TENANT="$5"
-export PCS_WEBUI_AUTH_AAD_APPID="$6"
-export PCS_WEBUI_AUTH_AAD_INSTANCE="$7"
 export PCS_APPLICATION_SECRET=$(cat /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9-,./;:[]\(\)_=^!~' | fold -w 64 | head -n 1)
-export PCS_RELEASE_VERSION="${19}"
-export PCS_DOCKER_TAG="${20}"
-export PCS_EVENTHUB_CONNSTRING="${21}"
+export PCS_TWIN_READ_WRITE_ENABLED="true"
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --hostname)                     HOST_NAME="$2" ;;
+        --runtime)                       APP_RUNTIME="$2" ;;
+        --iothub-name)                  PCS_IOTHUBREACT_HUB_NAME="$2" ;;
+        --iothub-endpoint)              PCS_IOTHUBREACT_HUB_ENDPOINT="$2" ;;
+        --iothub-partitions)            PCS_IOTHUBREACT_HUB_PARTITIONS="$2" ;;
+        --iothub-connstring)            PCS_IOTHUB_CONNSTRING="$2" ;;
+        --azureblob-account)            PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT="$2" ;;
+        --azureblob-key)                PCS_IOTHUBREACT_AZUREBLOB_KEY="$2" ;;
+        --azureblob-endpoint-suffix)    PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX="$2" ;;
+        --docdb-connstring)             PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
+        --azure-maps)                   PCS_AZUREMAPS_KEY="$2" ;;
+        --ssl-certificate)              PCS_CERTIFICATE="$2" ;;
+        --ssl-certificate-key)          PCS_CERTIFICATE_KEY="$2" ;;
+        --auth-audience)                PCS_AUTH_AUDIENCE="$2" ;;
+        --auth-issuer)                  PCS_AUTH_ISSUER="$2" ;;
+        --auth-type)                    PCS_WEBUI_AUTH_TYPE="$2" ;;
+        --aad-appid)                    PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
+        --aad-tenant)                   PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
+        --aad-instance)                 PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
+        --release-version)              PCS_RELEASE_VERSION="$2" ;;
+        --docker-tag)                   PCS_DOCKER_TAG="$2" ;;
+        --evenhub-connstring)           PCS_EVENTHUB_CONNSTRING="$2" ;;
+        --twin-read-write-enabled)      PCS_TWIN_READ_WRITE_ENABLED="$2" ;;
+    esac
+    shift
+done
+
+PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=
+PCS_AUTH_ISSUER="https://sts.windows.net/${PCS_AUTH_ISSUER}/"
 
 # TODO: move files to Remote Monitoring repositories
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm"
@@ -60,7 +73,7 @@ config_for_azure_china() {
         service docker restart
 
         # Rewrite the AAD issuer in Azure China environment
-        export PCS_AUTH_ISSUER="https://sts.chinacloudapi.cn/$2/"
+        export PCS_AUTH_ISSUER="https://sts.chinacloudapi.cn/${PCS_AUTH_ISSUER}/"
     fi
     set -e
 }
@@ -187,6 +200,11 @@ echo "export PCS_IOTHUBREACT_HUB_PARTITIONS=\"${PCS_IOTHUBREACT_HUB_PARTITIONS}\
 echo "export PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""                 >> ${ENVVARS}
 echo "export PCS_IOTHUBREACT_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""                         >> ${ENVVARS}
 echo "export PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX}\"" >> ${ENVVARS}
+echo "export PCS_ASA_DATA_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""                    >> ${ENVVARS}
+echo "export PCS_ASA_DATA_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""                            >> ${ENVVARS}
+echo "export PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX}\""    >> ${ENVVARS}
+echo "export PCS_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                                     >> ${ENVVARS}
+echo "export PCS_TWIN_READ_WRITE_ENABLED=\"${PCS_TWIN_READ_WRITE_ENABLED}\""                             >> ${ENVVARS}
 echo "export PCS_AZUREMAPS_KEY=\"${PCS_AZUREMAPS_KEY}\""                                                 >> ${ENVVARS}
 echo "export PCS_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                                     >> ${ENVVARS}
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
