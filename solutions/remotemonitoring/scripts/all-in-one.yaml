@@ -598,6 +598,112 @@ spec:
 
 ---
 
+# ASA Manager - Start
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: asa-manager
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: asa-manager
+    spec:
+      containers:
+      - name: asa-manager-pod
+        image: azureiotpcs/asa-manager-dotnet:{dockerTag}
+        ports:
+        - containerPort: 9024
+        env:
+        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: docdb.connstring
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.webservice.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.webservice.url
+        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubmanager.webservice.url
+        - name: PCS_ASA_DATA_AZUREBLOB_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: asa.azureblob.account
+        - name: PCS_ASA_DATA_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: asa.azureblob.key
+        - name: PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: asa.azureblob.endpointsuffix
+        - name: PCS_EVENTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: asa.eventhub.connstring
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_APPLICATION_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: asa-manager-svc
+  labels:
+    app: asa-manager
+spec:
+  type: NodePort
+  ports:
+  - port: 9024
+  selector:
+    app: asa-manager
+# ASA Manager - End
+
+---
+
 # PCS Config - Start
 apiVersion: extensions/v1beta1
 kind: Deployment

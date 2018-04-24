@@ -66,6 +66,12 @@ data:
   # Azure maps key
   azure.maps.key: "{AzureMapsKey}"
 
+  # ASA Manager
+  asa.eventhub.connstring: "{Event hub connection string}"
+  asa.azureblob.account: "{Azure Blob account name}"
+  asa.azureblob.key: "{Azure Blob account key}"
+  asa.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
+
   # Nginx Template
   nginx.tmpl: |
               {{ $cfg := .cfg }}
