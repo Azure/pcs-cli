@@ -32,7 +32,7 @@ while [ "$#" -gt 0 ]; do
         --azureblob-key)                PCS_IOTHUBREACT_AZUREBLOB_KEY="$2" ;;
         --azureblob-endpoint-suffix)    PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX="$2" ;;
         --docdb-connstring)             PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
-        --azure-maps)                   PCS_AZUREMAPS_KEY="$2" ;;
+        --azuremaps-key)                PCS_AZUREMAPS_KEY="$2" ;;
         --ssl-certificate)              PCS_CERTIFICATE="$2" ;;
         --ssl-certificate-key)          PCS_CERTIFICATE_KEY="$2" ;;
         --auth-audience)                PCS_AUTH_AUDIENCE="$2" ;;
@@ -209,7 +209,6 @@ echo "export PCS_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""            
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
 echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                       >> ${ENVVARS}
 echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}
-
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
