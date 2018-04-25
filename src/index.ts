@@ -471,8 +471,14 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
                 retryCount++;
                 return authzClient.roleAssignments.create(scope, assignmentGuid, roleCreateParams)
                 .then((roleResult: any) => {
-                    clearInterval(timer);
-                    resolve(appId);
+                    // Sometimes after role assignment it takes some time before they get propagated
+                    // this failes the ACS deployment since it thinks that credentials are not valid
+                    setTimeout(
+                        () => {
+                            clearInterval(timer);
+                            resolve(appId);
+                        },
+                        5000);
                 })
                 .catch ((error: Error) => {
                     if (retryCount >= MAX_RETRYCOUNT) {

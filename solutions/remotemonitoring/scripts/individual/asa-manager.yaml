@@ -17,11 +17,11 @@ spec:
     spec:
       containers:
       - name: asa-manager-pod
-        image: azureiotpcs/asa-manager-{runtime}:{dockerTag}
+        image: azureiotpcs/asa-manager-dotnet:{dockerTag}
         ports:
         - containerPort: 9024
         env:
-        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
+        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap

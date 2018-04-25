@@ -622,7 +622,7 @@ spec:
         ports:
         - containerPort: 9024
         env:
-        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
+        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
@@ -885,7 +885,7 @@ spec:
       - name: remote-monitoring-webui-pod
         image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
         ports:
-        - containerPort: 80
+        - containerPort: 10080
         volumeMounts:
           - name: webui-config-volume
             mountPath: /app/build/webui-config.js
@@ -909,7 +909,7 @@ spec:
   type: NodePort
   ports:
   - port: 9000
-    targetPort: 80
+    targetPort: 10080
   selector:
     app: remote-monitoring-webui
 # Remote Monitoring WebUI - End
