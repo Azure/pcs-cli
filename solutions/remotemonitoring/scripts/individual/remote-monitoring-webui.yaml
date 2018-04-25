@@ -19,7 +19,7 @@ spec:
       - name: remote-monitoring-webui-pod
         image: azureiotpcs/pcs-remote-monitoring-webui:testing
         ports:
-        - containerPort: 80
+        - containerPort: 10080
         volumeMounts:
           - name: webui-config-volume
             mountPath: /app/build/webui-config.js
@@ -43,6 +43,6 @@ spec:
   type: NodePort
   ports:
   - port: 9000
-    targetPort: 80
+    targetPort: 10080
   selector:
     app: remote-monitoring-webui
