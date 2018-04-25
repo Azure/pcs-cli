@@ -195,11 +195,11 @@ function main() {
                     deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, program.type, program.sku);
                     return deploymentManager.getLocations();
                 })
-                .then((locations: string[]) => {
-                    if (locations && locations.length === 0) {
-                        throw new Error('Locations list cannot be empty');
+                .then((locations: string[] | undefined) => {
+                    if (locations && locations.length > 0) {
+                        return prompt(getDeploymentQuestions(locations));
                     }
-                    return prompt(getDeploymentQuestions(locations));
+                    throw new Error('Locations list cannot be empty');
                 })
                 .then((ans: Answers) => {
                     answers.location = ans.location;
@@ -230,7 +230,7 @@ function main() {
                     cachedAuthResponse.options.tokenAudience = null;
                     answers.deploymentSku = program.sku;
                     answers.runtime = program.runtime;
-                    if (program.versionOverride === 'master') {
+                    if (program.versionOverride) {
                         // In order to run latest code verion override to master is required
                         answers.version = program.versionOverride;
                         answers.dockerTag = 'testing';
