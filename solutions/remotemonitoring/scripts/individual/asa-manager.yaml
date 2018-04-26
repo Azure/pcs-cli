@@ -61,6 +61,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: asa.eventhub.connstring
+        - name: PCS_EVENTHUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: asa.eventhub.name
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:

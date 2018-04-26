@@ -43,6 +43,7 @@ while [ "$#" -gt 0 ]; do
         --release-version)              PCS_RELEASE_VERSION="$2" ;;
         --docker-tag)                   PCS_DOCKER_TAG="$2" ;;
         --evenhub-connstring)           PCS_EVENTHUB_CONNSTRING="$2" ;;
+        --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
     esac
     shift
 done
@@ -201,8 +202,8 @@ echo "export PCS_ASA_DATA_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUN
 echo "export PCS_ASA_DATA_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""                            >> ${ENVVARS}
 echo "export PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX}\""    >> ${ENVVARS}
 echo "export PCS_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                                     >> ${ENVVARS}
+echo "export PCS_EVENTHUB_NAME=\"${PCS_EVENTHUB_NAME}\""                                                 >> ${ENVVARS}
 echo "export PCS_AZUREMAPS_KEY=\"${PCS_AZUREMAPS_KEY}\""                                                 >> ${ENVVARS}
-echo "export PCS_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                                     >> ${ENVVARS}
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
 echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                       >> ${ENVVARS}
 echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}

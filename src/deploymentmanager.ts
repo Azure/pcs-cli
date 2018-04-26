@@ -209,7 +209,8 @@ export class DeploymentManager implements IDeploymentManager {
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
                     config.Runtime = answers.runtime;
                     config.TLS = answers.certData;
-                    config.EventHubConnectionString = outputs.eventHubConnectionString.value;
+                    config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
+                    config.MessagesEventHubName = outputs.messagesEventHubName.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -468,7 +469,11 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
         data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
         data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
-        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.eventHubConnectionString.value);
+        data.push('PCS_ASA_DATA_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
+        data.push('PCS_ASA_DATA_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
+        data.push('PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
+        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.messagesEventHubConnectionString.value);
+        data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
 
