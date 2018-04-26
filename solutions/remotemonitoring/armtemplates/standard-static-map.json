@@ -893,9 +893,13 @@
             "type": "string",
             "value": "[listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
         },
-        "eventHubConnectionString": {
+        "messagesEventHubConnectionString": {
             "type": "string",
             "value": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey)]"
+        },
+        "messagesEventHubName": {
+            "type": "string",
+            "value": "[parameters('eventHubName')]"
         },
         "streamingJobsName": {
             "type": "string",
