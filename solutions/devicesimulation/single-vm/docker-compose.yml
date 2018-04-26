@@ -2,7 +2,7 @@ version: '2'
 
 services:
   apigateway-svc:
-    image: azureiotpcs/simulation-api-gateway:millennium
+    image: azureiotpcs/simulation-api-gateway:ds-staging
     ports:
       - "443:443"
     depends_on:
@@ -14,7 +14,7 @@ services:
       - /app/certs:/app/certs:ro
 
   webui-svc:
-    image: azureiotpcs/device-simulation-webui:millennium
+    image: azureiotpcs/device-simulation-webui:ds-staging
     depends_on:
       - devicesimulation-svc
       - diagnostics-svc
@@ -67,7 +67,7 @@ services:
       - PCS_CORS_WHITELIST
 
   diagnostics-svc:
-    image: azureiotpcs/pcs-diagnostics-dotnet:millennium
+    image: azureiotpcs/pcs-diagnostics-dotnet:ds-staging
     depends_on:
       - config-svc
     environment:
@@ -81,7 +81,7 @@ services:
       - PCS_DIAGNOSTICS_ENDPOINT_URL
 
   config-svc:
-    image: azureiotpcs/pcs-config-dotnet:millennium
+    image: azureiotpcs/pcs-config-dotnet:ds-staging
     depends_on:
       - storageadapter-svc
     environment:
