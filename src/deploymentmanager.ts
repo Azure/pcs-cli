@@ -220,8 +220,7 @@ export class DeploymentManager implements IDeploymentManager {
             .then(() => {
                 // wait for streaming jobs to start if it is included in template and sku is not local
                 if (deploymentProperties.outputs.streamingJobsName && answers.deploymentSku !== 'local') {
-                    deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
-                    deployUI.start(`${deploymentProperties.outputs.streamingJobsName.value}`);
+                    deployUI.start(`Waiting for streaming jobs to be started, this could take up to few minutes.`);
                     return this.waitForStreamingJobsToStart(answers.solutionName, deploymentProperties.outputs.streamingJobsName.value);
                 }
                 return Promise.resolve(true);
