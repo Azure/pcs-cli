@@ -385,6 +385,14 @@
             "metadata": {
                 "description": "The certficate key that needs to be updated to the VM"
             }
+        },
+        "bingMapsLocation": {
+            "comments": "Marked for deletion, unused",
+            "type": "string",
+            "defaultValue": "westus",
+            "metadata": {
+                "description": "Bing Maps region"
+            }
         }
     },
     "variables": {

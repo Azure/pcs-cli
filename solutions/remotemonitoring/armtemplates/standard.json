@@ -327,6 +327,14 @@
             "metadata": {
                 "description": "The storage SKU name"
             }
+        },
+        "bingMapsLocation": {
+            "type": "string",
+            "defaultValue": "westus",
+            "metadata": {
+                "description": "Bing Maps region",
+                "comments": "Marked for deletion, unused"
+            }
         }
     },
     "variables": {
