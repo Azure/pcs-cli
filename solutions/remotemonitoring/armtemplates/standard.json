@@ -918,9 +918,13 @@
             "type": "string",
             "value": "[listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey]"
         },
-        "eventHubConnectionString": {
+        "messagesEventHubConnectionString": {
             "type": "string",
             "value": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey)]"
+        },
+        "messagesEventHubName": {
+            "type": "string",
+            "value": "[parameters('eventHubName')]"
         },
         "streamingJobsName": {
             "type": "string",

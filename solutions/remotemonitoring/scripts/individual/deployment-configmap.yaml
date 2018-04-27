@@ -68,6 +68,7 @@ data:
 
   # ASA Manager
   asa.eventhub.connstring: "{Event hub connection string}"
+  asa.eventhub.name: "{Event hub name}"
   asa.azureblob.account: "{Azure Blob account name}"
   asa.azureblob.key: "{Azure Blob account key}"
   asa.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"

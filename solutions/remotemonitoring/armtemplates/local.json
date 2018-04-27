@@ -611,9 +611,13 @@
             "type": "string",
             "value": "[resourceGroup().name]"
         },
-        "eventHubConnectionString": {
+        "messagesEventHubConnectionString": {
             "type": "string",
             "value": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey)]"
+        },
+        "messagesEventHubName": {
+            "type": "string",
+            "value": "[parameters('eventHubName')]"
         },
         "iotHubConnectionString": {
             "type": "string",
