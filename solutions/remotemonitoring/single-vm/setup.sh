@@ -142,6 +142,7 @@ wget $SCRIPTS_URL/start.sh    -O /app/start.sh    && chmod 750 /app/start.sh
 wget $SCRIPTS_URL/stats.sh    -O /app/stats.sh    && chmod 750 /app/stats.sh
 wget $SCRIPTS_URL/status.sh   -O /app/status.sh   && chmod 750 /app/status.sh
 wget $SCRIPTS_URL/stop.sh     -O /app/stop.sh     && chmod 750 /app/stop.sh
+wget $SCRIPTS_URL/update.sh   -O /app/update.sh   && chmod 750 /app/update.sh
 
 # Temporarily disabled - The update scenario requires some work
 # wget $SCRIPTS_REPO/update.sh   -O /app/update.sh   && chmod 750 /app/update.sh
