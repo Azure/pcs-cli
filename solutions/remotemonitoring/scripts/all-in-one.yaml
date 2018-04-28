@@ -348,7 +348,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-{runtime}:{dockerTag}
+        image: azureiotpcs/telemetry-dotnet:{dockerTag}
         ports:
         - containerPort: 9004
         env:

@@ -387,11 +387,11 @@
             }
         },
         "bingMapsLocation": {
-            "comments": "Marked for deletion, unused",
             "type": "string",
             "defaultValue": "westus",
             "metadata": {
-                "description": "Bing Maps region"
+                "description": "Bing Maps region",
+                "comments": "Marked for deletion, unused"
             }
         }
     },
