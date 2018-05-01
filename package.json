@@ -68,7 +68,7 @@
     "ts-jest": "20.0.6",
     "ts-node": "3.0.6",
     "tslint": "5.4.3",
-    "typescript": "2.5.2"
+    "typescript": "2.8.1"
   },
   "dependencies": {
     "@kubernetes/typescript-node": "0.1.1",

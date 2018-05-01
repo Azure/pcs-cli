@@ -2,7 +2,7 @@
 
 PCS_RELEASE_VERSION=$1
 
-if [ -n "$PCS_RELEASE_VERSION" ]; then
+if [ -z "$PCS_RELEASE_VERSION" ]; then
     echo "Please specify release version for which you want to run the update"
     echo "For latest release number, please see https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/releases"
     exit 1
