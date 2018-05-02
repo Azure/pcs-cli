@@ -644,7 +644,7 @@
         },
         {
             "comments": "Azure Maps service",
-            "type": "Microsoft.LocationBasedServices/accounts",
+            "type": "Microsoft.Maps/accounts",
             "sku": {
                 "name": "[variables('azureMapsPricingSpec')]"
             },
@@ -1065,7 +1065,7 @@
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
                 "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
                 "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
-                "[resourceId('Microsoft.LocationBasedServices/accounts', variables('azureMapsName'))]",
+                "[resourceId('Microsoft.Maps/accounts', variables('azureMapsName'))]",
                 "[variables('eventHubNamespaceResourceId')]"
             ],
             "properties": {
