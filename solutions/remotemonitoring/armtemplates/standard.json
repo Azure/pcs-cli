@@ -847,7 +847,7 @@
         },
         {
             "comments": "Azure Maps service",
-            "type": "Microsoft.LocationBasedServices/accounts",
+            "type": "Microsoft.Maps/accounts",
             "sku": {
                 "name": "[variables('azureMapsPricingSpec')]"
             },
