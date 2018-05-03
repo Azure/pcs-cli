@@ -97,7 +97,7 @@ the Remote Monitoring WebApp
 
 **Tip:**
 
-> To get more info about service principal creation please go [here](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest)
+> To get more info about service principal creation please go [here](https://docs.microsoft.com/cli/azure/create-an-azure-service-principal-azure-cli)
 
 
 **Sample output format:**
