@@ -237,8 +237,9 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion
-                        answers.verion = '1.0.0';
-                        answers.dockerTag = answers.version;
+                        const version = '1.0.0';
+                        answers.version = version;
+                        answers.dockerTag = version;
                     }
 
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
