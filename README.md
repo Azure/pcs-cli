@@ -91,9 +91,14 @@ the Remote Monitoring WebApp
 
 ### Deploy Azure Resources
 
-1. `pcs -t remotemonitoring -s standard`
+1. `pcs -t remotemonitoring -s standard --servicePrincipalId {servicePrincipalId} --servicePrincipalSecret {servicePrincipalSecret}`
 2. Follow the on-screen prompts
-3. The results of the deployment will be saved to a file named {deployment-name}-output.json 
+3. The results of the deployment will be saved to a file named {deployment-name}-output.json
+
+**Tip:**
+
+> To get more info about service principal creation please go [here](https://docs.microsoft.com/cli/azure/create-an-azure-service-principal-azure-cli). Use the `--password` option for service principal creation.
+
 
 **Sample output format:**
 ```json
