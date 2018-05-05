@@ -105,7 +105,7 @@ the Remote Monitoring web application.
 1. Go to {azurewebitesurl}/devices/v1/status to see Devices microservice status
 
 ### Local Deployment
-Please look [here](https://docs.microsoft.com/azure/iot-suite/iot-suite-remote-monitoring-deploy-local for more information for using this option
+Please look [here](https://docs.microsoft.com/azure/iot-suite/iot-suite-remote-monitoring-deploy-local for more information for using this option)
 1. `pcs -s local`
 1. Follow onscreen prompts to start the deployment
 
