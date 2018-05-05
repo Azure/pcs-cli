@@ -236,12 +236,8 @@ function main() {
                         answers.dockerTag = 'testing';
                     } else {
                         // For a released version the docker tag and version should be same
-                        // Default to master and then try to get the version number from package.json
-                        answers.verion = 'master';
-                        const list = RELEASE_VERSION_PATTERN.exec(packageJson.version);
-                        if (list) {
-                            answers.version = list[1];
-                        }
+                        // Default to latest released verion
+                        answers.verion = '1.0.0';
                         answers.dockerTag = answers.version;
                     }
 
