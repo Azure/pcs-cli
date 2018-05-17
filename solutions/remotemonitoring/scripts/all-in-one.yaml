@@ -281,11 +281,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothub.connstring
-        - name: PCS_CONFIG_WEBSERVICE_URL
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: config.webservice.url
+              key: storageadapter.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -629,11 +629,6 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: telemetry.webservice.url
-        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: iothubmanager.webservice.url
         - name: PCS_AZUREMAPS_KEY
           valueFrom:
             configMapKeyRef:
