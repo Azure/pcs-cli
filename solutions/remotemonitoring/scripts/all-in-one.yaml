@@ -194,7 +194,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: azureiotpcs/device-simulation-dotnet:{dockerTag}
+        image: isaac73/device-simulation-dotnet:latest
         ports:
         - containerPort: 9003
         env:
@@ -270,7 +270,7 @@ spec:
     spec:
       containers:
       - name: iothub-manager-pod
-        image: azureiotpcs/iothub-manager-{runtime}:{dockerTag}
+        image: isaac73/iothub-manager-{runtime}:testing
         ports:
         - containerPort: 9002
         env:
@@ -608,7 +608,7 @@ spec:
     spec:
       containers:
       - name: config-pod
-        image: azureiotpcs/pcs-config-{runtime}:{dockerTag}
+        image: isaac73/pcs-config-{runtime}:testing
         ports:
         - containerPort: 9005
         env:
@@ -762,7 +762,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
+        image: isaac73/pcs-remote-monitoring-webui:test3
         ports:
         - containerPort: 10080
         volumeMounts:

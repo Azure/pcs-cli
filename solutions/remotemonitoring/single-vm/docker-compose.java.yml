@@ -20,7 +20,7 @@ services:
       - /app/certs:/app/certs:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:${PCS_DOCKER_TAG}
+    image: isaac73/pcs-remote-monitoring-webui:test3
     networks:
       - default_net
     depends_on:
@@ -45,7 +45,7 @@ services:
       - APPLICATION_SECRET
 
   iothubmanager:
-    image: azureiotpcs/iothub-manager-java:${PCS_DOCKER_TAG}
+    image: isaac73/iothub-manager-java:testing
     networks:
       - default_net
     depends_on:
@@ -61,7 +61,7 @@ services:
       - APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    image: isaac73/device-simulation-dotnet:latest
     networks:
       - default_net
     depends_on:
@@ -96,7 +96,7 @@ services:
       - APPLICATION_SECRET
 
   config:
-    image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
+    image: isaac73/pcs-config-java:latest
     networks:
       - default_net
     depends_on:
