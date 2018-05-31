@@ -46,7 +46,7 @@ export class DeploymentManager implements IDeploymentManager {
         this._subscriptionId = subscriptionId;
         const baseUri = this._options.environment ? this._options.environment.resourceManagerEndpointUrl : undefined;
         this._client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
-        this._streamAnalyticsClient = new StreamAnalyticsManagementClient(new DeviceTokenCredentials(this._options), subscriptionId);
+        this._streamAnalyticsClient = new StreamAnalyticsManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
     }
 
     public getLocations(): Promise<string[] | undefined> {
