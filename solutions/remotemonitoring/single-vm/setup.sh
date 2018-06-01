@@ -48,8 +48,6 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-PCS_AUTH_ISSUER="https://sts.windows.net/${PCS_AUTH_ISSUER}/"
-
 # TODO: move files to Remote Monitoring repositories
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
@@ -72,6 +70,8 @@ config_for_azure_china() {
 
         # Rewrite the AAD issuer in Azure China environment
         export PCS_AUTH_ISSUER="https://sts.chinacloudapi.cn/${PCS_AUTH_ISSUER}/"
+    else
+        export PCS_AUTH_ISSUER="https://sts.windows.net/${PCS_AUTH_ISSUER}/"
     fi
     set -e
 }
