@@ -5,7 +5,7 @@
 Azure IoT PCS CLI Overview
 ==========================
 
-Command Line Interface for deploying an [Azure IoT solution](https://www.azureiotsolutions.com) into a
+Command Line Interface for deploying an [Azure IoT Solution Accelerator](https://www.azureiotsolutions.com) into a
 user's Azure subscription.
 
 An IoT Solution Accelerator is open source implementation of common IoT solution patterns that can be
@@ -118,11 +118,11 @@ Deployment Options
 
 ## Overview
 
-When you deploy the preconfigured solution, there are several options that configure the deployment process:
+When deploying the preconfigured solution, there are several options that configure the deployment process:
 
 | Option | Values | Description |
 | ------ | ------ | ----------- |
-| SKU    | `basic`, `standard`, `local` | A _basic_ deployment is intended for test and demonstrations, it deploys all the microservices to a single virtual machine. A _standard_ deployment is intended for production, it deploys the microservices to multiple virtual machines. A _local_ deployment configures a Docker container to run the microservices on your local machine, and uses Azure services, such as storage and Cosmos DB, in the cloud. |
+| SKU    | `basic`, `standard`, `local` | A _basic_ deployment is intended for test and demonstrations, it deploys all the microservices to a single virtual machine. A _standard_ deployment is intended for production, it deploys the microservices to multiple virtual machines. A _local_ deployment configures a Docker container to run the microservices locally, and uses Azure services, such as storage and Cosmos DB, in the cloud. |
 | Runtime | `dotnet`, `java` | Selects the language implementation of the microservices. |
 
 To learn about how to use the local deployment, see [Running the remote monitoring solution locally](https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/wiki/Running-the-Remote-Monitoring-Solution-Locally#deploy-azure-services-and-set-environment-variables).
@@ -139,7 +139,7 @@ provisioned into the subscription:
 |--------------------------------|-----------|
 | [Linux Virtual Machine][virtual-machines]  | Hosting microservices |
 | [Azure IoT Hub][iot-hub]                   | Device management and communication |
-| [Azure Cosmos DB][cosmos-db]               | Storing configuration data, and device telemetry like rules, alerts, and messages |
+| [Azure Cosmos DB][cosmos-db]               | Stores configuration data, and device telemetry like rules, alerts, and messages |
 | [Azure Storage Account][storage-account]   | Storage for checkpoints |
 | [Azure Stream Analytics][stream-analytics] | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
 | [Azure Event Hub][event-hub]               | Used for device notifications |
