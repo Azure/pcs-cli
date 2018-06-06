@@ -8,15 +8,19 @@ Azure IoT PCS CLI Overview
 Command Line Interface for deploying an [Azure IoT solution](https://www.azureiotsolutions.com) into a
 user's Azure subscription.
 
-An IoT Solution is open source implementation of a common IoT solution patterns that you can deploy to Azure using your subscription. Each solution combines custom code and Azure services to implement a specific IoT scenario or scenarios. You can customize any of the scenarios to meet your specific requirements. Visit https://www.azureiotsolutions.com for more details or to deploy using the GUI.
+An IoT Solution Accelerator is open source implementation of common IoT solution patterns that can be
+deployed to Azure using an Azure subscription. Each solution combines custom code and services to
+implement a specific IoT scenario or scenarios. Any of the solutions can be customized to meet any
+specific requirements. Visit [azureiotsolutions.com](https://www.azureiotsolutions.com) for more
+details or to deploy using the GUI.
 
 ### Features
 
-This CLI has the ability to deploy the following configurations of PCS solutions:
+This CLI has the ability to deploy the following configurations of solutions:
 
-1. [Basic](#basic) - deploys all resources to a single VM.
-1. [Standard](#standard) - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
-1. [Local](#local) - deploys resources to be used for running and debugging microservices locally.
+1. [basic](#basic) - deploys all resources to a single VM.
+1. [standard](#standard) - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
+1. [local](#local) - deploys resources to be used for running and debugging microservices locally.
 
 ### Documentation
 
@@ -27,7 +31,7 @@ How to use the CLI
 
 ## 1. Prerequisites
 
-* [nodejs](https://nodejs.org/en/) used as the runtime for the CLI.  Please install node before attempting a deployment.
+* [nodejs](https://nodejs.org/) used as the runtime for the CLI.  Please install node before attempting a deployment.
 * [Azure Subscription](https://azure.microsoft.com/free/) (also see [permissions guidelines](https://docs.microsoft.com/azure/iot-suite/iot-suite-permissions))
 
 ## 2. Install the CLI
@@ -48,20 +52,20 @@ In locally cloned directory run
 1. `npm link`
 
 ## 3. Sign in
-Sign in using `pcs login` and your Azure account credentials.
+Sign in using `pcs login` and credentials for an Azure account.
 
 ## 4. Create a deployment
 ### Basic Deployment
 #### Deploy Azure Resources
 
-1. Run either `pcs` or `pcs -t remotemonitoring -s basic`.  These are equivalent in that they will both deploy a basic deployment (i.e. a deployment to a single VM).
+1. Run either `pcs` or `pcs -t remotemonitoring -s basic`.  These are equivalent in that they will both deploy
+a basic deployment (i.e. a deployment to a single VM).
 1. Follow the on-screen prompts
 1. The results of the deployment will be saved to a file named `output.json`
 
 #### Verify the Web UI and Microservices are deployed
 
-Click on the link that is shown in the output window, it will take you to
-the Remote Monitoring web application.
+Click on the link that is shown in the output window to go to the Remote Monitoring web application.
 
 ### Standard Deployment
 
@@ -73,7 +77,8 @@ the Remote Monitoring web application.
 
 **Tip:**
 
-> To get more info about service principal creation please go [here](https://docs.microsoft.com/cli/azure/create-an-azure-service-principal-azure-cli). Use the `--password` option for service principal creation.
+> To get more info about service principal creation please go
+[here](https://docs.microsoft.com/cli/azure/create-an-azure-service-principal-azure-cli). Use the `--password` option for service principal creation.
 
 **Sample output format:**
 ```json
@@ -98,8 +103,7 @@ the Remote Monitoring web application.
 
 #### Verify the Web UI and Microservices are deployed
 
-1. Click on the link that is shown in the output window, it will take you to
-   the Remote Monitoring WebApp
+1. Click on the link that is shown in the output window to go to the Remote Monitoring web application.
 1. It can take upto 5 minutes for the webapp to be ready
 1. Go to {azurewebitesurl}/hubmanager/v1/status to see HubManager microservice status
 1. Go to {azurewebitesurl}/devices/v1/status to see Devices microservice status
@@ -128,8 +132,8 @@ To learn about how to use the local deployment, see [Running the remote monitori
 The purpose of the basic deployment is to demo the capabilities of the system
 and requires minimal setup, deploying all resources to a single VM.
 
-Creating a Basic solution will result in the following Azure services being
-provisioned into your Azure subscription:
+Creating a basic solution will result in the following Azure services being
+provisioned into the subscription:
 
 | Resource                       | Used For  |
 |--------------------------------|-----------|
@@ -137,37 +141,38 @@ provisioned into your Azure subscription:
 | [Azure IoT Hub][iot-hub]                   | Device management and communication |
 | [Azure Cosmos DB][cosmos-db]               | Storing configuration data, and device telemetry like rules, alerts, and messages |
 | [Azure Storage Account][storage-account]   | Storage for checkpoints |
-| [Azure Stream Analytics][stream-analytics] | Transforms data into messages and alerts |
+| [Azure Stream Analytics][stream-analytics] | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
 | [Azure Event Hub][event-hub]               | Used for device notifications |
-| [App Service][web-application]             | Hosting front-end web application |
+| [App Service][web-application]             | Application gateway with valid SSL certificate |
 
 ## Standard
 
 The standard deployment is a production-ready deployment a developer can
-customize and extend to meet their needs. The Standard deployment option should be used when
-you are ready to customize a production-ready architecture, built for scale and
+customize and extend to meet their needs. The standard deployment option should be used when
+ready to customize a production-ready architecture, built for scale and
 extensibility. Application microservices are built as Docker containers and deployed using an orchestrator
 ([Kubernetes](https://kubernetes.io/) by default). The orchestrator is
 responsible for deployment, scaling, and management of the application.
 
-Creating a Standard solution will result in the following Azure services being
-provisioned into your Azure subscription:
+Creating a standard solution will result in the following Azure services being
+provisioned into the subscription:
 
 | Resource                                     | Used For |
 |----------------------------------------------|----------|
 | [Linux Virtual Machines][virtual-machines]   | 1 master and 3 agents for hosting microservices with redundancy |
 | [Azure IoT Hub][iot-hub]                     | Device management, command and control |
 | [Azure Container Service][container-service] | [Kubernetes](https://kubernetes.io) orchestrator |
-| [Azure Cosmos DB][cosmos-db]                 | Storing configuration data, and device telemetry like rules, alerts, and messages |
+| [Azure Cosmos DB][cosmos-db]                 | Stores configuration data, and device telemetry like rules, alerts, and messages |
 | [Azure Storage Accounts][storage-account]    | 4 for VM storage, and 1 for the streaming checkpoints |
-| [Azure Stream Analytics][stream-analytics]   | Transforms data into messages and alerts |
+| [Azure Stream Analytics][stream-analytics]   | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
+| [App Service][web-application]             | Application gateway with valid SSL certificate |
 
 ## Local
 The purpose of the local deployment is to deploy the minimal set of services required to set up
-the solution for local development on your machine.
+the solution for local development.
 
 Creating a local deployment will result in the following Azure services being
-provisioned into your Azure subscription:
+provisioned into the subscription:
 
 | Resource                                   | Used For  |
 |--------------------------------------------|-----------|
@@ -177,7 +182,7 @@ provisioned into your Azure subscription:
 
 > Pricing information for these services can be found
 [here](https://azure.microsoft.com/pricing). Usage amounts and billing details
-for your subscription can be found in the
+for a subscription can be found in the
 [Azure Portal](https://portal.azure.com/).
 
 Configuration
@@ -185,9 +190,10 @@ Configuration
 
 ## Kubernetes Dashboard
 
-1. Go to ~\{HOMEDIR}\.kube\config-{solutionname}-cluster and rename it to ~\{HOMEDIR}\.kube\config. Please take a backup of your ~\{HOMEDIR}\.kube\config file if it exists
+1. Go to ~\{HOMEDIR}\.kube\config-{solutionname}-cluster and rename it to ~\{HOMEDIR}\.kube\config.
+   Please take a backup of the ~\{HOMEDIR}\.kube\config file if it exists
 1. To view Kubernetes dashboard, run the following command, which will start a local
-web proxy for your cluster (it will start a local server at http://127.0.0.1:8001/ui):
+   web proxy for the cluster (it will start a local server at http://127.0.0.1:8001/ui):
 
 `kubectl proxy`
 
@@ -218,12 +224,12 @@ Licensed under the [MIT](LICENSE) License.
 [gitter-badge]: https://img.shields.io/gitter/room/azure/iot-solutions.js.svg
 [gitter-url]: https://gitter.im/azure/iot-solutions
 
-[stream-analytics]: https://azure.microsoft.com/services/stream-analytics/
-[event-hub]: https://azure.microsoft.com/services/event-hubs/
-[azure-active-directory]: https://azure.microsoft.com/services/active-directory/
-[iot-hub]: https://azure.microsoft.com/services/iot-hub/
-[cosmos-db]: https://azure.microsoft.com/services/cosmos-db/
-[container-service]: https://azure.microsoft.com/services/container-service/
+[stream-analytics]: https://azure.microsoft.com/services/stream-analytics
+[event-hub]: https://azure.microsoft.com/services/event-hubs
+[azure-active-directory]: https://azure.microsoft.com/services/active-directory
+[iot-hub]: https://azure.microsoft.com/services/iot-hub
+[cosmos-db]: https://azure.microsoft.com/services/cosmos-db
+[container-service]: https://azure.microsoft.com/services/container-service
 [storage-account]: https://docs.microsoft.com/azure/storage/common/storage-introduction#types-of-storage-accounts
-[virtual-machines]: https://azure.microsoft.com/services/virtual-machines/
-[web-application]: https://azure.microsoft.com/services/app-service/web/
+[virtual-machines]: https://azure.microsoft.com/services/virtual-machines
+[web-application]: https://azure.microsoft.com/services/app-service/web
