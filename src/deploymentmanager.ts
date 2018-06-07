@@ -219,9 +219,18 @@ export class DeploymentManager implements IDeploymentManager {
             })
             .then(() => {
                 // wait for streaming jobs to start if it is included in template and sku is not local
-                if (deploymentProperties.outputs.streamingJobsName && answers.deploymentSku !== 'local') {
-                    deployUI.start(`Waiting for streaming jobs to be started, this could take up to few minutes.`);
-                    return this.waitForStreamingJobsToStart(answers.solutionName, deploymentProperties.outputs.streamingJobsName.value);
+                const outputJobName = deploymentProperties.outputs.streamingJobsName;
+                if (outputJobName) {
+                    if (answers.deploymentSku === 'local') {
+                        deployUI.start(`Skipping starting streaming jobs: ${chalk.cyan(outputJobName.value)}.`);
+                        deployUI.stop({
+                            message: `Please find streaming jobs ${chalk.cyan(outputJobName.value)} under the resource group ` +
+                                `${chalk.cyan(answers.solutionName)} on Azure portal and start it mannually once local containers are running.`
+                        });
+                    } else {
+                        deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
+                        return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
+                    }
                 }
                 return Promise.resolve(true);
             })
