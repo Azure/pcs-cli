@@ -142,7 +142,7 @@ export class DeploymentManager implements IDeploymentManager {
 
         deployment.properties.parameters = this._parameters;
         deployment.properties.template = this._template;
-        deployUI.start('Creating resource group');
+        deployUI.start(`Creating resource group: ${chalk.cyan(answers.solutionName)}`);
         return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
