@@ -150,7 +150,6 @@ export class DeploymentManager implements IDeploymentManager {
                     portalUrl = environment.portalUrl;
                 }
                 resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
-                console.log('Resources are being deployed at ' + resourceGroupUrl);
                 deployUI.stop({ message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}` });
                 deployUI.start('Running validation before deploying resources');
                 return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
