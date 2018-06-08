@@ -221,11 +221,8 @@ export class DeploymentManager implements IDeploymentManager {
                 const outputJobName = deploymentProperties.outputs.streamingJobsName;
                 if (outputJobName) {
                     if (answers.deploymentSku === 'local') {
-                        deployUI.start(`Skipping starting streaming jobs: ${chalk.cyan(outputJobName.value)}.`);
-                        deployUI.stop({
-                            message: `Please find streaming jobs ${chalk.cyan(outputJobName.value)} under the resource group ` +
-                                `${chalk.cyan(answers.solutionName)} on Azure portal and start it mannually once local containers are running.`
-                        });
+                        const jobUrl = `${resourceGroupUrl}/providers/Microsoft.StreamAnalytics/streamingjobs/${outputJobName.value}`;
+                        console.log(chalk.yellow(`Please start streaming jobs mannually once local containers are running: ${jobUrl} `));
                     } else {
                         deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
                         return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
