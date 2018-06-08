@@ -192,6 +192,7 @@ function main() {
                         throw new Error(errorMessage);
                     }
                     cachedAuthResponse.options.domain = cachedAuthResponse.subscriptions[index].tenantId;
+                    answers.domainName = cachedAuthResponse.options.domain;
                     deploymentManager = new DeploymentManager(cachedAuthResponse.options, answers.subscriptionId, program.type, program.sku);
                     return deploymentManager.getLocations();
                 })
@@ -215,7 +216,7 @@ function main() {
                         // For local deployment we don't need to create Application in AAD hence skipping the creation by resolving empty promise
                         return Promise.resolve({
                             appId: '', 
-                            domainName: '',
+                            domainName: ans.domainName || '',
                             objectId: '',
                             servicePrincipalId: '',
                             servicePrincipalSecret: '' });

@@ -142,7 +142,7 @@ export class DeploymentManager implements IDeploymentManager {
 
         deployment.properties.parameters = this._parameters;
         deployment.properties.template = this._template;
-        deployUI.start('Creating resource group');
+        deployUI.start(`Creating resource group: ${chalk.cyan(answers.solutionName)}`);
         return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
@@ -150,7 +150,6 @@ export class DeploymentManager implements IDeploymentManager {
                     portalUrl = environment.portalUrl;
                 }
                 resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
-                console.log('Resources are being deployed at ' + resourceGroupUrl);
                 deployUI.stop({ message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}` });
                 deployUI.start('Running validation before deploying resources');
                 return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
@@ -219,9 +218,15 @@ export class DeploymentManager implements IDeploymentManager {
             })
             .then(() => {
                 // wait for streaming jobs to start if it is included in template and sku is not local
-                if (deploymentProperties.outputs.streamingJobsName && answers.deploymentSku !== 'local') {
-                    deployUI.start(`Waiting for streaming jobs to be started, this could take up to few minutes.`);
-                    return this.waitForStreamingJobsToStart(answers.solutionName, deploymentProperties.outputs.streamingJobsName.value);
+                const outputJobName = deploymentProperties.outputs.streamingJobsName;
+                if (outputJobName) {
+                    if (answers.deploymentSku === 'local') {
+                        const jobUrl = `${resourceGroupUrl}/providers/Microsoft.StreamAnalytics/streamingjobs/${outputJobName.value}`;
+                        console.log(chalk.yellow(`Please start streaming jobs mannually once local containers are running: ${jobUrl} `));
+                    } else {
+                        deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
+                        return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
+                    }
                 }
                 return Promise.resolve(true);
             })
