@@ -243,7 +243,10 @@
         "consumerGroupName": "streamingJobsConsumerGroup",
         "streamingJobsOutputDBName": "pcs-iothub-stream",
         "storageApiVersion": "2017-06-01",
-        "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]"
+        "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
+        "azureMapsName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-map')]",
+        "azureMapsVersion": "2017-01-01-preview",
+        "azureMapsPricingSpec": "S0"
     },
     "resources": [
         {
@@ -399,6 +402,17 @@
                 "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
             ]
         },
+        {
+            "comments": "Azure Maps service",
+            "type": "Microsoft.Maps/accounts",
+            "sku": {
+                "name": "[variables('azureMapsPricingSpec')]"
+            },
+            "name": "[variables('azureMapsName')]",
+            "apiVersion": "[variables('azureMapsVersion')]",
+            "location": "global",
+            "properties": {}
+        },        
         {
             "comments": "Azure Stream Analytics streamingjobs",
             "apiVersion": "[variables('streamAnalyticsApiVersion')]",
@@ -650,6 +664,10 @@
         "streamingJobsName": {
             "type": "string",
             "value": "[parameters('streamingJobsName')]"
+        },
+        "azureMapsKey": {
+            "type": "string",
+            "value": "[listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey]"
         }
     }
 }
