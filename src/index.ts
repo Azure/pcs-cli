@@ -416,7 +416,7 @@ function createServicePrincipal(azureWebsiteName: string,
             }
         ],
         replyUrls,
-        requiredResourceAccess 
+        requiredResourceAccess
     };
     let objectId: string = '';
     return graphClient.applications.create(applicationCreateParameters)
