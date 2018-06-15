@@ -194,7 +194,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: isaac73/device-simulation-dotnet:latest
+        image: isaac73/device-simulation-dotnet:testing
         ports:
         - containerPort: 9003
         env:
@@ -762,7 +762,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: isaac73/pcs-remote-monitoring-webui:test3
+        image: isaac73/pcs-remote-monitoring-webui:testing
         ports:
         - containerPort: 10080
         volumeMounts:
