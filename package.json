@@ -78,7 +78,7 @@
     "azure-arm-resource": "3.0.0-preview",
     "azure-arm-streamanalytics": "1.0.0-preview",
     "azure-arm-website": "2.0.0-preview",
-    "azure-graph": "^3.0.0",
+    "azure-graph": "3.0.0",
     "btoa": "1.1.2",
     "commander": "2.9.0",
     "inquirer": "4.0.0",
