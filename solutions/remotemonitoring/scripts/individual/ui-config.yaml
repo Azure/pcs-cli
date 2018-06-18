@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: config-pod
-        image: azureiotpcs/pcs-config-{runtime}:testing
+        image: isaac73/pcs-config-{runtime}:testing
         ports:
         - containerPort: 9005
         env:
