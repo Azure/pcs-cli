@@ -15,7 +15,7 @@ import { ChoiceType, prompt } from 'inquirer';
 import { AuthResponse, AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
     LinkedSubscription, InteractiveLoginOptions, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
 import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
-import GraphRbacManagementClient = require('azure-graph');
+import GraphRbacManagementClient from 'azure-graph';
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
 import { Command } from 'commander';
@@ -359,7 +359,7 @@ function createServicePrincipal(azureWebsiteName: string,
     graphOptions.tokenAudience = 'graph';
     const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : undefined;
     const tokenCredentials = new DeviceTokenCredentials(graphOptions);
-    const graphClient = new GraphRbacManagementClient.GraphRbacManagementClient(tokenCredentials, options.domain ? options.domain : '', baseUri);
+    const graphClient = new GraphRbacManagementClient(tokenCredentials, options.domain ? options.domain : '', baseUri);
     const startDate = new Date(Date.now());
     let endDate = new Date(startDate.toISOString());
     const m = momemt(endDate);
