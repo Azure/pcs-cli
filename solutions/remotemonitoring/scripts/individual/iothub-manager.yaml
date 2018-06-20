@@ -28,11 +28,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothub.connstring
-        - name: PCS_CONFIG_WEBSERVICE_URL
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: config.webservice.url
+              key: storageadapter.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:

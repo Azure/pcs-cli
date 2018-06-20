@@ -38,11 +38,6 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: telemetry.webservice.url
-        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: iothubmanager.webservice.url
         - name: PCS_AZUREMAPS_KEY
           valueFrom:
             configMapKeyRef:

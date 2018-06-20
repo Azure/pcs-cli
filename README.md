@@ -45,8 +45,8 @@ How to use the CLI
 
 `git clone https://github.com/Azure/pcs-cli.git`
 
-### Install CLI
-In locally cloned directory run
+### Build the CLI
+1. `cd {your-local-repo}` in command line.
 1. `npm install`
 1. `npm start`
 1. `npm link`
@@ -190,10 +190,10 @@ Configuration
 
 ## Kubernetes Dashboard
 
-1. Go to ~\{HOMEDIR}\.kube\config-{solutionname}-cluster and rename it to ~\{HOMEDIR}\.kube\config.
-   Please take a backup of the ~\{HOMEDIR}\.kube\config file if it exists
+1. Go to ~\{HOMEDIR}\.kube\config-{solutionname}-cluster and rename it to ~\{HOMEDIR}\.kube\config. Please take a backup of your ~\{HOMEDIR}\.kube\config file if it exists
+1. {HOMEDIR} for windows - C:\Users\xyz, for mac - /Users/xyz
 1. To view Kubernetes dashboard, run the following command, which will start a local
-   web proxy for the cluster (it will start a local server at http://127.0.0.1:8001/ui):
+web proxy for your cluster (it will start a local server at http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/):
 
 `kubectl proxy`
 
