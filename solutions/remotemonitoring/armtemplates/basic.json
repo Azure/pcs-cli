@@ -333,14 +333,14 @@
         },
         "pcsReleaseVersion": {
             "type": "string",
-            "defaultValue": "master",
+            "defaultValue": "1.0.0",
             "metadata": {
                 "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
             }
         },
         "pcsDockerTag": {
             "type": "string",
-            "defaultValue": "testing",
+            "defaultValue": "1.0.0",
             "metadata": {
                 "description": "The docker tag can be same as release version and is the latest released docker image"
             }
