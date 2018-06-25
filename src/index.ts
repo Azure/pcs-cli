@@ -390,7 +390,7 @@ function saveAuthResponse(response: AuthResponse): any {
     };
     cachedAuthResponse = data;
     if (!fs.existsSync(pcsTmpDir)) {
-        fs.mkdir(pcsTmpDir);
+        fs.mkdirSync(pcsTmpDir);
     }
     fs.writeFileSync(cacheFilePath, JSON.stringify(data));
     console.log(`${chalk.green('Successfully logged in')}`);
