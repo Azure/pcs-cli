@@ -929,7 +929,7 @@
                 "$connections": {
                   "value": {
                     "office365": {
-                      "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'office365')]",
+                      "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', [resourceGroup().location], '/managedApis/', 'office365')]",
                       "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]",
                       "connectionName": "[parameters('office365_1_Connection_Name')]"
                     }
@@ -952,10 +952,10 @@
             "type": "MICROSOFT.WEB/CONNECTIONS",
             "apiVersion": "2016-06-01",
             "name": "[parameters('office365_1_Connection_Name')]",
-            "location": "eastus",
+            "location": "[resourceGroup().location]",
             "properties": {
               "api": {
-                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'office365')]"
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', [resourceGroup().location], '/managedApis/', 'office365')]"
               },
               "displayName": "[parameters('office365_1_Connection_DisplayName')]"
             }
