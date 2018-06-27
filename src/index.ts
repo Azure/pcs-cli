@@ -408,6 +408,14 @@ function createServicePrincipal(azureWebsiteName: string,
         homepage,
         identifierUris,
         oauth2AllowImplicitFlow: true,
+        optionalClaims: {
+            idToken: [
+                {
+                  essential: true,
+                  name: 'role'
+                }
+          ]
+        },
         passwordCredentials: [{
                 endDate,
                 keyId: uuid.v1(),
