@@ -15,7 +15,7 @@ import { ChoiceType, prompt } from 'inquirer';
 import { AuthResponse, AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
     LinkedSubscription, InteractiveLoginOptions, interactiveLoginWithAuthResponse } from 'ms-rest-azure';
 import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
-import GraphRbacManagementClient = require('azure-graph');
+import GraphRbacManagementClient from 'azure-graph';
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
 import { Command } from 'commander';
@@ -358,7 +358,8 @@ function createServicePrincipal(azureWebsiteName: string,
     const graphOptions = options;
     graphOptions.tokenAudience = 'graph';
     const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : undefined;
-    const graphClient = new GraphRbacManagementClient(new DeviceTokenCredentials(graphOptions), options.domain ? options.domain : '', baseUri);
+    const tokenCredentials = new DeviceTokenCredentials(graphOptions);
+    const graphClient = new GraphRbacManagementClient(tokenCredentials, options.domain ? options.domain : '', baseUri);
     const startDate = new Date(Date.now());
     let endDate = new Date(startDate.toISOString());
     const m = momemt(endDate);
@@ -382,6 +383,26 @@ function createServicePrincipal(azureWebsiteName: string,
         resourceAppId: '00000002-0000-0000-c000-000000000000'
     }];
     const applicationCreateParameters = {
+        appRoles: [{
+            allowedMemberTypes: [
+              'User'
+            ],
+            description: 'Administrator access to the application',
+            displayName: 'Admin',
+            id: 'a400a00b-f67c-42b7-ba9a-f73d8c67e433',
+            isEnabled: true,
+            value: 'Admin'
+          },
+          {
+            allowedMemberTypes: [
+              'User'
+            ],
+            description: 'Read only access to device information',
+            displayName: 'Read Only',
+            id: 'e5bbd0f5-128e-4362-9dd1-8f253c6082d7',
+            isEnabled: true,
+            value: 'ReadOnly'
+          }],
         availableToOtherTenants: false,
         displayName: azureWebsiteName,
         homepage,
