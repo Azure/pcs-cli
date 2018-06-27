@@ -335,7 +335,20 @@
                 "description": "Bing Maps region",
                 "comments": "Marked for deletion, unused"
             }
-        }
+        },
+        "office365_1_Connection_Name": {
+            "type": "string",
+            "defaultValue": "office365"
+          },
+          "office365_1_Connection_DisplayName": {
+            "type": "string",
+            "defaultValue": "NotificationLogicApp"
+          },
+          "LogicAppLocation": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "[resourceGroup().location]"
+          }
     },
     "variables": {
         "location": "[resourceGroup().location]",
@@ -855,7 +868,98 @@
             "apiVersion": "[variables('azureMapsVersion')]",
             "location": "global",
             "properties": {}
-        }
+        },
+        {
+            "properties": {
+              "state": "Enabled",
+              "definition": {
+                "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                "actions": {
+                  "Send_an_email": {
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['office365']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "body": {
+                        "To": "@triggerBody()?['Email']",
+                        "Subject": "@triggerBody()?['Subject']",
+                        "Body": "@triggerBody()?['Body']"
+                      },
+                      "path": "/Mail"
+                    },
+                    "runAfter": {}
+                  }
+                },
+                "parameters": {
+                  "$connections": {
+                    "defaultValue": {},
+                    "type": "Object"
+                  }
+                },
+                "triggers": {
+                  "manual": {
+                    "type": "Request",
+                    "kind": "Http",
+                    "inputs": {
+                      "schema": {
+                        "properties": {
+                          "Body": {
+                            "type": "string"
+                          },
+                          "Email": {
+                            "type": "string"
+                          },
+                          "Subject": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      }
+                    }
+                  }
+                },
+                "contentVersion": "1.0.0.0",
+                "outputs": {}
+              },
+              "parameters": {
+                "$connections": {
+                  "value": {
+                    "office365": {
+                      "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'office365')]",
+                      "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]",
+                      "connectionName": "[parameters('office365_1_Connection_Name')]"
+                    }
+                  }
+                }
+              }
+            },
+            "name": "NotificationLogicApp",
+            "type": "Microsoft.Logic/workflows",
+            "location": "[parameters('LogicAppLocation')]",
+            "tags": {
+              "displayName": "LogicApp"
+            },
+            "apiVersion": "2016-06-01",
+            "dependsOn": [
+              "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]"
+            ]
+          },
+          {
+            "type": "MICROSOFT.WEB/CONNECTIONS",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('office365_1_Connection_Name')]",
+            "location": "eastus",
+            "properties": {
+              "api": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'eastus', '/managedApis/', 'office365')]"
+              },
+              "displayName": "[parameters('office365_1_Connection_DisplayName')]"
+            }
+          }
     ],
     "outputs": {
         "resourceGroup": {
