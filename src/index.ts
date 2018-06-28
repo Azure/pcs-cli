@@ -266,6 +266,19 @@ function main() {
                         console.log(`${chalk.red(message)}`);
                     }
                 })
+                // StartLogicAppAuth *LogicAppConnectionAuth on github*
+                .then(() => {
+                    const params = [
+                        {ResourceGroupName: answers.solutionName},
+                        {ResourceLocation: ResourceLocationChoice},
+                        {api: 'office365'},
+                        {ConnectionName: 'office365'},
+                        {subscriptionId: subId},
+                        {createConnection: '$False'}
+                    ];
+                
+                })
+                // EndLogicAppAuth      
                 .catch((error: any) => {
                     if (error.request) {
                         console.log(JSON.stringify(error, null, 2));
