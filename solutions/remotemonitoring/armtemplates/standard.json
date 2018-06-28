@@ -890,13 +890,11 @@
                         "Body": "@triggerBody()?['Body']"
                       },
                       "path": "/Mail"
-                    },
-                    "runAfter": {}
+                    }
                   }
                 },
                 "parameters": {
                   "$connections": {
-                    "defaultValue": {},
                     "type": "Object"
                   }
                 },
@@ -922,14 +920,13 @@
                     }
                   }
                 },
-                "contentVersion": "1.0.0.0",
-                "outputs": {}
+                "contentVersion": "1.0.0.0"
               },
               "parameters": {
                 "$connections": {
                   "value": {
                     "office365": {
-                      "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', [resourceGroup().location], '/managedApis/', 'office365')]",
+                      "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/', 'office365')]",
                       "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]",
                       "connectionName": "[parameters('office365_1_Connection_Name')]"
                     }
@@ -955,7 +952,7 @@
             "location": "[resourceGroup().location]",
             "properties": {
               "api": {
-                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', [resourceGroup().location], '/managedApis/', 'office365')]"
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/', 'office365')]"
               },
               "displayName": "[parameters('office365_1_Connection_DisplayName')]"
             }
