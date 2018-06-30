@@ -449,7 +449,8 @@ function createServicePrincipal(azureWebsiteName: string,
         graphClientPromise = Promise.resolve<GraphRbacManagementClient>(graphClient);
     }
 
-    return graphClientPromise.then((client: GraphRbacManagementClient) => {
+    return graphClientPromise.
+    then((client: GraphRbacManagementClient) => {
         graphClient = client;
         const startDate = new Date(Date.now());
         let endDate = new Date(startDate.toISOString());
@@ -520,7 +521,7 @@ function createServicePrincipal(azureWebsiteName: string,
             return result;
         })
         .catch((error) => {
-            throw new Error('Could not create new application in this tenant');
+            throw new Error(`Could not create new application in this tenant: ${error.message}`);
         });
     })
     .then((result: any) => {
@@ -530,19 +531,6 @@ function createServicePrincipal(azureWebsiteName: string,
         };
         objectId = result.objectId;
         return graphClient.servicePrincipals.create(servicePrincipalCreateParameters);
-    })
-    .then((result: ServicePrincipal) => {
-        servicePrincipalCreateParameters = {
-            accountEnabled: true,
-            appId: result.appId
-        };
-        return graphClient.servicePrincipals.list({filter: `appId eq '${result.appId}'`})
-        .then((value: ServicePrincipalListResult) => {
-            if (value && value.length) {
-                return value[0];
-            }
-            throw new Error('Could not list any service principals in this tenant that matches the application id');
-        });
     })
     .then((sp: any) => {
         newServicePrincipal = sp;
@@ -588,12 +576,7 @@ function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
     // clearing the token audience
     options.tokenAudience = undefined;
     const baseUri = options.environment ? options.environment.resourceManagerEndpointUrl : undefined;
-    const cred: any = new DeviceTokenCredentials(options);
-    // clean the default username of 'user@example.com' which always fail the token search in cache when using service principal login option.
-    if (cred.hasOwnProperty('username') && cred.username === 'user@example.com') {
-        delete cred.username;
-    }
-    const authzClient = new AuthorizationManagementClient(cred, subscriptionId, baseUri);
+    const authzClient = new AuthorizationManagementClient(getPatchedDeviceTokenCredentials(options), subscriptionId, baseUri);
     const assignmentGuid = uuid.v1();
     const roleCreateParams = {
       properties: {
@@ -818,4 +801,13 @@ function getAzureEnvironment(environmentName: string): AzureEnvironment {
             break;
     }
     return environment;
+}
+
+function getPatchedDeviceTokenCredentials(options: any) {
+    const credentials: any = new DeviceTokenCredentials(options);
+    // clean the default username of 'user@example.com' which always fail the token search in cache when using service principal login option.
+    if (credentials.hasOwnProperty('username') && credentials.username === 'user@example.com') {
+        delete credentials.username;
+    }
+    return credentials;
 }

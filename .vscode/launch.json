@@ -57,7 +57,7 @@
                 "--subscriptionId", "",
                 "--location", "",
                 "--username", "",
-                "--sshFilePath", "",
+                "--password", "",
                 "--servicePrincipalId", "",
                 "--servicePrincipalSecret", "",
                 "--domainId", ""
