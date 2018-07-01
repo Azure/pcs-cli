@@ -15,6 +15,7 @@ PKEY="${CERTS}/tls.key"
 
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/solutions/devicesimulation-nohub/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
+SETUP_URL="${REPOSITORY}/setup/"
 
 # ========================================================================
 
@@ -171,6 +172,16 @@ echo ""                                                                         
 echo "# Format: { 'origins': ['*'], 'methods': ['*'], 'headers': ['*'] }"                                >> ${ENVVARS}
 echo "# empty => CORS support disabled"                                                                  >> ${ENVVARS}
 echo "export PCS_CORS_WHITELIST=\"\""                                                                    >> ${ENVVARS}
+
+# ========================================================================
+
+# Shell environment enhancements
+
+echo "### CUSTOMIZATIONS ###" >> /etc/nanorc
+wget $SETUP_URL/nanorc -O /tmp/nanorc && cat /tmp/nanorc >> /etc/nanorc
+
+echo "### CUSTOMIZATIONS ###" >> /etc/bash.bashrc
+wget $SETUP_URL/bashrc -O /tmp/bashrc && cat /tmp/bashrc >> /etc/bash.bashrc
 
 # ========================================================================
 
