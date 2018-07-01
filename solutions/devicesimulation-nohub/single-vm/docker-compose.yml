@@ -1,10 +1,10 @@
 version: '2'
 
-# When editing thisg file, restart the microservices to apply the changes, running:
+# When editing this file, restart the services to apply the changes, running:
 #     sudo /app/start.sh
 
 # To add custom device models from a folder, upload the files into the VM, and use the "volumes"
-# section of "devicesimulation-svc" to mount the folder. Make sure the lines are indented correctly.
+# section of "devicesimulation-svc" to mount the folder. Make sure lines are indented correctly.
 # Example:
 #
 #    volumes:
