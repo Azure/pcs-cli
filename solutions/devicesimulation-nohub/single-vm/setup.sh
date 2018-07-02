@@ -185,4 +185,10 @@ wget $SETUP_URL/bashrc -O /tmp/bashrc && cat /tmp/bashrc >> /etc/bash.bashrc
 
 # ========================================================================
 
+# Auto-start after reboots
+
+wget $SETUP_URL/init -O /etc/init.d/azure-iot-solution && update-rc.d azure-iot-solution defaults
+
+# ========================================================================
+
 nohup /app/start.sh > /dev/null 2>&1&
