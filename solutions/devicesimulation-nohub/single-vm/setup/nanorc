@@ -1,3 +1,4 @@
+
 syntax "ini" "\.ini(\.old|\.bak|\.example|~)?$"
 
 ## Values
