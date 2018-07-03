@@ -40,10 +40,10 @@ if [[ "$1" == "--debug" || "$2" == "--debug" ]]; then
   echo -e "${COL_WARN}Starting services... Press CTRL+C to exit${COL_NO}"
   docker-compose up
   exit 0
-else
-  echo -e "${COL_WARN}Starting services...${COL_NO}"
-  nohup docker-compose up > /dev/null 2>&1&
 fi
+
+echo -e "${COL_WARN}Starting services...${COL_NO}"
+nohup docker-compose up > /dev/null 2>&1&
 
 ISUP=$(curl -ks https://localhost/ | grep -i "html" | wc -l)
 while [[ "$ISUP" == "0" ]]; do
