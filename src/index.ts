@@ -27,6 +27,8 @@ import { Questions, IQuestions } from './questions';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 
+const opn = require('opn');
+
 const WebSiteManagementClient = require('azure-arm-website');
 
 const packageJson = require('../package.json');
@@ -154,6 +156,10 @@ function main() {
      * Submit deployment
      */
     cachedAuthResponse = getCachedAuthResponse();
+
+    // Logic App Auth Data
+    let subId = '';
+
     if (!cachedAuthResponse) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
@@ -165,6 +171,7 @@ function main() {
             cachedAuthResponse.subscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
                     subs.push({name: subscription.name, value: subscription.id});
+                    subId = getSubId(subscription.id);
                 }
             });
 
@@ -268,17 +275,10 @@ function main() {
                 })
                 // StartLogicAppAuth *LogicAppConnectionAuth on github*
                 .then(() => {
-                    const params = [
-                        {ResourceGroupName: answers.solutionName},
-                        {ResourceLocation: ResourceLocationChoice},
-                        {api: 'office365'},
-                        {ConnectionName: 'office365'},
-                        {subscriptionId: subId},
-                        {createConnection: '$False'}
-                    ];
-                
+                    const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + subId + '/resourceGroups/' + answers.solutionName + '/providers/MICROSOFT.WEB/connections/office365/edit';
+                        opn(authURL);
                 })
-                // EndLogicAppAuth      
+                // EndLogicAppAuth                
                 .catch((error: any) => {
                     if (error.request) {
                         console.log(JSON.stringify(error, null, 2));
@@ -696,4 +696,12 @@ function getDomain(): string {
 function getWebsiteUrl(hostName: string): string {
     const domain = getDomain();
     return `https://${hostName}${domain}`;
+}
+
+function getResourceLocationChoice(input: string): string {
+    return input;
+}
+
+function getSubId(input: string): string {
+    return input;
 }
