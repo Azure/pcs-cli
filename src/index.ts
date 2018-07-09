@@ -275,7 +275,9 @@ function main() {
                 })
                 // StartLogicAppAuth *LogicAppConnectionAuth on github*
                 .then(() => {
-                    const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + subId + '/resourceGroups/' + answers.solutionName + '/providers/MICROSOFT.WEB/connections/office365/edit';
+                    const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + 
+                    subId + '/resourceGroups/' + answers.solutionName + 
+                    '/providers/MICROSOFT.WEB/connections/office365/edit';
                         opn(authURL);
                 })
                 // EndLogicAppAuth                
