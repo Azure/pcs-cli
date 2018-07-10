@@ -230,6 +230,7 @@ function main() {
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
+                        answers.AuthAns = ans.AuthAns;
                         deployUI.start('Registering application in the Azure Active Directory');
                         return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                     }
@@ -278,7 +279,12 @@ function main() {
                     const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + 
                     subId + '/resourceGroups/' + answers.solutionName + 
                     '/providers/MICROSOFT.WEB/connections/office365/edit';
-                    opn(authURL);
+
+                    if (answers.AuthAns) {
+                        opn(authURL);
+                    } else {
+                        console.log('To activate email notifications at a later time go to\n' + authURL);
+                    }
                 })
                 // EndLogicAppAuth                
                 .catch((error: any) => {
@@ -619,6 +625,12 @@ function getDeploymentQuestions(locations: string[]) {
         questions.push(pwdQuestion('pwdFirstAttempt'));
         questions.push(pwdQuestion('pwdSecondAttempt', 'Confirm your password:'));
     }
+    questions.push({
+        default: true,
+        message: 'Would you like to enable email notifications?:',
+        name: 'AuthAns',
+        type: 'confirm',
+    });
     return questions;
 }
 
@@ -698,10 +710,6 @@ function getDomain(): string {
 function getWebsiteUrl(hostName: string): string {
     const domain = getDomain();
     return `https://${hostName}${domain}`;
-}
-
-function getResourceLocationChoice(input: string): string {
-    return input;
 }
 
 function getSubId(input: string): string {
