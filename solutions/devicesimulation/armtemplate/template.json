@@ -172,21 +172,28 @@
                 "description": "User password for the Linux Virtual Machines, must between 12 and 72 characters long and have 3 of the following: 1 uppercase character, 1 lowercase character, 1 number and 1 special character that is not slash (\\) or dash (-)"
             }
         },
-        "vmSetupScriptUri": {
-            "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/solutions/devicesimulation/single-vm/setup.sh",
-            "metadata": {
-                "description": "The URL of the script to setup a single VM deployment"
-            }
-        },
-        "vmFQDNSuffix": {
-            "type": "string",
-            "defaultValue": "cloudapp.azure.com",
-            "allowedValues": [
-                "cloudapp.azure.com",
-                "cloudapp.chinacloudapi.cn",
-                "cloudapp.azure.de"
-            ]
+      "vmSetupScriptUri": {
+        "type": "string",
+        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsDockerTag'), '/solutions/remotemonitoring/single-vm/setup.sh')]",
+        "metadata": {
+          "description": "The URL of the script to setup a single VM deployment"
+        }
+      },
+      "vmFQDNSuffix": {
+        "type": "string",
+        "defaultValue": "cloudapp.azure.com",
+        "allowedValues": [
+          "cloudapp.azure.com",
+          "cloudapp.chinacloudapi.cn",
+          "cloudapp.azure.de"
+        ]
+      },
+      "pcsDockerTag": {
+          "type": "string",
+          "defaultValue": "1.0.1",
+          "metadata": {
+            "description": "The docker tag can be same as release version and is the latest released docker image"
+          }
         },
         "azureWebsiteName": {
             "type": "string",
