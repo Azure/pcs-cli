@@ -281,6 +281,7 @@ function main() {
                     '/providers/MICROSOFT.WEB/connections/office365/edit';
 
                     if (answers.AuthAns) {
+                        console.log('Please click authenticate on the browser window');
                         opn(authURL);
                     } else {
                         console.log('To activate email notifications at a later time go to\n' + authURL);
