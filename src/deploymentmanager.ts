@@ -5,13 +5,14 @@ import * as path from 'path';
 import * as fetch from 'node-fetch';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
-import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
+import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
 import StreamAnalyticsManagementClient = require('azure-arm-streamanalytics');
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
+import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -30,7 +31,8 @@ export interface IDeploymentManager {
 }
 
 export class DeploymentManager implements IDeploymentManager {
-    private _options: DeviceTokenCredentialsOptions;
+    private _credentials: ServiceClientCredentials;
+    private _environment: AzureEnvironment;
     private _solutionType: string;
     private _sku: string;
     private _template: any;
@@ -39,14 +41,19 @@ export class DeploymentManager implements IDeploymentManager {
     private _client: ResourceManagementClient;
     private _streamAnalyticsClient: StreamAnalyticsManagementClient;
 
-    constructor(options: DeviceTokenCredentialsOptions, subscriptionId: string, solutionType: string, sku: string) {
-        this._options = options;
+    constructor(credentials: ServiceClientCredentials,
+                environment: AzureEnvironment,
+                subscriptionId: string,
+                solutionType: string,
+                sku: string) {
+        this._credentials = credentials;
+        this._environment = environment;
         this._solutionType = solutionType;
         this._sku = sku;
         this._subscriptionId = subscriptionId;
-        const baseUri = this._options.environment ? this._options.environment.resourceManagerEndpointUrl : undefined;
-        this._client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
-        this._streamAnalyticsClient = new StreamAnalyticsManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
+        const baseUri = environment ? environment.resourceManagerEndpointUrl : undefined;
+        this._client = new ResourceManagementClient(this._credentials, subscriptionId, baseUri);
+        this._streamAnalyticsClient = new StreamAnalyticsManagementClient(this._credentials, subscriptionId, baseUri);
     }
 
     public getLocations(): Promise<string[] | undefined> {
@@ -83,7 +90,7 @@ export class DeploymentManager implements IDeploymentManager {
             tags: { IotSolutionType: this._solutionType },
         };
 
-        const environment = this._options.environment;
+        const environment = this._environment;
         let portalUrl = 'https://portal.azure.com';
         let storageEndpointSuffix: string;
         let azureVMFQDNSuffix: string;
@@ -93,7 +100,7 @@ export class DeploymentManager implements IDeploymentManager {
             const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
             this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
             // using static map for China environment by default since Azure Maps resource is not available.
-            if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
+            if (environment && environment.name === AzureEnvironment.AzureChina.name) {
                 this._sku += '-static-map';
             }
             this._template = require(armTemplatePath + this._sku + '.json');
@@ -357,7 +364,10 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.servicePrincipalSecret.value = answers.servicePrincipalSecret;
         }
         if (this._parameters.servicePrincipalClientId) {
-            this._parameters.servicePrincipalClientId.value = answers.servicePrincipalId;
+            // According to the document, the service principal client id can use appId. When using servicePrincipalId
+            // of answer ACS deployment always fails and complains application was not found.
+            // more detail here: https://docs.microsoft.com/en-us/azure/container-service/kubernetes/container-service-kubernetes-service-principal
+            this._parameters.servicePrincipalClientId.value = answers.appId;
         }
         if (this._parameters.sshRSAPublicKey) {
             this._parameters.sshRSAPublicKey.value = fs.readFileSync(answers.sshFilePath, 'UTF-8');
