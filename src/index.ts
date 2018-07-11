@@ -171,7 +171,7 @@ function main() {
             cachedAuthResponse.subscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
                     subs.push({name: subscription.name, value: subscription.id});
-                    subId = getSubId(subscription.id);
+                    subId = subscription.id.toString();
                 }
             });
 
@@ -230,7 +230,7 @@ function main() {
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
-                        answers.AuthAns = ans.AuthAns;
+                        answers.EnableEmail = ans.EnableEmail;
                         deployUI.start('Registering application in the Azure Active Directory');
                         return createServicePrincipal(answers.azureWebsiteName, answers.subscriptionId, cachedAuthResponse.options);
                     }
@@ -280,11 +280,11 @@ function main() {
                     subId + '/resourceGroups/' + answers.solutionName + 
                     '/providers/MICROSOFT.WEB/connections/office365/edit';
 
-                    if (answers.AuthAns) {
-                        console.log('Please click authenticate on the browser window');
+                    if (answers.EnableEmail) {
+                        console.log('\nPlease click authorize on the browser window');
                         opn(authURL);
                     } else {
-                        console.log('To activate email notifications at a later time go to\n' + authURL);
+                        console.log('\nTo activate email notifications at a later time go to\n' + authURL);
                     }
                 })
                 // EndLogicAppAuth                
@@ -628,8 +628,8 @@ function getDeploymentQuestions(locations: string[]) {
     }
     questions.push({
         default: true,
-        message: 'Would you like to enable email notifications?:',
-        name: 'AuthAns',
+        message: 'Enable email notifications?:',
+        name: 'EnableEmail',
         type: 'confirm',
     });
     return questions;
@@ -711,8 +711,4 @@ function getDomain(): string {
 function getWebsiteUrl(hostName: string): string {
     const domain = getDomain();
     return `https://${hostName}${domain}`;
-}
-
-function getSubId(input: string): string {
-    return input;
 }
