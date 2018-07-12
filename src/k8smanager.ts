@@ -105,7 +105,7 @@ export class K8sManager implements IK8sManager {
     }
 
     public deleteConfigMap(): Promise<any> {
-        const configPath = __dirname + path.sep + 'remotemonitoring/scripts/individual/deployment-configmap.yaml';
+        const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
         return this._api.deleteNamespacedConfigMap(configMap.metadata.name, this._namespace, configMap);
@@ -113,7 +113,7 @@ export class K8sManager implements IK8sManager {
 
     public deleteDeployment(): Promise<any> {
         const promises = new Array<Promise<any>>();
-        const allInOnePath = process.cwd() + path.sep + 'remotemonitoring/scripts/all-in-one.yaml';
+        const allInOnePath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/all-in-one.yaml';
         const data = fs.readFileSync(allInOnePath, 'UTF-8');
         const allInOne = jsyaml.safeLoadAll(data, (doc: any) => {
             doc.metadata.namespace = this._namespace;
@@ -183,13 +183,13 @@ export class K8sManager implements IK8sManager {
     }
 
     public setupConfigMap(): Promise<any> {
-        const configPath = process.cwd() + path.sep + 'remotemonitoring/scripts/individual/deployment-configmap.yaml';
+        const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
         configMap.data['security.auth.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
         configMap.data['security.application.secret'] = this.genPassword();
-        configMap.data['bing.map.key'] = this._config.BingMapApiQueryKey ? this._config.BingMapApiQueryKey : '';
+        configMap.data['azure.maps.key'] = this._config.AzureMapsKey ? this._config.AzureMapsKey : '';
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
         configMap.data['iothubreact.hub.name'] = this._config.EventHubName;
@@ -199,6 +199,11 @@ export class K8sManager implements IK8sManager {
         configMap.data['iothubreact.azureblob.account'] = this._config.AzureStorageAccountName;
         configMap.data['iothubreact.azureblob.key'] = this._config.AzureStorageAccountKey;
         configMap.data['iothubreact.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
+        configMap.data['asa.eventhub.connstring'] = this._config.MessagesEventHubConnectionString;
+        configMap.data['asa.eventhub.name'] = this._config.MessagesEventHubName;
+        configMap.data['asa.azureblob.account'] = this._config.AzureStorageAccountName;
+        configMap.data['asa.azureblob.key'] = this._config.AzureStorageAccountKey;
+        configMap.data['asa.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
         let deploymentConfig = configMap.data['webui-config.js'];
         deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);
@@ -209,7 +214,7 @@ export class K8sManager implements IK8sManager {
 
     public setupDeployment(): Promise<any> {
         const promises = new Array<Promise<any>>();
-        const allInOnePath = process.cwd() + path.sep + 'remotemonitoring/scripts/all-in-one.yaml';
+        const allInOnePath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/all-in-one.yaml';
         const data = fs.readFileSync(allInOnePath, 'UTF-8');
         const allInOne = jsyaml.safeLoadAll(data, (doc: any) => {
             doc.metadata.namespace = this._namespace;
@@ -224,9 +229,13 @@ export class K8sManager implements IK8sManager {
                     promises.push(this._api.createNamespacedReplicationController(this._namespace, doc));
                     break;
                 case 'Deployment':
-                    const imageName: string = doc.spec.template.spec.containers[0].image;
+                    let imageName: string = doc.spec.template.spec.containers[0].image;
                     if (imageName.includes('{runtime}')) {
                         doc.spec.template.spec.containers[0].image = imageName.replace('{runtime}', this._config.Runtime);
+                    }
+                    imageName = doc.spec.template.spec.containers[0].image;
+                    if (imageName.includes('{dockerTag}')) {
+                        doc.spec.template.spec.containers[0].image = imageName.replace('{dockerTag}', this._config.DockerTag);
                     }
                     promises.push(this._betaApi.createNamespacedDeployment(this._namespace, doc));
                     break;

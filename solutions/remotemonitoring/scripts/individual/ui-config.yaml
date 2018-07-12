@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: storage-adapter
+  name: config
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -13,21 +13,36 @@ spec:
   template:
     metadata:
       labels:
-        app: storage-adapter
+        app: config
     spec:
       containers:
-      - name: storage-adapter-pod
-        image: azureiotpcs/pcs-storage-adapter-dotnet:testing
+      - name: config-pod
+        image: azureiotpcs/pcs-config-{runtime}:testing
         ports:
-        - containerPort: 9022
+        - containerPort: 9005
         env:
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_PORT
-          value: "9022"
-        - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+        - name: PCS_CONFIG_WEBSERVICE_PORT
+          value: "9005"
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: docdb.connstring
+              key: storageadapter.webservice.url
+        - name: PCS_DEVICESIMULATION_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: devicesimulation.webservice.url
+        - name: PCS_TELEMETRY_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.webservice.url
+        - name: PCS_AZUREMAPS_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azure.maps.key
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -57,12 +72,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: storage-adapter-svc
+  name: config-svc
   labels:
-    app: storage-adapter
+    app: config
 spec:
   type: NodePort
   ports:
-  - port: 9022
+  - port: 9005
   selector:
-    app: storage-adapter
+    app: config

@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: telemetry
+  name: storage-adapter
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -13,24 +13,21 @@ spec:
   template:
     metadata:
       labels:
-        app: telemetry
+        app: storage-adapter
     spec:
       containers:
-      - name: telemetry-pod
-        image: azureiotpcs/telemetry-dotnet:testing
+      - name: storage-adapter-pod
+        image: azureiotpcs/pcs-storage-adapter-{runtime}:testing
         ports:
-        - containerPort: 9004
+        - containerPort: 9022
         env:
-        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_PORT
+          value: "9022"
+        - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: storageadapter.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -60,12 +57,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: telemetry-svc
+  name: storage-adapter-svc
   labels:
-    app: telemetry
+    app: storage-adapter
 spec:
   type: NodePort
   ports:
-  - port: 9004
+  - port: 9022
   selector:
-    app: telemetry
+    app: storage-adapter

@@ -5,8 +5,9 @@ export class Config {
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
-    public BingMapApiQueryKey: string;
+    public AzureMapsKey: string;
     public DocumentDBConnectionString: string;
+    public DockerTag: string;
     public DNS: string;
     public EventHubEndpoint: string;
     public EventHubName: string;
@@ -23,4 +24,6 @@ export class Config {
             appId: string
         }
     };
+    public MessagesEventHubConnectionString: string;
+    public MessagesEventHubName: string;
 }

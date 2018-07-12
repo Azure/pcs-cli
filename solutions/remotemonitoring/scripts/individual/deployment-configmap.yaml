@@ -63,8 +63,15 @@ data:
   security.cors.whitelist: ""
   security.application.secret: "{Application secret}"
 
-  # Bing map query key
-  bing.map.key: "{BingMapApiQueryKey}"
+  # Azure maps key
+  azure.maps.key: "{AzureMapsKey}"
+
+  # ASA Manager
+  asa.eventhub.connstring: "{Event hub connection string}"
+  asa.eventhub.name: "{Event hub name}"
+  asa.azureblob.account: "{Azure Blob account name}"
+  asa.azureblob.key: "{Azure Blob account key}"
+  asa.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
 
   # Nginx Template
   nginx.tmpl: |
@@ -257,6 +264,7 @@ data:
                       # PEM sha: {{ $server.SSLPemChecksum }}
                       ssl_certificate /etc/nginx-ssl/default-tls-certificate.pem;
                       ssl_certificate_key /etc/nginx-ssl/default-tls-certificate.pem;
+                      ssl_protocols TLSv1.2;
 
                       more_set_headers                            "Strict-Transport-Security: max-age=15724800; includeSubDomains; preload";
 

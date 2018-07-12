@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: telemetry-agent
+  name: asa-manager
 spec:
   replicas: 1
   minReadySeconds: 10
@@ -13,15 +13,15 @@ spec:
   template:
     metadata:
       labels:
-        app: telemetry-agent
+        app: asa-manager
     spec:
       containers:
-      - name: telemetry-agent-pod
-        image: azureiotpcs/telemetry-agent-java:testing
+      - name: asa-manager-pod
+        image: azureiotpcs/asa-manager-dotnet:{dockerTag}
         ports:
-        - containerPort: 9023
+        - containerPort: 9024
         env:
-        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
+        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
@@ -41,41 +41,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothubmanager.webservice.url
-        - name: PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
+        - name: PCS_ASA_DATA_AZUREBLOB_ACCOUNT
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothubreact.azureblob.account
-        - name: PCS_IOTHUBREACT_AZUREBLOB_KEY
+              key: asa.azureblob.account
+        - name: PCS_ASA_DATA_AZUREBLOB_KEY
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothubreact.azureblob.key
-        - name: PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX
+              key: asa.azureblob.key
+        - name: PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothubreact.azureblob.endpointsuffix
-        - name: PCS_IOTHUBREACT_HUB_NAME
+              key: asa.azureblob.endpointsuffix
+        - name: PCS_EVENTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothubreact.hub.name
-        - name: PCS_IOTHUBREACT_HUB_ENDPOINT
+              key: asa.eventhub.connstring
+        - name: PCS_EVENTHUB_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothubreact.hub.endpoint
-        - name: PCS_IOTHUBREACT_HUB_PARTITIONS
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: iothubreact.hub.partitions
-        - name: PCS_IOTHUBREACT_ACCESS_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: iothubreact.access.connstring
+              key: asa.eventhub.name
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -105,12 +95,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: telemetry-agent-svc
+  name: asa-manager-svc
   labels:
-    app: telemetry-agent
+    app: asa-manager
 spec:
   type: NodePort
   ports:
-  - port: 9023
+  - port: 9024
   selector:
-    app: telemetry-agent
+    app: asa-manager

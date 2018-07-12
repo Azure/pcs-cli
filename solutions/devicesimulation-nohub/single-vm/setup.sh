@@ -13,9 +13,6 @@ CERTS="${APP_PATH}/certs"
 CERT="${CERTS}/tls.crt"
 PKEY="${CERTS}/tls.key"
 
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/solutions/devicesimulation-nohub/single-vm"
-SCRIPTS_URL="${REPOSITORY}/scripts/"
-
 # ========================================================================
 
 # Default values
@@ -52,10 +49,14 @@ while [ "$#" -gt 0 ]; do
         --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
         --deployment-id)           PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
+        --release-version)         PCS_RELEASE_VERSION="$2" ;;
+        --docker-tag)              PCS_DOCKER_TAG="$2" ;;
     esac
     shift
 done
 
+REPOSITORY= "https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub/single-vm"
+SCRIPTS_URL="${REPOSITORY}/scripts/"
 # ========================================================================
 
 # Configure Docker registry based on host name
@@ -88,6 +89,7 @@ cd ${APP_PATH}
 
 DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.yml"
 wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
+sed -i 's/${PCS_DOCKER_TAG}/'${PCS_DOCKER_TAG}'/g' ${DOCKERCOMPOSE}
 
 # ========================================================================
 

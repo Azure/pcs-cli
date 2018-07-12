@@ -1,213 +1,231 @@
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-        "aadTenantId": {
-            "type": "string",
-            "defaultValue": "novalue",
-            "metadata": {
-                "description": "The AAD tenant identifier (GUID)"
-            }
-        },
-        "aadInstance": {
-            "type": "string",
-            "defaultValue": "https://login.microsoftonline.com/",
-            "metadata": {
-                "description": "URL of the AAD login page (example: https://login.microsoftonline.com/)"
-            }
-        },
-        "aadClientId": {
-            "type": "string",
-            "defaultValue": "novalue",
-            "metadata": {
-                "description": "AAD application identifier (GUID)"
-            }
-        },
-        "solutionName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the solution"
-            }
-        },
-        "solutionType": {
-           "type": "string",
-           "defaultValue": "DeviceSimulationV1",
-           "metadata": {
-               "description": "The type of the solution"
-           }
-        },
-        "storageName": {
-            "type": "string",
-            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
-            "metadata": {
-                "description": "The name of the storageAccount"
-            }
-        },
-        "storageSkuName": {
-            "type": "string",
-            "defaultValue": "Standard_LRS",
-            "allowedValues": [
-                "Standard_LRS", "Standard_GRS", "Standard_RAGRS", "Standard_ZRS", "Premium_LRS"
-            ],
-            "metadata": {
-                "description": "The storage SKU name"
-            }
-        },
-        "storageEndpointSuffix": {
-            "type": "string",
-            "defaultValue": "core.windows.net",
-            "allowedValues": [
-                "core.windows.net",
-                "core.chinacloudapi.cn",
-                "core.cloudapi.de"
-            ],
-            "metadata": {
-                "description": "Suffix added to Azure Storage hostname"
-            }
-        },
-        "documentDBName": {
-            "type": "string",
-            "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
-            "metadata": {
-                "description": "The name of the CosmosDB"
-            }
-        },
-        "docDBConsistencyLevel": {
-            "type": "string",
-            "allowedValues": [
-                "Strong",
-                "BoundedStaleness",
-                "Session",
-                "ConsistentPrefix",
-                "Eventual"
-            ],
-            "defaultValue": "Strong",
-            "metadata": {
-                "description": "The CosmosDB default consistency level for this account."
-            }
-        },
-        "docDBMaxStalenessPrefix": {
-            "type": "int",
-            "minValue": 10,
-            "maxValue": 1000,
-            "defaultValue": 10,
-            "metadata": {
-                "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
-            }
-        },
-        "docDBMaxIntervalInSeconds": {
-            "type": "int",
-            "minValue": 5,
-            "maxValue": 600,
-            "defaultValue": 5,
-            "metadata": {
-                "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
-            }
-        },
-        "vmName": {
-            "type": "string",
-            "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
-            "metadata": {
-                "description": "The name of the Linux Virtual Machine"
-            }
-        },
-        "vmSize": {
-            "type": "string",
-            "defaultValue": "Standard_D4_v3",
-            "allowedValues": [],
-            "metadata": {
-                "description": "The size of the Virtual Machine."
-            }
-        },
-        "ubuntuOSVersion": {
-            "type": "string",
-            "defaultValue": "16.04.0-LTS",
-            "allowedValues": [ "12.04.5-LTS", "14.04.5-LTS", "15.10", "16.04.0-LTS" ],
-            "metadata": {
-                "description": "The Ubuntu version for the Virtual Machine."
-            }
-        },
-        "adminUsername": {
-            "type": "string",
-            "defaultValue": "azureuser",
-            "metadata": {
-                "description": "User name for the Linux Virtual Machine."
-            }
-        },
-        "adminPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "User password for the Linux Virtual Machines, must between 12 and 72 characters long and have 3 of the following: 1 uppercase character, 1 lowercase character, 1 number and 1 special character that is not slash (\\) or dash (-)"
-            }
-        },
-        "vmSetupScriptUri": {
-            "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/azure-iot-pcs-simulation/solutions/devicesimulation/single-vm/setup.sh",
-            "metadata": {
-                "description": "The URL of the script to setup a single VM deployment"
-            }
-        },
-        "vmFQDNSuffix": {
-            "type": "string",
-            "defaultValue": "cloudapp.azure.com",
-            "allowedValues": [
-                "cloudapp.azure.com",
-                "cloudapp.chinacloudapi.cn",
-                "cloudapp.azure.de"
-            ]
-        },
-        "azureWebsiteName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the azure website that you want to create. It will be of format {azureWebsiteName}.azurewebsites.net"
-            }
-        },
-        "remoteEndpointSSLThumbprint": {
-            "type": "securestring",
-            "metadata": {
-                "description": "This is the thumbprint of the HTTPS SSL Certificate"
-            },
-            "defaultValue": "secretkey"
-        },
-        "remoteEndpointCertificate": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The certificate that needs to be uploaded to the VM"
-            }
-        },
-        "remoteEndpointCertificateKey": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The certificate key that needs to be uploaded to the VM"
-            }
-        },
-        "domain": {
-            "type": "string",
-            "metadata": {
-                "description": "The Azure Active Directory domain used by the Azure Subscription where the solution is deployed"
-            }
-        },
-        "subscriptionId": {
-            "type": "string",
-            "metadata": {
-                "description": "ID of the Azure Subscription where the solution is deployed"
-            }
-        },
-        "deploymentId": {
-            "type": "string",
-            "metadata": {
-                "description": "Unique Id of the deployment."
-            },
-            "defaultValue": "Undefined"
-        },
-        "diagnosticsEndpointUrl": {
-            "type": "string",
-            "metadata": {
-                "description": "Diagnostics service endpoint url"
-            },
-            "defaultValue": "Undefined"
-        }
+  "parameters": {
+    "aadTenantId": {
+      "type": "string",
+      "defaultValue": "novalue",
+      "metadata": {
+        "description": "The AAD tenant identifier (GUID)"
+      }
     },
+    "aadInstance": {
+      "type": "string",
+      "defaultValue": "https://login.microsoftonline.com/",
+      "metadata": {
+        "description": "URL of the AAD login page (example: https://login.microsoftonline.com/)"
+      }
+    },
+    "aadClientId": {
+      "type": "string",
+      "defaultValue": "novalue",
+      "metadata": {
+        "description": "AAD application identifier (GUID)"
+      }
+    },
+    "solutionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the solution"
+      }
+    },
+    "solutionType": {
+      "type": "string",
+      "defaultValue": "DeviceSimulationV1",
+      "metadata": {
+        "description": "The type of the solution"
+      }
+    },
+    "storageName": {
+      "type": "string",
+      "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+      "metadata": {
+        "description": "The name of the storageAccount"
+      }
+    },
+    "storageSkuName": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Standard_ZRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "The storage SKU name"
+      }
+    },
+    "storageEndpointSuffix": {
+      "type": "string",
+      "defaultValue": "core.windows.net",
+      "allowedValues": [
+        "core.windows.net",
+        "core.chinacloudapi.cn",
+        "core.cloudapi.de"
+      ],
+      "metadata": {
+        "description": "Suffix added to Azure Storage hostname"
+      }
+    },
+    "documentDBName": {
+      "type": "string",
+      "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+      "metadata": {
+        "description": "The name of the CosmosDB"
+      }
+    },
+    "docDBConsistencyLevel": {
+      "type": "string",
+      "allowedValues": [
+        "Strong",
+        "BoundedStaleness",
+        "Session",
+        "ConsistentPrefix",
+        "Eventual"
+      ],
+      "defaultValue": "Strong",
+      "metadata": {
+        "description": "The CosmosDB default consistency level for this account."
+      }
+    },
+    "docDBMaxStalenessPrefix": {
+      "type": "int",
+      "minValue": 10,
+      "maxValue": 1000,
+      "defaultValue": 10,
+      "metadata": {
+        "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
+      }
+    },
+    "docDBMaxIntervalInSeconds": {
+      "type": "int",
+      "minValue": 5,
+      "maxValue": 600,
+      "defaultValue": 5,
+      "metadata": {
+        "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
+      }
+    },
+    "vmName": {
+      "type": "string",
+      "defaultValue": "[concat('vm-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+      "metadata": {
+        "description": "The name of the Linux Virtual Machine"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D4_v3",
+      "allowedValues": [],
+      "metadata": {
+        "description": "The size of the Virtual Machine."
+      }
+    },
+    "ubuntuOSVersion": {
+      "type": "string",
+      "defaultValue": "16.04.0-LTS",
+      "allowedValues": [ "12.04.5-LTS", "14.04.5-LTS", "15.10", "16.04.0-LTS" ],
+      "metadata": {
+        "description": "The Ubuntu version for the Virtual Machine."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "azureuser",
+      "metadata": {
+        "description": "User name for the Linux Virtual Machine."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "User password for the Linux Virtual Machines, must between 12 and 72 characters long and have 3 of the following: 1 uppercase character, 1 lowercase character, 1 number and 1 special character that is not slash (\\) or dash (-)"
+      }
+    },
+    "vmSetupScriptUri": {
+      "type": "string",
+      "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-nohub/single-vm/setup.sh')]",
+      "metadata": {
+        "description": "The URL of the script to setup a single VM deployment"
+      }
+    },
+    "vmFQDNSuffix": {
+      "type": "string",
+      "defaultValue": "cloudapp.azure.com",
+      "allowedValues": [
+        "cloudapp.azure.com",
+        "cloudapp.chinacloudapi.cn",
+        "cloudapp.azure.de"
+      ]
+    },
+    "pcsReleaseVersion": {
+      "type": "string",
+      "defaultValue": "DS-1.0.1",
+      "metadata": {
+        "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
+      }
+    },
+    "pcsDockerTag": {
+      "type": "string",
+      "defaultValue": "millenium",
+      "metadata": {
+        "description": "The docker tag can be same as release version and is the latest released docker image"
+      }
+    },
+    "azureWebsiteName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the azure website that you want to create. It will be of format {azureWebsiteName}.azurewebsites.net"
+      }
+    },
+    "remoteEndpointSSLThumbprint": {
+      "type": "securestring",
+      "metadata": {
+        "description": "This is the thumbprint of the HTTPS SSL Certificate"
+      },
+      "defaultValue": "secretkey"
+    },
+    "remoteEndpointCertificate": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The certificate that needs to be uploaded to the VM"
+      }
+    },
+    "remoteEndpointCertificateKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The certificate key that needs to be uploaded to the VM"
+      }
+    },
+    "domain": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure Active Directory domain used by the Azure Subscription where the solution is deployed"
+      }
+    },
+    "subscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "ID of the Azure Subscription where the solution is deployed"
+      }
+    },
+    "deploymentId": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique Id of the deployment."
+      },
+      "defaultValue": "Undefined"
+    },
+    "diagnosticsEndpointUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Diagnostics service endpoint url"
+      },
+      "defaultValue": "Undefined"
+    }
+  },
     "variables": {
         "location": "[resourceGroup().location]",
         "documentDBApiVersion": "2016-03-19",
@@ -544,9 +562,9 @@
                         "[parameters('vmSetupScriptUri')]"
                     ]
                 },
-                "protectedSettings": {
-                    "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'),  ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'), ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-sku ', concat('\"', parameters('storageSkuName'), '\"'), ' --storage-endpoint-suffix ', concat('\"', parameters('storageEndpointSuffix'), '\"'), ' --docdb-name ', concat('\"', parameters('documentDBName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"'))]"
-                }
+              "protectedSettings": {
+                "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'), ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-sku ', concat('\"', parameters('storageSkuName'), '\"'), ' --storage-endpoint-suffix ', concat('\"', parameters('storageEndpointSuffix'), '\"'), ' --docdb-name ', concat('\"', parameters('documentDBName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"'))]"
+              }
             },
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
