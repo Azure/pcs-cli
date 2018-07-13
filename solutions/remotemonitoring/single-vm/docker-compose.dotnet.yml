@@ -15,6 +15,7 @@ services:
       - devicesimulation
       - telemetry
       - config
+      - diagnostics
     volumes:
       - /app/certs:/app/certs:ro
 
@@ -28,6 +29,7 @@ services:
       - devicesimulation
       - telemetry
       - config
+      - diagnostics
     volumes:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
@@ -143,6 +145,20 @@ services:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_APPLICATION_SECRET
+
+  diagnostics:
+    image: azureiotpcs/pcs-diagnostics-dotnet:millennium
+    depends_on:
+      - config
+    environment:
+      - PCS_LOG_LEVEL
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
+      - PCS_AUTH_REQUIRED
+      - PCS_CORS_WHITELIST
+      - PCS_DEPLOYMENT_ID
+      - PCS_SOLUTION_TYPE
+      - PCS_DIAGNOSTICS_ENDPOINT_URL
 
 networks:
   default_net:

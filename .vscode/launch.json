@@ -49,6 +49,18 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "pcs basic dotnet versionOverride",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [ "--versionOverride", "parvezp/diagnostics" ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "pcs basic dotnet sp",
             "sourceMaps": true,
             "program": "${workspaceRoot}/src/index.ts",

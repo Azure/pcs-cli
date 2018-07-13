@@ -309,6 +309,8 @@ function main() {
                     cachedAuthResponse.credentials.tokenAudience = null;
                     answers.deploymentSku = program.sku;
                     answers.runtime = program.runtime;
+                    answers.deploymentId = uuid.v1();
+                    answers.diagnosticsUrl = 'https://iotpcsdiagnostics-staging.azurewebsites.net/';
                     if (program.versionOverride) {
                         // In order to run latest code verion override to master is required
                         answers.version = program.versionOverride;

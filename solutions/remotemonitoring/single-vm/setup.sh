@@ -17,12 +17,14 @@ export PCS_LOG_LEVEL="Info"
 export APP_RUNTIME="dotnet"
 export PCS_WEBUI_AUTH_TYPE="aad"
 export PCS_APPLICATION_SECRET=$(cat /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9-,./;:[]\(\)_=^!~' | fold -w 64 | head -n 1)
+export PCS_DIAGNOSTICS_ENDPOINT_URL="https://iotpcsdiagnostics-staging.azurewebsites.net/"
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --hostname)                     HOST_NAME="$2" ;;
         --log-level)                    PCS_LOG_LEVEL="$2" ;;
         --runtime)                      APP_RUNTIME="$2" ;;
+        --solution-type)                PCS_SOLUTION_TYPE="$2" ;;
         --iothub-name)                  PCS_IOTHUBREACT_HUB_NAME="$2" ;;
         --iothub-endpoint)              PCS_IOTHUBREACT_HUB_ENDPOINT="$2" ;;
         --iothub-partitions)            PCS_IOTHUBREACT_HUB_PARTITIONS="$2" ;;
@@ -44,6 +46,8 @@ while [ "$#" -gt 0 ]; do
         --docker-tag)                   PCS_DOCKER_TAG="$2" ;;
         --evenhub-connstring)           PCS_EVENTHUB_CONNSTRING="$2" ;;
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
+        --deployment-id)                PCS_DEPLOYMENT_ID="$2" ;;
+        --diagnostics-url)              PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
     esac
     shift
 done
@@ -208,6 +212,9 @@ echo "export PCS_AZUREMAPS_KEY=\"${PCS_AZUREMAPS_KEY}\""                        
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
 echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                       >> ${ENVVARS}
 echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}
+echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
+echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
+echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

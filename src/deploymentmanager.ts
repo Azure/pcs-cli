@@ -399,6 +399,12 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.pcsDockerTag) {
             this._parameters.pcsDockerTag.value = answers.dockerTag;
         }
+        if (this._parameters.deploymentId) {
+            this._parameters.deploymentId.value = answers.deploymentId;
+        }
+        if (this._parameters.diagnosticsEndpointUrl) {
+            this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsUrl;
+        }
     }
 
     private waitForWebsiteToBeReady(url: string): Promise<boolean> {
