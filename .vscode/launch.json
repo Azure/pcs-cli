@@ -3,17 +3,166 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [{
-        "type": "node",
-        "request": "launch",
-        "name": "Launch Program",
-        "sourceMaps": true,
-        "program": "${workspaceRoot}/src/index.ts",
-        //"args": [ "-r", "java", "-s", "standard" ],
-        "args": [ "-t", "test", "-s", "test" ],
-        "console": "integratedTerminal",
-        "outFiles": [
-            "${workspaceRoot}/publish/**/*.js"
-        ]
-    }]
+    "configurations": [
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs login",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [ "login" ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs login with sp",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "login",
+                "--servicePrincipalId", "",
+                "--servicePrincipalSecret", "",
+                "--domainId", ""
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs basic dotnet",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [ "" ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs basic dotnet sp",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "--solutionName", "",
+                "--subscriptionId", "",
+                "--location", "",
+                "--username", "",
+                "--password", "",
+                "--servicePrincipalId", "",
+                "--servicePrincipalSecret", "",
+                "--domainId", ""
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs standard dotnet",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "-s", "standard",
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs standard dotnet sp",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "-s", "standard",
+                "--solutionName", "",
+                "--subscriptionId", "",
+                "--location", "",
+                "--username", "",
+                "--sshFilePath", "",
+                "--servicePrincipalId", "",
+                "--servicePrincipalSecret", "",
+                "--domainId", ""
+             ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs basic java",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [ "-r", "java" ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs basic java sp",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "-r", "java",
+                "--servicePrincipalId", "",
+                "--servicePrincipalSecret", "",
+                "--domainId", ""
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs standard java",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "-s", "standard",
+                "-r", "java"
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs standard java sp",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "-r", "java",
+                "--servicePrincipalId", "",
+                "--servicePrincipalSecret", "",
+                "--domainId", ""
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        }
+    ]
 }
