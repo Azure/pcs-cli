@@ -322,9 +322,9 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion
-                        const version = 'DS-1.0.1';
+                        const version = '1.0.0';
                         answers.version = version;
-                        answers.dockerTag = 'millenium';
+                        answers.dockerTag = version;
                     }
 
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
