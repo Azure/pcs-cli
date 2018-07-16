@@ -195,17 +195,12 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-<<<<<<< HEAD
-    cachedAuthResponse = getCachedAuthResponse();
 
     // Logic App Auth Data
     let subId = '';
-
-    if (!cachedAuthResponse) {
-=======
+    
     cachedAuthResponse = cachedAuthResponse || getCachedAuthResponse();
     if (!cachedAuthResponse || !program.servicePrincipalId && cachedAuthResponse.isServicePrincipal) {
->>>>>>> master
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
         const baseUri = cachedAuthResponse.credentials.environment.resourceManagerEndpointUrl;
