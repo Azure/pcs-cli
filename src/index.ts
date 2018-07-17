@@ -578,7 +578,7 @@ function createAppRoleAssignment(
     baseUri: string): Promise<ServicePrincipal> {
     const meOptions: any = {
         method: 'GET',
-        url: `${baseUri}/me`
+        url: `${baseUri}/me?api-version=1.6`
     };
     return graphClient.sendRequest(meOptions)
     .then((me: any) => {
@@ -589,7 +589,7 @@ function createAppRoleAssignment(
                 resourceId: sp.objectId,
             },
             method: 'POST',
-            url: `${baseUri}/me/appRoleAssignments`,
+            url: `${baseUri}/me/appRoleAssignments?api-version=1.6`,
         };
         return graphClient.sendRequest(options)
         .then((result: any) => {
