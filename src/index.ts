@@ -90,6 +90,7 @@ const program = new Command(packageJson.name)
     .option('--servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
     .option('--servicePrincipalSecret <servicePrincipalSecret>', 'Service Principal Secret')
     .option('--versionOverride <versionOverride>', 'Current accepted value is "master"')
+    .option('--dockerTagOverride <dockerTagOverride>', 'Override value for docker image tag')
     .option('--domainId <domainId>', 'This can either be an .onmicrosoft.com domain or the Azure object ID for the tenant')
     .option('--solutionName <solutionName>', 'Solution name for your Remote monitoring accelerator')
     .option('--subscriptionId <subscriptionId>', 'SubscriptionId on which this solution should be created')
@@ -315,10 +316,15 @@ function main() {
                     cachedAuthResponse.credentials.tokenAudience = null;
                     answers.deploymentSku = program.sku;
                     answers.runtime = program.runtime;
-                    if (program.versionOverride) {
+                    if (program.versionOverride && program.dockerTagOverride) {
+                        answers.version = program.versionOverride;
+                        answers.dockerTag = program.dockerTagOverride;
+                    } else if (program.versionOverride) {
                         // In order to run latest code verion override to master is required
                         answers.version = program.versionOverride;
                         answers.dockerTag = 'testing';
+                    } else if (program.dockerTagOverride) {
+                        answers.dockerTag = program.dockerTagOverride;
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion

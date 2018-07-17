@@ -257,7 +257,7 @@ export class DeploymentManager implements IDeploymentManager {
                     fs.mkdirSync(directoryPath);
                 }
                 const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
-                const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
+                const troubleshootingGuide = this._solutionType === 'remotemonitoring' ? 'https://aka.ms/iot-rm-tsg' : '';
 
                 if (answers.deploymentSku === 'local') {
                     return Promise.resolve();
