@@ -871,57 +871,92 @@
         },
         {
             "properties": {
-              "state": "Enabled",
-              "definition": {
-                "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-                "actions": {
-                  "Send_an_email": {
-                    "type": "ApiConnection",
-                    "inputs": {
-                      "host": {
-                        "connection": {
-                          "name": "@parameters('$connections')['office365']['connectionId']"
+                "state": "Enabled",
+                "definition": {
+                  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                  "actions": {
+                    "For_each": {
+                        "actions": {
+                            "Send_an_email": {
+                                "inputs": {
+                                    "body": {
+                                        "Body": "@body('Parse_JSON')?['template']",
+                                        "Subject": "Rule Notification ",
+                                        "To": "@items('For_each')"
+                                    },
+                                    "host": {
+                                        "connection": {
+                                            "name": "@parameters('$connections')['office365']['connectionId']"
+                                        }
+                                    },
+                                    "method": "post",
+                                    "path": "/Mail"
+                                },
+                                "runAfter": {},
+                                "type": "ApiConnection"
+                            }
+                        },
+                        "foreach": "@body('Parse_JSON')?['emailAddress']",
+                        "runAfter": {
+                            "Parse_JSON": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Foreach"
+                    },
+                    "Parse_JSON": {
+                      "type": "ParseJson",
+                      "inputs": {
+                        "content": "@triggerBody()",
+                        "schema": {
+                          "properties": {
+                            "emailAddress": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "template": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
                         }
                       },
-                      "method": "post",
-                      "body": {
-                        "To": "@triggerBody()?['Email']",
-                        "Subject": "@triggerBody()?['Subject']",
-                        "Body": "@triggerBody()?['Body']"
-                      },
-                      "path": "/Mail"
+                      "runAfter": {}
                     }
-                  }
-                },
-                "parameters": {
-                  "$connections": {
-                    "type": "Object"
-                  }
-                },
-                "triggers": {
-                  "manual": {
-                    "type": "Request",
-                    "kind": "Http",
-                    "inputs": {
-                      "schema": {
-                        "properties": {
-                          "Body": {
-                            "type": "string"
+                  },
+                  "parameters": {
+                    "$connections": {
+                      "defaultValue": {},
+                      "type": "Object"
+                    }
+                  },
+                  "triggers": {
+                    "manual": {
+                      "type": "Request",
+                      "kind": "Http",
+                      "inputs": {
+                        "schema": {
+                          "properties": {
+                            "emailAddress": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "template": {
+                              "type": "string"
+                            }
                           },
-                          "Email": {
-                            "type": "string"
-                          },
-                          "Subject": {
-                            "type": "string"
-                          }
-                        },
-                        "type": "object"
+                          "type": "object"
+                        }
                       }
                     }
-                  }
+                  },
+                  "contentVersion": "1.0.0.0",
+                  "outputs": {}
                 },
-                "contentVersion": "1.0.0.0"
-              },
               "parameters": {
                 "$connections": {
                   "value": {
