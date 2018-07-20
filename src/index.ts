@@ -352,7 +352,7 @@ function main() {
                         console.log(`${chalk.red(message)}`);
                     }
                 })
-                // StartLogicAppAuth *LogicAppConnectionAuth on github*
+                // StartLogicAppAuth
                 .then(() => {
                     const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + 
                     subId + '/resourceGroups/' + answers.solutionName + 
