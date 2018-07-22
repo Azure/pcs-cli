@@ -427,9 +427,11 @@ function createServicePrincipal(azureWebsiteName: string,
                                 Promise<{appId: string, domainName: string, objectId: string,
                                     servicePrincipalId: string, servicePrincipalSecret: string}> {
     const homepage = getWebsiteUrl(azureWebsiteName);
-    const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : undefined;
+    const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : 'https://graph.windows.net/';
     const existingServicePrincipalSecret: string = program.servicePrincipalSecret;
     const newServicePrincipalSecret: string = uuid.v4();
+    const adminAppRoleId = 'a400a00b-f67c-42b7-ba9a-f73d8c67e433';
+    const readOnlyAppRoleId = 'e5bbd0f5-128e-4362-9dd1-8f253c6082d7';
     let newServicePrincipal: ServicePrincipal;
     let objectId: string = '';
 
@@ -482,7 +484,7 @@ function createServicePrincipal(azureWebsiteName: string,
                 ],
                 description: 'Administrator access to the application',
                 displayName: 'Admin',
-                id: 'a400a00b-f67c-42b7-ba9a-f73d8c67e433',
+                id: adminAppRoleId,
                 isEnabled: true,
                 value: 'Admin'
               },
@@ -492,7 +494,7 @@ function createServicePrincipal(azureWebsiteName: string,
                 ],
                 description: 'Read only access to device information',
                 displayName: 'Read Only',
-                id: 'e5bbd0f5-128e-4362-9dd1-8f253c6082d7',
+                id: readOnlyAppRoleId,
                 isEnabled: true,
                 value: 'ReadOnly'
               }],
@@ -524,7 +526,7 @@ function createServicePrincipal(azureWebsiteName: string,
             return result;
         })
         .catch((error) => {
-            throw new Error(`Could not create new application in this tenant: ${error.message}`);
+            throw new Error(`Could not create new application in this tenant: ${error.message || (error.body && error.body.message)}`);
         });
     })
     .then((result: any) => {
@@ -537,6 +539,9 @@ function createServicePrincipal(azureWebsiteName: string,
     })
     .then((sp: any) => {
         newServicePrincipal = sp;
+        return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
+    })
+    .then((sp: any) => {
         // Create role assignment only for standard deployment since ACS requires it
         if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
             const cachedAuthResp = getCachedAuthResponse();
@@ -566,6 +571,36 @@ function createServicePrincipal(azureWebsiteName: string,
     })
     .catch((error: Error) => {
         throw error;
+    });
+}
+
+function createAppRoleAssignment(
+    roleId: string,
+    sp: ServicePrincipal,
+    graphClient: GraphRbacManagementClient,
+    baseUri: string): Promise<ServicePrincipal> {
+    const meOptions: any = {
+        method: 'GET',
+        url: `${baseUri}/me?api-version=1.6`
+    };
+    return graphClient.sendRequest(meOptions)
+    .then((me: any) => {
+        const options: any = {
+            body: {
+                id: roleId,
+                principalId: me.objectId,
+                resourceId: sp.objectId,
+            },
+            method: 'POST',
+            url: `${baseUri}/me/appRoleAssignments?api-version=1.6`,
+        };
+        return graphClient.sendRequest(options)
+        .then((result: any) => {
+            return sp;
+        })
+        .catch((error) => {
+            throw new Error('Could not assign app admin role to you');
+        });
     });
 }
 
