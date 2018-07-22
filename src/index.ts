@@ -98,6 +98,7 @@ const program = new Command(packageJson.name)
     .option('-u, --username <username>', 'User name for the virtual machine that will be created as part of the solution')
     .option('-p, --password <password>', 'Password for the virtual machine that will be created as part of the solution')
     .option('--sshFilePath <sshFilePath>', 'Path to the ssh file path that will be used by standard deployment')
+    .option('--fxUrl <fxUrl>', 'Azure function app url for the diagnostics service')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -310,7 +311,7 @@ function main() {
                     answers.deploymentSku = program.sku;
                     answers.runtime = program.runtime;
                     answers.deploymentId = uuid.v1();
-                    answers.diagnosticsUrl = 'https://iotpcsdiagnostics-staging.azurewebsites.net/';
+                    answers.diagnosticsUrl = program.fxUrl;
                     if (program.versionOverride) {
                         // In order to run latest code verion override to master is required
                         answers.version = program.versionOverride;
@@ -321,7 +322,6 @@ function main() {
                         const version = '1.0.0';
                         answers.version = version;
                         answers.dockerTag = version;
-                        answers.diagnosticsUrl = 'https://iotpcsdiagnostics-prod.azurewebsites.net/';
                     }
 
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
