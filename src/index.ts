@@ -321,6 +321,7 @@ function main() {
                         const version = '1.0.0';
                         answers.version = version;
                         answers.dockerTag = version;
+                        answers.diagnosticsUrl = 'https://iotpcsdiagnostics-prod.azurewebsites.net/';
                     }
 
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {

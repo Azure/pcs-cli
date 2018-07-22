@@ -155,6 +155,8 @@ services:
 
   diagnostics:
     image: azureiotpcs/pcs-diagnostics-dotnet:millennium
+    networks:
+      - default_net
     depends_on:
       - config
     environment:

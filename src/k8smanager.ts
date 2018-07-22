@@ -191,6 +191,9 @@ export class K8sManager implements IK8sManager {
         configMap.data['security.application.secret'] = this.genPassword();
         configMap.data['azure.maps.key'] = this._config.AzureMapsKey ? this._config.AzureMapsKey : '';
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
+        configMap.data['diagnostics.deployment.id'] = this._config.DeploymentId;
+        configMap.data['diagnostics.endpoint.url'] = this._config.DiagnosticsEndpointUrl;
+        configMap.data['diagnostics.solution.type'] = this._config.SolutionType;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
         configMap.data['iothubreact.hub.name'] = this._config.EventHubName;
         configMap.data['iothubreact.hub.endpoint'] = this._config.EventHubEndpoint;
