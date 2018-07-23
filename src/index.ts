@@ -311,7 +311,7 @@ function main() {
                     answers.deploymentSku = program.sku;
                     answers.runtime = program.runtime;
                     answers.deploymentId = uuid.v1();
-                    answers.diagnosticsUrl = program.fxUrl;
+                    answers.diagnosticsEndpointUrl = program.fxUrl;
                     if (program.versionOverride) {
                         // In order to run latest code verion override to master is required
                         answers.version = program.versionOverride;

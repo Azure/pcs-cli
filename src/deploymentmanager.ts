@@ -406,7 +406,7 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.deploymentId.value = answers.deploymentId;
         }
         if (this._parameters.diagnosticsEndpointUrl) {
-            this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsUrl;
+            this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
         }
     }
 
