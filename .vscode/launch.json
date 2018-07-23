@@ -52,7 +52,7 @@
             "name": "pcs basic dotnet versionOverride",
             "sourceMaps": true,
             "program": "${workspaceRoot}/src/index.ts",
-            "args": [ "--versionOverride", "parvezp/diagnostics" ],
+            "args": [ "--versionOverride", "" ],
             "console": "integratedTerminal",
             "outFiles": [
                 "${workspaceRoot}/publish/**/*.js"
