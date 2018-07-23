@@ -17,7 +17,6 @@ export PCS_LOG_LEVEL="Info"
 export APP_RUNTIME="dotnet"
 export PCS_WEBUI_AUTH_TYPE="aad"
 export PCS_APPLICATION_SECRET=$(cat /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9-,./;:[]\(\)_=^!~' | fold -w 64 | head -n 1)
-export PCS_DIAGNOSTICS_ENDPOINT_URL="https://iotpcsdiagnostics-staging.azurewebsites.net/"
 
 while [ "$#" -gt 0 ]; do
     case "$1" in

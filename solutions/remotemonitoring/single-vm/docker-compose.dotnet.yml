@@ -147,7 +147,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   diagnostics:
-    image: azureiotpcs/pcs-diagnostics-dotnet:millennium
+    image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:
