@@ -40,3 +40,7 @@ spec:
         backend:
           serviceName: config-svc
           servicePort: 9005
+      - path: /diagnostics
+        backend:
+          serviceName: diagnostics-svc
+          servicePort: 9006

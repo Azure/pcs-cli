@@ -205,6 +205,8 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AzureStorageEndpointSuffix = storageEndpointSuffix;
                     // If we are under the plan limit then we should have received a query key
                     config.AzureMapsKey = outputs.azureMapsKey.value;
+                    config.DeploymentId = answers.deploymentId;
+                    config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
                     config.DockerTag = answers.dockerTag;
                     config.DNS = outputs.agentFQDN.value;
                     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
@@ -214,6 +216,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
                     config.Runtime = answers.runtime;
+                    config.SolutionType = this._solutionType;
                     config.TLS = answers.certData;
                     config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
                     config.MessagesEventHubName = outputs.messagesEventHubName.value;
@@ -398,6 +401,12 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.pcsDockerTag) {
             this._parameters.pcsDockerTag.value = answers.dockerTag;
+        }
+        if (this._parameters.deploymentId) {
+            this._parameters.deploymentId.value = answers.deploymentId;
+        }
+        if (this._parameters.diagnosticsEndpointUrl) {
+            this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
         }
     }
 
