@@ -73,6 +73,11 @@ data:
   asa.azureblob.key: "{Azure Blob account key}"
   asa.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
 
+  # Diagnostics
+  diagnostics.deployment.id: "{Deployment Id of the solution}"
+  diagnostics.endpoint.url: "{Diagnostics endpoint URL}"
+  diagnostics.solution.type: "{Solution type}"
+
   # Nginx Template
   nginx.tmpl: |
               {{ $cfg := .cfg }}

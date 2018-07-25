@@ -1,0 +1,73 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: diagnostics
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: diagnostics
+    spec:
+      containers:
+      - name: config-pod
+        image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
+        ports:
+        - containerPort: 9006
+        env:
+        - name: PCS_DIAGNOSTICS_WEBSERVICE_PORT
+          value: "9006"
+        - name: PCS_DIAGNOSTICS_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.endpoint.url
+        - name: PCS_AUTH_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.issuer
+        - name: PCS_AUTH_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AUTH_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.required
+        - name: PCS_CORS_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.cors.whitelist
+        - name: PCS_DEPLOYMENT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.deployment.id
+        - name: PCS_SOLUTION_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.type
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: diagnostics-svc
+  labels:
+    app: diagnostics
+spec:
+  type: NodePort
+  ports:
+  - port: 9006
+  selector:
+    app: diagnostics

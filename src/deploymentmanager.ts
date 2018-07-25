@@ -196,32 +196,35 @@ export class DeploymentManager implements IDeploymentManager {
             })
             .then((kubeConfigPath: string) => {
                 if (answers.deploymentSku === 'standard') {
-                  deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
-                  const outputs = deploymentProperties.outputs;
-                  const config = new Config();
-                  config.AADTenantId = answers.aadTenantId;
-                  config.AADLoginURL = activeDirectoryEndpointUrl;
-                  config.ApplicationId = answers.appId;
-                  config.AzureStorageAccountKey = outputs.storageAccountKey.value;
-                  config.AzureStorageAccountName = outputs.storageAccountName.value;
-                  config.AzureStorageEndpointSuffix = storageEndpointSuffix;
-                  // If we are under the plan limit then we should have received a query key
-                  config.AzureMapsKey = outputs.azureMapsKey.value;
-                  config.DockerTag = answers.dockerTag;
-                  config.DNS = outputs.agentFQDN.value;
-                  config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
-                  config.EventHubEndpoint = outputs.eventHubEndpoint.value;
-                  config.EventHubName = outputs.eventHubName.value;
-                  config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
-                  config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
-                  config.LoadBalancerIP = outputs.loadBalancerIp.value;
-                  config.Runtime = answers.runtime;
-                  config.TLS = answers.certData;
-                  config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
-                  config.MessagesEventHubName = outputs.messagesEventHubName.value;
-                  const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
-                  deployUI.start('Setting up Kubernetes');
-                  return k8sMananger.setupAll();
+                    deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
+                    const outputs = deploymentProperties.outputs;
+                    const config = new Config();
+                    config.AADTenantId = answers.aadTenantId;
+                    config.AADLoginURL = activeDirectoryEndpointUrl;
+                    config.ApplicationId = answers.appId;
+                    config.AzureStorageAccountKey = outputs.storageAccountKey.value;
+                    config.AzureStorageAccountName = outputs.storageAccountName.value;
+                    config.AzureStorageEndpointSuffix = storageEndpointSuffix;
+                    // If we are under the plan limit then we should have received a query key
+                    config.AzureMapsKey = outputs.azureMapsKey.value;
+                    config.DeploymentId = answers.deploymentId;
+                    config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
+                    config.DockerTag = answers.dockerTag;
+                    config.DNS = outputs.agentFQDN.value;
+                    config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                    config.EventHubEndpoint = outputs.eventHubEndpoint.value;
+                    config.EventHubName = outputs.eventHubName.value;
+                    config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
+                    config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
+                    config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                    config.Runtime = answers.runtime;
+                    config.SolutionType = this._solutionType;
+                    config.TLS = answers.certData;
+                    config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
+                    config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                    const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
+                    deployUI.start('Setting up Kubernetes');
+                    return k8sMananger.setupAll();
                 }
                 return Promise.resolve();
             })
@@ -404,6 +407,12 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.pcsDockerTag) {
             this._parameters.pcsDockerTag.value = answers.dockerTag;
+        }
+        if (this._parameters.deploymentId) {
+            this._parameters.deploymentId.value = answers.deploymentId;
+        }
+        if (this._parameters.diagnosticsEndpointUrl) {
+            this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
         }
     }
 

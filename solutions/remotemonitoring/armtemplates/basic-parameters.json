@@ -34,5 +34,11 @@
     },
     "pcsDockerTag": {
       "value": "{Added through command line interface}"
+    },
+    "deploymentId": {
+      "value": "{Added through command line interface}"
+    },
+    "diagnosticsEndpointUrl": {
+      "value": "{Added through command line interface}"
     }
 }

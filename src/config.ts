@@ -6,6 +6,8 @@ export class Config {
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
     public AzureMapsKey: string;
+    public DeploymentId: string;
+    public DiagnosticsEndpointUrl: string;
     public DocumentDBConnectionString: string;
     public DockerTag: string;
     public DNS: string;
@@ -15,6 +17,7 @@ export class Config {
     public IoTHubConnectionString: string;
     public LoadBalancerIP: string;
     public Runtime: string;
+    public SolutionType: string;
     public TLS: {cert: string, key: string, fingerPrint: string};
     public WebUIConfig: { 
         authEnabled: boolean,
