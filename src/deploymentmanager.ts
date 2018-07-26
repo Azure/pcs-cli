@@ -136,11 +136,13 @@ export class DeploymentManager implements IDeploymentManager {
                     this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
                     this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
                 }
-                let serviceBusEndpointSuffix = 'servicebus.windows.net';
-                if (environment.name === AzureEnvironment.AzureChina.name) {
+                if (this._solutionType === 'remotemonitoring') {
+                  let serviceBusEndpointSuffix = 'servicebus.windows.net';
+                  if (environment.name === AzureEnvironment.AzureChina.name) {
                     serviceBusEndpointSuffix = 'servicebus.chinacloudapi.cn';
+                  }
+                  this._parameters.serviceBusEndpointSuffix = { value: serviceBusEndpointSuffix };
                 }
-                this._parameters.serviceBusEndpointSuffix = { value: serviceBusEndpointSuffix };
             }
             this.setupParameters(answers);
         } catch (ex) {
@@ -227,16 +229,20 @@ export class DeploymentManager implements IDeploymentManager {
                 return Promise.resolve();
             })
             .then(() => {
-                // wait for streaming jobs to start if it is included in template and sku is not local
-                const outputJobName = deploymentProperties.outputs.streamingJobsName;
-                if (outputJobName) {
+                if (this._solutionType === 'remotemonitoring') {
+                  // wait for streaming jobs to start if it is included in template and sku is not local
+                  const outputJobName = deploymentProperties.outputs.streamingJobsName;
+                  if (outputJobName) {
                     if (answers.deploymentSku === 'local') {
-                        const jobUrl = `${resourceGroupUrl}/providers/Microsoft.StreamAnalytics/streamingjobs/${outputJobName.value}`;
-                        console.log(chalk.yellow(`Please start streaming jobs mannually once local containers are running: ${jobUrl} `));
+                      const jobUrl =
+                        `${resourceGroupUrl}/providers/Microsoft.StreamAnalytics/streamingjobs/${outputJobName.value}`;
+                      console.log(chalk.yellow(
+                        `Please start streaming jobs mannually once local containers are running: ${jobUrl} `));
                     } else {
                         deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
                         return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
                     }
+                  }
                 }
                 return Promise.resolve(true);
             })
@@ -254,7 +260,7 @@ export class DeploymentManager implements IDeploymentManager {
                     fs.mkdirSync(directoryPath);
                 }
                 const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
-                const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
+                const troubleshootingGuide = this._solutionType === 'remotemonitoring' ? 'https://aka.ms/iot-rm-tsg' : '';
 
                 if (answers.deploymentSku === 'local') {
                     return Promise.resolve();

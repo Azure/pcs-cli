@@ -79,17 +79,18 @@ let answers: Answers = {};
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .option('-t, --type <type>', 'Solution Type: remotemonitoring',
-            /^(remotemonitoring|test)$/i,
+    .option('-t, --type <type>', 'Solution Type: remotemonitoring, devicesimulation, devicesimulation-nohub',
+            /^(remotemonitoring|devicesimulation|devicesimulation-nohub|test)$/i,
             'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or local', /^(basic|standard|local)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')
-    .option('-r, --runtime <runtime>', 'Microservices runtime: dotnet or java', /^(dotnet|java)$/i, 'dotnet')
+    .option('-r, --runtime <runtime>', 'Microservices runtime (only for Remote Monitoring): dotnet or java', /^(dotnet|java)$/i, 'dotnet')
     .option('--servicePrincipalId <servicePrincipalId>', 'Service Principal Id')
     .option('--servicePrincipalSecret <servicePrincipalSecret>', 'Service Principal Secret')
     .option('--versionOverride <versionOverride>', 'Current accepted value is "master"')
+    .option('--dockerTagOverride <dockerTagOverride>', 'Override value for Docker image tag')
     .option('--domainId <domainId>', 'This can either be an .onmicrosoft.com domain or the Azure object ID for the tenant')
     .option('--solutionName <solutionName>', 'Solution name for your Remote monitoring accelerator')
     .option('--subscriptionId <subscriptionId>', 'SubscriptionId on which this solution should be created')
@@ -114,6 +115,12 @@ const program = new Command(packageJson.name)
         );
         console.log(
             `    Example for deploying Remote Monitoring for local development:  ${chalk.green('pcs -t remotemonitoring -s local')}.`
+        );
+        console.log(
+          `    Example for deploying Device Simulation:  ${chalk.green('pcs -t devicesimulation')}.`
+        );
+        console.log(
+          `    Example for deploying Device Simulation:  ${chalk.green('pcs -t devicesimulation-nohub')}.`
         );
         console.log();
         console.log(
@@ -312,10 +319,15 @@ function main() {
                     answers.runtime = program.runtime;
                     answers.deploymentId = uuid.v1();
                     answers.diagnosticsEndpointUrl = program.diagnosticUrl;
-                    if (program.versionOverride) {
+                    if (program.versionOverride && program.dockerTagOverride) {
+                        answers.version = program.versionOverride;
+                        answers.dockerTag = program.dockerTagOverride;
+                    } else if (program.versionOverride) {
                         // In order to run latest code verion override to master is required
                         answers.version = program.versionOverride;
                         answers.dockerTag = 'testing';
+                    } else if (program.dockerTagOverride) {
+                        answers.dockerTag = program.dockerTagOverride;
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion
