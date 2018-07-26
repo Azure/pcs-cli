@@ -239,13 +239,13 @@ export class DeploymentManager implements IDeploymentManager {
                       console.log(chalk.yellow(
                         `Please start streaming jobs mannually once local containers are running: ${jobUrl} `));
                     } else {
-                      deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
-                      return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
+                        deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
+                        return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
                     }
                   }
                 }
                 return Promise.resolve(true);
-              })
+            })
             .then(() => {
                 if (answers.deploymentSku !== 'local') {
                     const webUrl = deploymentProperties.outputs.azureWebsite.value;
