@@ -8,6 +8,18 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "pcs",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "pcs login",
             "sourceMaps": true,
             "program": "${workspaceRoot}/src/index.ts",
