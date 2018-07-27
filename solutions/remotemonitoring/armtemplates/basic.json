@@ -832,20 +832,6 @@
                             },
                             "type": "Reference"
                         }
-                    },
-                    {
-                        "name": "NotificationSystem",
-                        "properties": {
-                            "datasource": {
-                                "type": "Microsoft.ServiceBus/EventHub",
-                                "properties": {
-                                    "serviceBusNamespace": "[parameters('eventHubNamespaceName')]",
-                                    "sharedAccessPolicyName": "[parameters('notificationSystemEventHubAuthorizationName')]",
-                                    "sharedAccessPolicyKey": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('notificationSystemEventHubName'), parameters('notificationSystemEventHubAuthorizationName')), variables('eventHubApiVersion')).primaryKey]",
-                                    "eventHubName": "[parameters('notificationSystemEventHubName')]"
-                                }  
-                            }
-                        }
                     }
                 ],
                 "outputs": [
