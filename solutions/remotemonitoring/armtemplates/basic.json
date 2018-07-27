@@ -182,7 +182,7 @@
         },
         "notificationSystemEventHubName": {
             "type": "string",
-            "defaultValue": "[concat('eventhub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]", 
+            "defaultValue": "[concat('notificationEventHub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]", 
             "metadata": {
                 "description": "The name of the Event Hub used for Notification System"
             }
