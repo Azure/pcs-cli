@@ -159,23 +159,6 @@ export class DeploymentManager implements IDeploymentManager {
                 resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
                 deployUI.stop({ message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}` });
                 deployUI.start('Running validation before deploying resources');
-                return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
-            })
-            .then((validationResult: DeploymentValidateResult) => {
-                if (validationResult.error) {
-                    const status = {
-                        err: 'Deployment validation failed:\n' + JSON.stringify(validationResult.error, null, 2)
-                    };
-                    deployUI.stop(status);
-                    throw new Error(JSON.stringify(validationResult.error));
-                }
-                const options = {
-                    client: this._client,
-                    deploymentName,
-                    resourceGroupName: answers.solutionName,
-                    totalResources: deployment.properties.template.resources.length as number
-                };
-                deployUI.start('', options);
                 return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
             })
             .then((res: DeploymentExtended) => {
