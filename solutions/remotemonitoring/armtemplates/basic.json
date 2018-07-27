@@ -153,7 +153,7 @@
             "type": "string",
             "defaultValue": "[concat('eventhubnamespace-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]", 
             "metadata": {
-                "description": "The name of the Event Hub"
+                "description": "The name of the Event Hub namespace"
             }
         },
         "eventHubSkuTier": {
@@ -191,14 +191,14 @@
             "type": "int",
             "defaultValue": 1,
             "metadata": {
-                "description": "The event hub message retention in days"
+                "description": "The event hub message retention in days for notification system."
             }
         },
         "notificationSystemEventHubPartitionCount": {
             "type": "int",
             "defaultValue": 2,
             "metadata": {
-                "description": "The event hub partition count"
+                "description": "The event hub partition count for notification system."
             }
         },
         "notificationSystemEventHubAuthorizationName": {
@@ -444,7 +444,8 @@
         "eventHubKeyName": "RootManageSharedAccessKey",
         "eventHubKeyResourceId": "[resourceId('Microsoft.EventHub/namespaces/AuthorizationRules', parameters('eventHubNamespaceName'), variables('eventHubKeyName'))]",
         "eventHubNamespaceResourceId": "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]",
-        "eventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
+        "eventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('notificationSystemEventHubName'))]",
+        "notificationSystemEventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
         "eventHubRouteKeyResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/AuthorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('eventHubAuthorizationName'))]",
         "iotHubApiVersion": "2017-01-19",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
@@ -649,7 +650,7 @@
             },
             "dependsOn": [
                 "[variables('eventHubNamespaceResourceId')]",
-                "[variables('eventHubResourceId')]"
+                "[variables('notificationSystemEventHubResourceId')]"
             ]
         },
         {
