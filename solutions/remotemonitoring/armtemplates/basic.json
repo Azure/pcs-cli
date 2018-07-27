@@ -201,13 +201,6 @@
                 "description": "The event hub partition count"
             }
         },
-        "notificationSystemEventHubNamespaceName": {
-            "type": "string",
-            "defaultValue": "[parameters('eventHubNamespaceName')]", 
-            "metadata": {
-                "description": "The name of the Event Hub [Same for both the eventHubs]"
-            }
-        },
         "notificationSystemEventHubAuthorizationName": {
             "type": "string",
             "defaultValue": "[concat('streamingjobs-', parameters('notificationSystemEventHubName'))]",
@@ -631,7 +624,7 @@
         {
             "comments": "Azure Event Hub For Notification System",
             "type": "Microsoft.EventHub/namespaces/eventhubs",
-            "name": "[concat(parameters('notificationSystemEventHubNamespaceName'), '/', parameters('notificationSystemEventHubName'))]",
+            "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('notificationSystemEventHubName'))]",
             "apiVersion": "[variables('eventHubApiVersion')]",
             "location": "[variables('location')]",
             "properties": {
@@ -646,7 +639,7 @@
         {
             "comments": "Event Hub Authorization for Streaming Agent",
             "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
-            "name": "[concat(parameters('notificationSystemEventHubNamespaceName'), '/', parameters('notificationSystemEventHubName'), '/', parameters('notificationSystemEventHubAuthorizationName'))]",
+            "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('notificationSystemEventHubName'), '/', parameters('notificationSystemEventHubAuthorizationName'))]",
             "apiVersion":  "[variables('eventHubApiVersion')]",
             "location": "[variables('location')]",
             "properties": {
@@ -847,7 +840,7 @@
                                 "properties": {
                                     "serviceBusNamespace": "[parameters('eventHubNamespaceName')]",
                                     "sharedAccessPolicyName": "[parameters('notificationSystemEventHubAuthorizationName')]",
-                                    "sharedAccessPolicyKey": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('notificationSystemEventHubNamespaceName'), parameters('notificationSystemEventHubName'), parameters('notificationSystemEventHubAuthorizationName')), variables('eventHubApiVersion')).primaryKey]",
+                                    "sharedAccessPolicyKey": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('notificationSystemEventHubName'), parameters('notificationSystemEventHubAuthorizationName')), variables('eventHubApiVersion')).primaryKey]",
                                     "eventHubName": "[parameters('notificationSystemEventHubName')]"
                                 }  
                             }
