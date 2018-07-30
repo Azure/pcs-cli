@@ -285,6 +285,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: iothub.connstring
+        - name: PCS_AUTH_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.webservice.url
         - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -361,6 +366,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: docdb.connstring
+        - name: PCS_AUTH_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.webservice.url
         - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -618,6 +628,11 @@ spec:
         env:
         - name: PCS_CONFIG_WEBSERVICE_PORT
           value: "9005"
+        - name: PCS_AUTH_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.webservice.url
         - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:

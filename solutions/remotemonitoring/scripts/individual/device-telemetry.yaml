@@ -31,6 +31,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: storageadapter.webservice.url
+        - name: PCS_AUTH_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: auth.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
