@@ -44,6 +44,8 @@ while [ "$#" -gt 0 ]; do
         --docker-tag)                   PCS_DOCKER_TAG="$2" ;;
         --evenhub-connstring)           PCS_EVENTHUB_CONNSTRING="$2" ;;
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
+        --logicapp-endpoint-url)        PCS_LOGICAPP_ENDPOINT_URL="$2" ;;
+        --telemetry-evenhub-name        PCS_TELEMETRY_EVENTHUB_NAME="$2" ;;
     esac
     shift
 done
@@ -208,6 +210,11 @@ echo "export PCS_AZUREMAPS_KEY=\"${PCS_AZUREMAPS_KEY}\""                        
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
 echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                       >> ${ENVVARS}
 echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}
+echo "export PCS_LOGICAPP_ENDPOINT_URL=\"${PCS_LOGICAPP_ENDPOINT_URL}\""                                 >> ${ENVVARS}
+echo "export PCS_TELEMETRY_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                           >> ${ENVVARS}
+echo "export PCS_TELEMETRY_EVENTHUB_NAME=\"${PCS_TELEMETRY_EVENTHUB_NAME}\""                             >> ${ENVVARS}
+echo "export PCS_TELEMETRY_DATA_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""              >> ${ENVVARS}
+echo "export PCS_TELEMETRY_DATA_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""                      >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
