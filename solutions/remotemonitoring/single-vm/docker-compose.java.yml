@@ -1,11 +1,14 @@
 version: '2'
 
+# TODO: remove APPLICATION_SECRET
 services:
   reverseproxy:
-    image: azureiotpcs/remote-monitoring-nginx:testing
+    image: azureiotpcs/remote-monitoring-nginx:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:10080"
+      - "443:10443"
     depends_on:
       - webui
       - auth
@@ -17,7 +20,9 @@ services:
       - /app/certs:/app/certs:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:testing
+    image: azureiotpcs/pcs-remote-monitoring-webui:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - auth
       - iothubmanager
@@ -28,28 +33,21 @@ services:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
   auth:
-    image: azureiotpcs/pcs-auth-dotnet:testing
+    image: azureiotpcs/pcs-auth-dotnet:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     environment:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - APPLICATION_SECRET
 
   iothubmanager:
-    image: azureiotpcs/iothub-manager-dotnet:testing
-    environment:
-      - PCS_IOTHUB_CONNSTRING
-      # TODO: the dependency on config is temporary
-      - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1
-      - PCS_AUTH_ISSUER
-      - PCS_AUTH_AUDIENCE
-      - PCS_AUTH_REQUIRED
-      - PCS_CORS_WHITELIST
-      - PCS_APPLICATION_SECRET
-
-  devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:testing
+    image: azureiotpcs/iothub-manager-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - storageadapter
     environment:
@@ -60,12 +58,31 @@ services:
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - APPLICATION_SECRET
+
+  devicesimulation:
+    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
+    depends_on:
+      - storageadapter
+    environment:
+      - PCS_IOTHUB_CONNSTRING
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
+      - PCS_AUTH_REQUIRED
+      - PCS_CORS_WHITELIST
+      - PCS_APPLICATION_SECRET
+      - APPLICATION_SECRET
     # How one could mount custom device models
     #volumes:
     #  - ./my-device-models:/app/data:ro
 
   telemetry:
-    image: azureiotpcs/telemetry-dotnet:testing
+    image: azureiotpcs/telemetry-dotnet:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - storageadapter
     environment:
@@ -76,28 +93,32 @@ services:
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - APPLICATION_SECRET
 
   config:
-    image: azureiotpcs/pcs-config-dotnet:testing
+    image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
       - storageadapter
       - devicesimulation
       - telemetry
-      - iothubmanager
     environment:
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
       - PCS_DEVICESIMULATION_WEBSERVICE_URL=http://devicesimulation:9003/v1
       - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1
-      - PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://iothubmanager:9002/v1
-      - PCS_BINGMAP_KEY
+      - PCS_AZUREMAPS_KEY
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - APPLICATION_SECRET
 
   storageadapter:
-    image: azureiotpcs/pcs-storage-adapter-dotnet:testing
+    image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     environment:
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AUTH_ISSUER
@@ -105,27 +126,36 @@ services:
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - APPLICATION_SECRET
 
-  telemetryagent:
-    image: azureiotpcs/telemetry-agent-dotnet:testing
+  asamanager:
+    image: azureiotpcs/asa-manager-dotnet:${PCS_DOCKER_TAG}
+    networks:
+      - default_net
     depends_on:
-      - telemetry
       - iothubmanager
       - config
     environment:
-      - PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
+      - PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
       - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1
       - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1
       - PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://iothubmanager:9002/v1
-      - PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
-      - PCS_IOTHUBREACT_AZUREBLOB_KEY
-      - PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX
-      - PCS_IOTHUBREACT_HUB_NAME
-      - PCS_IOTHUBREACT_HUB_ENDPOINT
-      - PCS_IOTHUBREACT_HUB_PARTITIONS
-      - PCS_IOTHUBREACT_ACCESS_CONNSTRING
-      - PCS_AUTH_ISSUER
-      - PCS_AUTH_AUDIENCE
+      - PCS_ASA_DATA_AZUREBLOB_ACCOUNT
+      - PCS_ASA_DATA_AZUREBLOB_KEY
+      - PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
+      - PCS_EVENTHUB_CONNSTRING
+      - PCS_EVENTHUB_NAME
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
+      - PCS_AUTH_ISSUER
+      - PCS_AUTH_AUDIENCE
       - PCS_APPLICATION_SECRET
+
+networks:
+  default_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+       - subnet: 172.18.0.0/16
+         gateway: 172.18.0.1

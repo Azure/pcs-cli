@@ -1,9 +1,9 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: config
+  name: telemetry-agent
 spec:
-  replicas: 3
+  replicas: 1
   minReadySeconds: 10
   strategy:
     type: RollingUpdate
@@ -13,41 +13,69 @@ spec:
   template:
     metadata:
       labels:
-        app: config
+        app: telemetry-agent
     spec:
       containers:
-      - name: config-pod
-        image: azureiotpcs/pcs-config-dotnet:testing
+      - name: telemetry-agent-pod
+        image: azureiotpcs/telemetry-agent-{runtime}:testing
         ports:
-        - containerPort: 9005
+        - containerPort: 9023
         env:
-        - name: PCS_CONFIG_WEBSERVICE_PORT
-          value: "9005"
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
+        - name: PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: storageadapter.webservice.url
-        - name: PCS_DEVICESIMULATION_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: devicesimulation.webservice.url
+              key: docdb.connstring
         - name: PCS_TELEMETRY_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: telemetry.webservice.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.webservice.url
         - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: iothubmanager.webservice.url
-        - name: PCS_BINGMAP_KEY
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: bing.map.key
+              key: iothubreact.azureblob.account
+        - name: PCS_IOTHUBREACT_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.key
+        - name: PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.azureblob.endpointsuffix
+        - name: PCS_IOTHUBREACT_HUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.name
+        - name: PCS_IOTHUBREACT_HUB_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.endpoint
+        - name: PCS_IOTHUBREACT_HUB_PARTITIONS
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.hub.partitions
+        - name: PCS_IOTHUBREACT_ACCESS_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: iothubreact.access.connstring
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -77,12 +105,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: config-svc
+  name: telemetry-agent-svc
   labels:
-    app: config
+    app: telemetry-agent
 spec:
   type: NodePort
   ports:
-  - port: 9005
+  - port: 9023
   selector:
-    app: config
+    app: telemetry-agent

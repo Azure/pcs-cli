@@ -5,12 +5,14 @@ import * as path from 'path';
 import * as fetch from 'node-fetch';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
-import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions } from 'ms-rest-azure';
+import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
+import StreamAnalyticsManagementClient = require('azure-arm-streamanalytics');
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
+import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -22,9 +24,6 @@ type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
 const MAX_RETRY = 36;
 const KUBEDIR = os.homedir() + path.sep + '.kube';
-// We are using BingMap APIs with plan = internal1
-// It only allows to have 2 apis per subscription
-const MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN = 2;
 
 export interface IDeploymentManager {
     submit(answers: Answers | undefined): Promise<any>;
@@ -32,21 +31,29 @@ export interface IDeploymentManager {
 }
 
 export class DeploymentManager implements IDeploymentManager {
-    private _options: DeviceTokenCredentialsOptions;
+    private _credentials: ServiceClientCredentials;
+    private _environment: AzureEnvironment;
     private _solutionType: string;
     private _sku: string;
     private _template: any;
     private _parameters: any;
     private _subscriptionId: string;
     private _client: ResourceManagementClient;
+    private _streamAnalyticsClient: StreamAnalyticsManagementClient;
 
-    constructor(options: DeviceTokenCredentialsOptions, subscriptionId: string, solutionType: string, sku: string) {
-        this._options = options;
+    constructor(credentials: ServiceClientCredentials,
+                environment: AzureEnvironment,
+                subscriptionId: string,
+                solutionType: string,
+                sku: string) {
+        this._credentials = credentials;
+        this._environment = environment;
         this._solutionType = solutionType;
         this._sku = sku;
         this._subscriptionId = subscriptionId;
-        const baseUri = this._options.environment ? this._options.environment.resourceManagerEndpointUrl : undefined;
-        this._client = new ResourceManagementClient(new DeviceTokenCredentials(this._options), subscriptionId, baseUri);
+        const baseUri = environment ? environment.resourceManagerEndpointUrl : undefined;
+        this._client = new ResourceManagementClient(this._credentials, subscriptionId, baseUri);
+        this._streamAnalyticsClient = new StreamAnalyticsManagementClient(this._credentials, subscriptionId, baseUri);
     }
 
     public getLocations(): Promise<string[] | undefined> {
@@ -77,94 +84,79 @@ export class DeploymentManager implements IDeploymentManager {
         const deploymentName = 'deployment-' + answers.solutionName;
         let deploymentProperties: any = null;
         let resourceGroupUrl: string;
-        let freeBingMapResourceCount: number = 0;
         let resourceGroup: ResourceGroup = {
             location,
             // TODO: Explore if it makes sense to add more tags, e.g. Language(Java/.Net), version etc
             tags: { IotSolutionType: this._solutionType },
         };
 
-        const environment = this._options.environment;
+        const environment = this._environment;
         let portalUrl = 'https://portal.azure.com';
         let storageEndpointSuffix: string;
         let azureVMFQDNSuffix: string;
         let activeDirectoryEndpointUrl: string;
 
-        return this._client.resources.list({ filter: 'resourceType eq \'Microsoft.BingMaps/mapApis\'' })
-            .then((resources: ResourceModels.ResourceListResult) => {
-
-                if (this._solutionType === 'remotemonitoring') {
-                    // using static map for China environment by default since Bing Map resource is not available.
-                    if (this._options.environment && this._options.environment.name === AzureEnvironment.AzureChina.name) {
-                        this._sku += '-static-map';
-                    } else {
-                        resources.forEach((resource: ResourceModels.GenericResource) => {
-                            if (resource.plan && resource.plan.name && resource.plan.name.toLowerCase() === 'internal1') {
-                                freeBingMapResourceCount++;
-                            }
-                        });
-                        if (freeBingMapResourceCount >= MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                            this._sku += '-static-map';
-                        }
-                    }
-
-                    const armTemplatePath = __dirname + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
-                    this._template = require(armTemplatePath + this._sku + '.json');
-                    this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
-                } else {
-                    const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
-                    this._template = require(armTemplatePath + 'template.json');
-                    this._parameters = require(armTemplatePath + 'parameters.json');
+        if (this._solutionType === 'remotemonitoring') {
+            const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
+            this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
+            // using static map for China environment by default since Azure Maps resource is not available.
+            if (environment && environment.name === AzureEnvironment.AzureChina.name) {
+                this._sku += '-static-map';
+            }
+            this._template = require(armTemplatePath + this._sku + '.json');
+        } else {
+            const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
+            this._template = require(armTemplatePath + 'template.json');
+            this._parameters = require(armTemplatePath + 'parameters.json');
+        }
+        try {
+            // Change the default suffix for basic sku based on current environment
+            if (environment) {
+                switch (environment.name) {
+                    case AzureEnvironment.AzureChina.name:
+                        azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
+                        break;
+                    case AzureEnvironment.AzureGermanCloud.name:
+                        azureVMFQDNSuffix = 'cloudapp.azure.de';
+                        break;
+                    case AzureEnvironment.AzureUSGovernment.name:
+                        azureVMFQDNSuffix = 'cloudapp.azure.us';
+                        break;
+                    default:
+                        // use default parameter values of global azure environment
+                        azureVMFQDNSuffix = 'cloudapp.azure.com';
                 }
-
-                try {
-                    // Change the default suffix for basic sku based on current environment
-                    if (environment) {
-                        switch (environment.name) {
-                            case AzureEnvironment.AzureChina.name:
-                                azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
-                                break;
-                            case AzureEnvironment.AzureGermanCloud.name:
-                                azureVMFQDNSuffix = 'cloudapp.azure.de';
-                                break;
-                            case AzureEnvironment.AzureUSGovernment.name:
-                                azureVMFQDNSuffix = 'cloudapp.azure.us';
-                                break;
-                            default:
-                                // use default parameter values of global azure environment
-                                azureVMFQDNSuffix = 'cloudapp.azure.com';
-                        }
-                        storageEndpointSuffix = environment.storageEndpointSuffix;
-                        activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
-                        if (storageEndpointSuffix.startsWith('.')) {
-                            storageEndpointSuffix = storageEndpointSuffix.substring(1);
-                        }
-                        if (answers.deploymentSku === 'basic') {
-                            this._parameters.storageEndpointSuffix = { value: storageEndpointSuffix };
-                            this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
-                            this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
-                        }
-                    }
-                    this.setupParameters(answers);
-                } catch (ex) {
-                    throw new Error('Could not find template or parameters file, Exception:');
+                storageEndpointSuffix = environment.storageEndpointSuffix;
+                activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
+                if (storageEndpointSuffix.startsWith('.')) {
+                    storageEndpointSuffix = storageEndpointSuffix.substring(1);
                 }
+                if (answers.deploymentSku === 'basic') {
+                    this._parameters.storageEndpointSuffix = { value: storageEndpointSuffix };
+                    this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
+                    this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
+                }
+                let serviceBusEndpointSuffix = 'servicebus.windows.net';
+                if (environment.name === AzureEnvironment.AzureChina.name) {
+                    serviceBusEndpointSuffix = 'servicebus.chinacloudapi.cn';
+                }
+                this._parameters.serviceBusEndpointSuffix = { value: serviceBusEndpointSuffix };
+            }
+            this.setupParameters(answers);
+        } catch (ex) {
+            throw new Error('Could not find template or parameters file, Exception:');
+        }
 
-                deployment.properties.parameters = this._parameters;
-                deployment.properties.template = this._template;
-                return deployment;
-            })
-            .then((properties: Deployment) => {
-                deployUI.start('Creating resource group');
-                return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup);
-            })
+        deployment.properties.parameters = this._parameters;
+        deployment.properties.template = this._template;
+        deployUI.start(`Creating resource group: ${chalk.cyan(answers.solutionName)}`);
+        return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
                 if (environment && environment.portalUrl) {
                     portalUrl = environment.portalUrl;
                 }
                 resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
-                console.log('Resources are being deployed at ' + resourceGroupUrl);
                 deployUI.stop({ message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}` });
                 deployUI.start('Running validation before deploying resources');
                 return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
@@ -194,6 +186,10 @@ export class DeploymentManager implements IDeploymentManager {
                     deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
                     return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
                 }
+
+                if (answers.deploymentSku === 'local') {
+                    this.printEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                }
                 return Promise.resolve('');
             })
             .then((kubeConfigPath: string) => {
@@ -207,10 +203,9 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                     config.AzureStorageAccountName = outputs.storageAccountName.value;
                     config.AzureStorageEndpointSuffix = storageEndpointSuffix;
-                    // If we are under the plan limi then we should have received a query key
-                    if (freeBingMapResourceCount < MAX_BING_MAP_APIS_FOR_INTERNAL1_PLAN) {
-                        config.BingMapApiQueryKey = outputs.mapApiQueryKey.value;
-                    }
+                    // If we are under the plan limit then we should have received a query key
+                    config.AzureMapsKey = outputs.azureMapsKey.value;
+                    config.DockerTag = answers.dockerTag;
                     config.DNS = outputs.agentFQDN.value;
                     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
                     config.EventHubEndpoint = outputs.eventHubEndpoint.value;
@@ -220,6 +215,8 @@ export class DeploymentManager implements IDeploymentManager {
                     config.LoadBalancerIP = outputs.loadBalancerIp.value;
                     config.Runtime = answers.runtime;
                     config.TLS = answers.certData;
+                    config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
+                    config.MessagesEventHubName = outputs.messagesEventHubName.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -227,9 +224,26 @@ export class DeploymentManager implements IDeploymentManager {
                 return Promise.resolve();
             })
             .then(() => {
-                const webUrl = deploymentProperties.outputs.azureWebsite.value;
-                deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
-                return this.waitForWebsiteToBeReady(webUrl);
+                // wait for streaming jobs to start if it is included in template and sku is not local
+                const outputJobName = deploymentProperties.outputs.streamingJobsName;
+                if (outputJobName) {
+                    if (answers.deploymentSku === 'local') {
+                        const jobUrl = `${resourceGroupUrl}/providers/Microsoft.StreamAnalytics/streamingjobs/${outputJobName.value}`;
+                        console.log(chalk.yellow(`Please start streaming jobs mannually once local containers are running: ${jobUrl} `));
+                    } else {
+                        deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
+                        return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
+                    }
+                }
+                return Promise.resolve(true);
+            })
+            .then(() => {
+                if (answers.deploymentSku !== 'local') {
+                    const webUrl = deploymentProperties.outputs.azureWebsite.value;
+                    deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
+                    return this.waitForWebsiteToBeReady(webUrl);
+                }
+                return Promise.resolve(true);
             })
             .then((done: boolean) => {
                 const directoryPath = process.cwd() + path.sep + 'deployments';
@@ -239,7 +253,13 @@ export class DeploymentManager implements IDeploymentManager {
                 const fileName: string = directoryPath + path.sep + deploymentName + '-output.json';
                 const troubleshootingGuide = 'https://aka.ms/iot-rm-tsg';
 
+<<<<<<< HEAD
                 if (deploymentProperties.outputs.azureWebsite) {
+=======
+                if (answers.deploymentSku === 'local') {
+                    return Promise.resolve();
+                } else if (deploymentProperties.outputs.azureWebsite) {
+>>>>>>> master
                     const webUrl = deploymentProperties.outputs.azureWebsite.value;
                     const status = {
                         message: `Solution: ${chalk.cyan(answers.solutionName)} is deployed at ${chalk.cyan(webUrl)}`
@@ -348,6 +368,9 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.servicePrincipalSecret.value = answers.servicePrincipalSecret;
         }
         if (this._parameters.servicePrincipalClientId) {
+            // According to the document, the service principal client id can use appId. When using servicePrincipalId
+            // of answer ACS deployment always fails and complains application was not found.
+            // more detail here: https://docs.microsoft.com/en-us/azure/container-service/kubernetes/container-service-kubernetes-service-principal
             this._parameters.servicePrincipalClientId.value = answers.appId;
         }
         if (this._parameters.sshRSAPublicKey) {
@@ -373,6 +396,12 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.microServiceRuntime) {
             this._parameters.microServiceRuntime.value = answers.runtime;
+        }
+        if (this._parameters.pcsReleaseVersion) {
+            this._parameters.pcsReleaseVersion.value = answers.version;
+        }
+        if (this._parameters.pcsDockerTag) {
+            this._parameters.pcsDockerTag.value = answers.dockerTag;
         }
     }
 
@@ -408,6 +437,65 @@ export class DeploymentManager implements IDeploymentManager {
                 },
                 10000);
         });
+    }
+
+    private waitForStreamingJobsToStart(resourceGroupName: string, streamingJobsName: string): Promise<boolean> {
+        let retryCount = 0;
+        return new Promise((resolve, reject) => {
+            const timer = setInterval(
+                () => {
+                    // check streaming jobs state and start it if it is not running
+                    this._streamAnalyticsClient.streamingJobs.get(resourceGroupName, streamingJobsName)
+                        .then((streamingJobs: any) => {
+                            if (streamingJobs.jobState.toLowerCase() === 'running') {
+                                clearInterval(timer);
+                                resolve(true);
+                            } else if (retryCount > MAX_RETRY) {
+                                clearInterval(timer);
+                                resolve(false);
+                            } else if (['created', 'failed'].indexOf(streamingJobs.jobState.toLowerCase()) > -1) {
+                                // try to start streaming jobs if it is in 'Created' or 'Failed' state
+                                this._streamAnalyticsClient.streamingJobs.start(resourceGroupName, streamingJobsName)
+                                    .catch((error: any) => {
+                                        // ignore error of connecting to Cosmos database when starting streaming jobs
+                                    });
+                            }
+                        })
+                        .catch((error: any) => {
+                            // Continue
+                            if (retryCount > MAX_RETRY) {
+                                clearInterval(timer);
+                                resolve(false);
+                            }
+                        });
+                    retryCount++;
+                },
+                10000);
+        });
+    }
+
+    private printEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
+        const data = [] as string[];
+        data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
+        data.push('PCS_IOTHUB_CONNSTRING=' + outputs.iotHubConnectionString.value);
+        data.push('PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
+        data.push('PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
+        data.push('PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
+        data.push('PCS_IOTHUBREACT_HUB_ENDPOINT=Endpoint=' + outputs.eventHubEndpoint.value);
+        data.push('PCS_IOTHUBREACT_HUB_PARTITIONS=' + outputs.eventHubPartitions.value);
+        data.push('PCS_IOTHUBREACT_HUB_NAME=' + outputs.eventHubName.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
+        data.push('PCS_ASA_DATA_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
+        data.push('PCS_ASA_DATA_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
+        data.push('PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
+        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.messagesEventHubConnectionString.value);
+        data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
+        data.push('PCS_AUTH_REQUIRED=false');
+        data.push('PCS_AZUREMAPS_KEY=static');
+
+        console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }
 }
 
