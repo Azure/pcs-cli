@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: iothub-manager
+  name: telemetry
 spec:
   replicas: 3
   minReadySeconds: 10
@@ -13,26 +13,24 @@ spec:
   template:
     metadata:
       labels:
-        app: iothub-manager
+        app: telemetry
     spec:
       containers:
-      - name: iothub-manager-pod
-        image: azureiotpcs/iothub-manager-dotnet:testing
+      - name: telemetry-pod
+        image: azureiotpcs/telemetry-{runtime}:testing
         ports:
-        - containerPort: 9002
+        - containerPort: 9004
         env:
-        - name: PCS_IOTHUBMANAGER_WEBSERVICE_PORT
-          value: "9002"
-        - name: PCS_IOTHUB_CONNSTRING
+        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothub.connstring
-        - name: PCS_CONFIG_WEBSERVICE_URL
+              key: docdb.connstring
+        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: config.webservice.url
+              key: storageadapter.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -62,12 +60,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: iothub-manager-svc
+  name: telemetry-svc
   labels:
-    app: iothub-manager
+    app: telemetry
 spec:
   type: NodePort
   ports:
-  - port: 9002
+  - port: 9004
   selector:
-    app: iothub-manager
+    app: telemetry

@@ -113,7 +113,7 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_D4_v3",
+            "defaultValue": "Standard_F4",
             "allowedValues": [],
             "metadata": {
                 "description": "The size of the Virtual Machine."

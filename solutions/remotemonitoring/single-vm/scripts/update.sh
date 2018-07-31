@@ -1,7 +1,15 @@
 #!/bin/bash -ex
 
+PCS_RELEASE_VERSION=$1
+
+if [ -z "$PCS_RELEASE_VERSION" ]; then
+    echo "Please specify release version for which you want to run the update"
+    echo "For latest release number, please see https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/releases"
+    exit 1
+fi
+
 # Where to download scripts from
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/master/remotemonitoring/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/$PCS_RELEASE_VERSION/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 cd /app
