@@ -356,7 +356,7 @@ function main() {
                 .then(() => {
                     const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + 
                     subId + '/resourceGroups/' + answers.solutionName + 
-                    '/providers/MICROSOFT.WEB/connections/office365/edit';
+                    '/providers/MICROSOFT.Web/connections/office365/edit';
 
                     if (answers.EnableEmail) {
                         console.log('\nPlease click authorize on the browser window');

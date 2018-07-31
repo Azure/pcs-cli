@@ -45,7 +45,7 @@ while [ "$#" -gt 0 ]; do
         --evenhub-connstring)           PCS_EVENTHUB_CONNSTRING="$2" ;;
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
         --logicapp-endpoint-url)        PCS_LOGICAPP_ENDPOINT_URL="$2" ;;
-        --telemetry-evenhub-name        PCS_TELEMETRY_EVENTHUB_NAME="$2" ;;
+        --telemetry-eventhub-name)      PCS_TELEMETRY_EVENTHUB_NAME="$2" ;;
     esac
     shift
 done
