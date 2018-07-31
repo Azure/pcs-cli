@@ -348,7 +348,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-dotnet:{dockerTag}
+        image: ayush8484/telemetry:final
         ports:
         - containerPort: 9004
         env:
@@ -387,6 +387,36 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_TELEMETRY_LOGICAPP_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.logicapp.endpointurl
+        - name: PCS_TELEMETRY_EVENTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.eventhub.connstring
+        - name: PCS_TELEMETRY_EVENTHUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.notificationsystem.eventhub.name
+        - name: PCS_TELEMETRY_DATA_AZUREBLOB_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.azureblob.account
+        - name: PCS_TELEMETRY_DATA_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.azureblob.key
+        - name: PCS_TELEMETRY_DATA_AZUREBLOB_ENDPOINT_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.azureblob.endpointsuffix
 ---
 apiVersion: v1
 kind: Service
@@ -497,7 +527,7 @@ spec:
     spec:
       containers:
       - name: asa-manager-pod
-        image: azureiotpcs/asa-manager-dotnet:{dockerTag}
+        image: ayush8484/asa-manager:rm8
         ports:
         - containerPort: 9024
         env:
@@ -762,7 +792,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
+        image: dianehu7/webui-alert-updates:webui-updates-tag
         ports:
         - containerPort: 10080
         volumeMounts:

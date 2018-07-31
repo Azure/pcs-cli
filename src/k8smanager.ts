@@ -204,6 +204,12 @@ export class K8sManager implements IK8sManager {
         configMap.data['asa.azureblob.account'] = this._config.AzureStorageAccountName;
         configMap.data['asa.azureblob.key'] = this._config.AzureStorageAccountKey;
         configMap.data['asa.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
+        configMap.data['telemetry.eventhub.connstring'] = this._config.MessagesEventHubConnectionString;
+        configMap.data['telemetry.notificationsystem.eventhub.name'] = this._config.NotificationSystemEventHub;
+        configMap.data['telemetry.azureblob.account'] = this._config.AzureStorageAccountName;
+        configMap.data['telemetry.azureblob.key'] = this._config.AzureStorageAccountKey;
+        configMap.data['telemetry.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
+        configMap.data['telemetry.logicapp.endpointurl'] = this._config.LogicAppEndpointUrl;
         let deploymentConfig = configMap.data['webui-config.js'];
         deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);

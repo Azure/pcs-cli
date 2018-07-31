@@ -26,4 +26,6 @@ export class Config {
     };
     public MessagesEventHubConnectionString: string;
     public MessagesEventHubName: string;
+    public LogicAppEndpointUrl: string;
+    public NotificationSystemEventHub: string;
 }

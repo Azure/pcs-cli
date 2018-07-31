@@ -217,6 +217,8 @@ export class DeploymentManager implements IDeploymentManager {
                     config.TLS = answers.certData;
                     config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
                     config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                    config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
+                    config.NotificationSystemEventHub = outputs.notificationSystemEventHubName.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -488,6 +490,11 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
         data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.messagesEventHubConnectionString.value);
         data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
+        data.push('PCS_TELEMETRY_LOGICAPP_ENDPOINT_URL=' + outputs.logicAppEndpointUrl.value);
+        data.push('PCS_TELEMETRY_EVENTHUB_CONNSTRING=' + outputs.messagesEventHubConnectionString.value);
+        data.push('PCS_TELEMETRY_EVENTHUB_NAME=' + outputs.notificationSystemEventHubName.value);
+        data.push('PCS_TELEMETRY_DATA_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
+        data.push('PCS_TELEMETRY_DATA_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
 

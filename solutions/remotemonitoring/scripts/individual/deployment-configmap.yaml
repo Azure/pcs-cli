@@ -52,6 +52,13 @@ data:
 
   # Telemetry
   telemetry.webservice.url: "http://telemetry-svc:9004/v1"
+  telemetry.eventhub.connstring: "{Eventhub namespace connection string}"
+  telemetry.notificationsystem.eventhub.name: "{Eventhub name for notification system}"
+  telemetry.azureblob.account: "{Azure Blob account name}"
+  telemetry.azureblob.key: "{Azure Blob account key}"
+  telemetry.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
+  telemetry.logicapp.endpointurl: "{Logic App end point URL}"
+
 
   # PCS Config
   config.webservice.url: "http://config-svc:9005/v1"
