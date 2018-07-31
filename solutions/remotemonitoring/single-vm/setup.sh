@@ -51,7 +51,8 @@ while [ "$#" -gt 0 ]; do
 done
 
 # TODO: move files to Remote Monitoring repositories
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm"
+# Temporarily changing the repo URL.
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/cli/notification/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # TODO: remove temporary fix when projects have moved to use PCS_APPLICATION_SECRET
@@ -210,7 +211,7 @@ echo "export PCS_AZUREMAPS_KEY=\"${PCS_AZUREMAPS_KEY}\""                        
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
 echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                       >> ${ENVVARS}
 echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}
-echo "export PCS_LOGICAPP_ENDPOINT_URL=\"${PCS_LOGICAPP_ENDPOINT_URL}\""                                 >> ${ENVVARS}
+echo "export PCS_TELEMETRY_LOGICAPP_ENDPOINT_URL=\"${PCS_LOGICAPP_ENDPOINT_URL}\""                       >> ${ENVVARS}
 echo "export PCS_TELEMETRY_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                           >> ${ENVVARS}
 echo "export PCS_TELEMETRY_EVENTHUB_NAME=\"${PCS_TELEMETRY_EVENTHUB_NAME}\""                             >> ${ENVVARS}
 echo "export PCS_TELEMETRY_DATA_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""              >> ${ENVVARS}

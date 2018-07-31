@@ -19,7 +19,7 @@ services:
       - /app/certs:/app/certs:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:${PCS_DOCKER_TAG}
+    image: dianehu7/webui-alert-updates:webui-updates-tag
     networks:
       - default_net
     depends_on:
@@ -76,7 +76,7 @@ services:
     #  - ./my-device-models:/app/data:ro
 
   telemetry:
-    image: azureiotpcs/telemetry-dotnet:${PCS_DOCKER_TAG}
+    image: ayush8484/telemetry:final
     networks:
       - default_net
     depends_on:
@@ -92,6 +92,9 @@ services:
       - PCS_TELEMETRY_DATA_AZUREBLOB_ACCOUNT
       - PCS_TELEMETRY_DATA_AZUREBLOB_KEY
       - PCS_TELEMETRY_LOGICAPP_ENDPOINT_URL
+      - PCS_TELEMETRY_EVENTHUB_CONNSTRING
+      - PCS_TELEMETRY_EVENTHUB_NAME
+
 
   config:
     image: azureiotpcs/pcs-config-dotnet:${PCS_DOCKER_TAG}
@@ -125,7 +128,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   asamanager:
-    image: azureiotpcs/asa-manager-dotnet:${PCS_DOCKER_TAG}
+    image: ayush8484/asa-manager:rm8
     networks:
       - default_net
     depends_on:
