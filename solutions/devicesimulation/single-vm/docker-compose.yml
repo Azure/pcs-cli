@@ -12,6 +12,11 @@ services:
       - config-svc
     volumes:
       - /app/certs:/app/certs:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10240k"
+        max-file: "10"
 
   webui-svc:
     image: azureiotpcs/device-simulation-webui:${PCS_DOCKER_TAG}
@@ -21,6 +26,11 @@ services:
       - config-svc
     volumes:
       - /app/webui-config.js:/app/build/webui-config.js:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10240k"
+        max-file: "10"
 
   devicesimulation-svc:
     image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
@@ -55,6 +65,11 @@ services:
     # Uncomment this line and restart the services.
     #volumes:
     #  - /app/device-simulation-appsettings.ini:/app/webservice/appsettings.ini:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10240k"
+        max-file: "10"
 
   storageadapter-svc:
     image: azureiotpcs/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}
@@ -65,6 +80,11 @@ services:
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10240k"
+        max-file: "10"
 
   diagnostics-svc:
     image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
@@ -79,6 +99,11 @@ services:
       - PCS_DEPLOYMENT_ID
       - PCS_SOLUTION_TYPE
       - PCS_DIAGNOSTICS_ENDPOINT_URL
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10240k"
+        max-file: "10"
 
   config-svc:
     image: azureiotpcs/pcs-config-dotnet:${PCS_DOCKER_TAG}
@@ -92,3 +117,8 @@ services:
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10240k"
+        max-file: "10"
