@@ -41,8 +41,6 @@ import {
 import { SubscriptionListResult } from 'azure-arm-resource/lib/subscription/models';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
 
-const opn = require('opn');
-
 const WebSiteManagementClient = require('azure-arm-website');
 
 const packageJson = require('../package.json');
@@ -195,9 +193,6 @@ function main() {
      * Create resource group
      * Submit deployment
      */
-
-    // Logic App Auth Data
-    let subId = '';
     
     cachedAuthResponse = cachedAuthResponse || getCachedAuthResponse();
     if (!cachedAuthResponse || !program.servicePrincipalId && cachedAuthResponse.isServicePrincipal) {
@@ -213,7 +208,7 @@ function main() {
             cachedAuthResponse.linkedSubscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
                     subs.push({name: subscription.name, value: subscription.id});
-                    subId = subscription.id.toString();
+                    answers.subId = subscription.id.toString();
                 }
             });
 
@@ -351,21 +346,7 @@ function main() {
                         'resource-group-create-service-principal-portal#required-permissions.';
                         console.log(`${chalk.red(message)}`);
                     }
-                })
-                // StartLogicAppAuth
-                .then(() => {
-                    const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + 
-                    subId + '/resourceGroups/' + answers.solutionName + 
-                    '/providers/MICROSOFT.Web/connections/office365/edit';
-
-                    if (answers.EnableEmail) {
-                        console.log('\nPlease click authorize on the browser window');
-                        opn(authURL);
-                    } else {
-                        console.log('\nTo activate email notifications at a later time go to\n' + authURL);
-                    }
-                })
-                // EndLogicAppAuth                
+                })         
                 .catch((error: any) => {
                     if (error.request) {
                         console.log(JSON.stringify(error, null, 2));

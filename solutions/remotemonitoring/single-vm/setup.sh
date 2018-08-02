@@ -46,6 +46,7 @@ while [ "$#" -gt 0 ]; do
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
         --logicapp-endpoint-url)        PCS_LOGICAPP_ENDPOINT_URL="$2" ;;
         --telemetry-eventhub-name)      PCS_TELEMETRY_EVENTHUB_NAME="$2" ;;
+        --solution-name)                PCS_SOLUTION_NAME="$2";;
     esac
     shift
 done
@@ -216,6 +217,7 @@ echo "export PCS_TELEMETRY_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""  
 echo "export PCS_TELEMETRY_EVENTHUB_NAME=\"${PCS_TELEMETRY_EVENTHUB_NAME}\""                             >> ${ENVVARS}
 echo "export PCS_TELEMETRY_DATA_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""              >> ${ENVVARS}
 echo "export PCS_TELEMETRY_DATA_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""                      >> ${ENVVARS}
+echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                                                 >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

@@ -22,6 +22,8 @@ type DeploymentOperationsListResult = ResourceModels.DeploymentOperationsListRes
 type DeploymentOperation = ResourceModels.DeploymentOperation;
 type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
+const opn = require('opn');
+
 const MAX_RETRY = 36;
 const KUBEDIR = os.homedir() + path.sep + '.kube';
 
@@ -244,6 +246,18 @@ export class DeploymentManager implements IDeploymentManager {
                     const webUrl = deploymentProperties.outputs.azureWebsite.value;
                     deployUI.start(`Waiting for ${chalk.cyan(webUrl)} to be ready, this could take up to 5 minutes`);
                     return this.waitForWebsiteToBeReady(webUrl);
+                }
+                return Promise.resolve(true);
+            })
+            .then((done: boolean) => {
+                const authURL = 'https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/' + 
+                answers.subId + '/resourceGroups/' + answers.solutionName + '/providers/MICROSOFT.Web/connections/office365/edit';
+
+                if (answers.EnableEmail) {
+                    console.log('\nPlease click authorize on the browser window');
+                    opn(authURL);
+                } else {
+                    console.log('\nTo activate email notifications at a later time go to\n' + authURL);
                 }
                 return Promise.resolve(true);
             })
