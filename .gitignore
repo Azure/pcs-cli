@@ -2,6 +2,7 @@
 *_.sh
 *WITHSECRETS*
 *.iml
+.DS_Store
 
 # Create-React-App build output
 build/
