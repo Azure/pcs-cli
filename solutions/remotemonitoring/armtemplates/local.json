@@ -882,6 +882,10 @@
         "notificationSystemEventHubName":{
             "type": "string",
             "value": "[parameters('notificationSystemEventHubName')]"
+        },
+        "solutionName":{
+            "type": "string",
+            "value": "[resourceGroup().name]"
         }
     }
 }

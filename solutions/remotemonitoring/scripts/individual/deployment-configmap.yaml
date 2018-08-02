@@ -58,6 +58,7 @@ data:
   telemetry.azureblob.key: "{Azure Blob account key}"
   telemetry.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
   telemetry.logicapp.endpointurl: "{Logic App end point URL}"
+  telemetry.solution.name: "{Solution Name used for sending Email Notification}"
 
 
   # PCS Config

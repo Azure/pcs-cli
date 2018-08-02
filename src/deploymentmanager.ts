@@ -221,6 +221,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.MessagesEventHubName = outputs.messagesEventHubName.value;
                     config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
                     config.NotificationSystemEventHub = outputs.notificationSystemEventHubName.value;
+                    config.SolutionName = outputs.solutionName.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -509,6 +510,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_TELEMETRY_EVENTHUB_NAME=' + outputs.notificationSystemEventHubName.value);
         data.push('PCS_TELEMETRY_DATA_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
         data.push('PCS_TELEMETRY_DATA_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
+        data.push('PCS_TELEMETRY_SOLUTION_NAME=' + outputs.solutionName.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
 
