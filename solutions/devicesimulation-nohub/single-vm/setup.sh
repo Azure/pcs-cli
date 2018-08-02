@@ -55,9 +55,9 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-REPOSITORY= 'https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub/single-vm'
-SCRIPTS_URL='{REPOSITORY}/scripts/'
-SETUP_URL='${REPOSITORY}/setup/'
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub/single-vm"
+SCRIPTS_URL="{REPOSITORY}/scripts/"
+SETUP_URL="${REPOSITORY}/setup/"
 
 # ========================================================================
 
