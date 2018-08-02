@@ -1,5 +1,20 @@
 version: '2'
 
+# When editing this file, restart the services to apply the changes, running:
+#     sudo /app/start.sh
+# To add custom device models from a folder, upload the files into the VM, and use the "volumes"
+# section of "devicesimulation-svc" to mount the folder. Make sure lines are indented correctly.
+# Example:
+#
+#    volumes:
+#      - /absolute-path/my-device-models:/app/data:ro
+# To change the simulation service configuration, create a custom appsettings.ini file, and use the
+# "volumes" section of "devicesimulation-svc" to mount the file. Make sure lines are indented correctly.
+# Example:
+#
+#    volumes:
+#      - /app/custom-device-simulation-appsettings.ini:/app/webservice/appsettings.ini:ro
+
 services:
   apigateway-svc:
     image: azureiotpcs/simulation-api-gateway:${PCS_DOCKER_TAG}
@@ -49,27 +64,17 @@ services:
       - PCS_SUBSCRIPTION_ID
       - PCS_RESOURCE_GROUP
       - PCS_IOHUB_NAME
-    # How one could mount custom device models. The path depends on
-    # the Docker Compose version, see first line in this file.
-    #
-    # Docker Compose v2:
-    #volumes:
-    #  - /absolute-path/my-device-models:/app/data:ro
-    #
-    # Docker Compose v3 (which supports relative paths):
-    #volumes:
-    #  - ./my-device-models:/app/data:ro
-    #
-    # How to mount a custom configuration file in the single VM.
-    # Create a custom file in the VM, e.g. /app/device-simulation-appsettings.ini
-    # Uncomment this line and restart the services.
-    #volumes:
-    #  - /app/device-simulation-appsettings.ini:/app/webservice/appsettings.ini:ro
     logging:
       driver: "json-file"
       options:
         max-size: "10240k"
         max-file: "10"
+    volumes:
+      - /tmp/share:/tmp/share
+# To mount custom device models, upload the files to the VM, edit and uncomment the following line:
+#     - /absolute-path/my-device-models:/app/data:ro
+# To mount a custom service configuration, create a custom file, edit and uncomment the following line:
+#     - /app/custom-device-simulation-appsettings.ini:/app/webservice/appsettings.ini:ro
 
   storageadapter-svc:
     image: azureiotpcs/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}
