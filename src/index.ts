@@ -194,6 +194,7 @@ function main() {
      * Submit deployment
      */
     
+    let subId = '';
     cachedAuthResponse = cachedAuthResponse || getCachedAuthResponse();
     if (!cachedAuthResponse || !program.servicePrincipalId && cachedAuthResponse.isServicePrincipal) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
@@ -208,7 +209,7 @@ function main() {
             cachedAuthResponse.linkedSubscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
                     subs.push({name: subscription.name, value: subscription.id});
-                    answers.subId = subscription.id.toString();
+                    subId = subscription.id.toString();
                 }
             });
 
@@ -312,6 +313,7 @@ function main() {
                     cachedAuthResponse.credentials.tokenAudience = null;
                     answers.deploymentSku = program.sku;
                     answers.runtime = program.runtime;
+                    answers.subId = subId;
                     if (program.versionOverride) {
                         // In order to run latest code verion override to master is required
                         answers.version = program.versionOverride;

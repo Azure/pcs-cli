@@ -417,7 +417,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', 'cli/notification', '/solutions/remotemonitoring/single-vm/setup.sh')]",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup.sh')]",
             "metadata": {
                 "description": "The URL of the script to setup a single VM deployment [Temporary change to setup.sh file]"
             }

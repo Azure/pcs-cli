@@ -52,8 +52,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 # TODO: move files to Remote Monitoring repositories
-# Temporarily changing the repo URL.
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/cli/notification/solutions/remotemonitoring/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 
 # TODO: remove temporary fix when projects have moved to use PCS_APPLICATION_SECRET

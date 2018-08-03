@@ -348,7 +348,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: ayush8484/telemetry:final
+        image: azureiotpcs/telemetry-dotnet:{dockerTag}
         ports:
         - containerPort: 9004
         env:
@@ -532,7 +532,7 @@ spec:
     spec:
       containers:
       - name: asa-manager-pod
-        image: ayush8484/asa-manager:rm8
+        image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
         ports:
         - containerPort: 9024
         env:
@@ -797,7 +797,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: dianehu7/webui-alert-updates:webui-updates-tag
+        image:  azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
         ports:
         - containerPort: 10080
         volumeMounts:
