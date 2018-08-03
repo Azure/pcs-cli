@@ -96,7 +96,6 @@ services:
       - PCS_TELEMETRY_EVENTHUB_NAME
       - PCS_SOLUTION_NAME
 
-
   config:
     image: azureiotpcs/pcs-config-dotnet:${PCS_DOCKER_TAG}
     networks:

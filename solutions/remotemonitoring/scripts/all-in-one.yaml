@@ -532,7 +532,7 @@ spec:
     spec:
       containers:
       - name: asa-manager-pod
-        image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
+        image: azureiotpcs/asa-manager-dotnet:{dockerTag}
         ports:
         - containerPort: 9024
         env:
@@ -797,7 +797,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image:  azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
+        image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
         ports:
         - containerPort: 10080
         volumeMounts:
