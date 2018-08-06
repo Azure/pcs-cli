@@ -99,7 +99,11 @@ services:
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - PCS_AAD_TENANT
       - APPLICATION_SECRET
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
+      - PCS_TSI_FQDN
 
   config:
     image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
