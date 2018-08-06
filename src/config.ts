@@ -2,6 +2,7 @@ export class Config {
     public AADTenantId: string;
     public AADLoginURL: string;
     public ApplicationId: string;
+    public ServicePrincipalSecret: string;
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
@@ -29,4 +30,6 @@ export class Config {
     };
     public MessagesEventHubConnectionString: string;
     public MessagesEventHubName: string;
+    public TelemetryStorgeType: string;
+    public TSIDataAccessFQDN: string;
 }
