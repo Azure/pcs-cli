@@ -399,6 +399,13 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.aadClientId) {
             this._parameters.aadClientId.value = answers.appId;
         }
+        if (this._parameters.aadClientSecret) {
+            // reuse the service principal secret value without creating new value
+            this._parameters.aadClientSecret.value = answers.servicePrincipalSecret;
+        }
+        if (this._parameters.userPrincipalObjectId) {
+            this._parameters.userPrincipalObjectId.value = answers.userPrincipalObjectId;
+        }
         if (this._parameters.microServiceRuntime) {
             this._parameters.microServiceRuntime.value = answers.runtime;
         }

@@ -47,6 +47,8 @@ while [ "$#" -gt 0 ]; do
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
         --deployment-id)                PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)              PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
+        --aad-appsecret)                PCS_AAD_APPSECRET="$2" ;;
+        --tsi-fqdn)                     PCS_TSI_FQDN="$2" ;;
     esac
     shift
 done
@@ -214,6 +216,10 @@ echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
+echo "export PCS_AAD_TENANT=\"${PCS_WEBUI_AUTH_AAD_TENANT}\""                                            >> ${ENVVARS}
+echo "export PCS_AAD_APPID=\"${PCS_WEBUI_AUTH_AAD_APPID}\""                                              >> ${ENVVARS}
+echo "export PCS_AAD_APPSECRET=\"${PCS_AAD_APPSECRET}\""                                                 >> ${ENVVARS}
+echo "export PCS_TSI_FQDN=\"${PCS_TSI_FQDN}\""                                                           >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

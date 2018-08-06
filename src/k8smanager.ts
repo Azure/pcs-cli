@@ -8,6 +8,7 @@ import * as jsyaml from 'js-yaml';
 
 import { Config } from './config';
 import DeployUI from './deployui';
+import { genPassword } from './utils';
 
 const MAX_RETRY: number = 36;
 const DEFAULT_TIMEOUT = 10000;
@@ -188,7 +189,7 @@ export class K8sManager implements IK8sManager {
         configMap.metadata.namespace = this._namespace;
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
         configMap.data['security.auth.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
-        configMap.data['security.application.secret'] = this.genPassword();
+        configMap.data['security.application.secret'] = genPassword();
         configMap.data['azure.maps.key'] = this._config.AzureMapsKey ? this._config.AzureMapsKey : '';
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['diagnostics.deployment.id'] = this._config.DeploymentId;
@@ -252,15 +253,5 @@ export class K8sManager implements IK8sManager {
             }
         });
         return Promise.all(promises);
-    }
-
-    private genPassword(): string {
-        const chs = '0123456789-ABCDEVISFGHJKLMNOPQRTUWXYZ_abcdevisfghjklmnopqrtuwxyz'.split('');
-        const len = chs.length;
-        let result = '';
-        for (let i = 0; i < 40; i++) {
-            result += chs[Math.floor(len * Math.random())];
-        }
-        return result;
     }
 }
