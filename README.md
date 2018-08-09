@@ -56,7 +56,7 @@ Sign in using `pcs login` and credentials for an Azure account.
 
 ## 4. Create a deployment
 *   ## Device Simulation
-    ### Basic Deployment With Hub
+    ### Deployment With Hub
     #### Deploy Azure Resources
 
     1. Run `pcs -t devicesimulation`.  This will deploy a basic deployment (i.e. a deployment to a single VM).
@@ -67,7 +67,7 @@ Sign in using `pcs login` and credentials for an Azure account.
 
     Click on the link that is shown in the output window to go to the Device Simulation web application.
 
-    ### Basic Deployment Without Hub
+    ### Deployment Without Hub
     #### Deploy Azure Resources
 
     1. Run `pcs -t devicesimulation-nohub`.  This will deploy a basic deployment (i.e. a deployment to a single VM) without an IoT hub.
