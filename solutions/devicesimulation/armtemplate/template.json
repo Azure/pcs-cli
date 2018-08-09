@@ -149,7 +149,7 @@
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_D4_v3",
+      "defaultValue": "Standard_F4",
       "allowedValues": [],
       "metadata": {
         "description": "The size of the Virtual Machine."
@@ -176,20 +176,6 @@
         "description": "User password for the Linux Virtual Machines, must between 12 and 72 characters long and have 3 of the following: 1 uppercase character, 1 lowercase character, 1 number and 1 special character that is not slash (\\) or dash (-)"
       }
     },
-    "pcsReleaseVersion": {
-      "type": "string",
-      "defaultValue": "DS-1.0.2",
-      "metadata": {
-        "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
-      }
-    },
-    "pcsDockerTag": {
-      "type": "string",
-      "defaultValue": "DS-1.0.2",
-      "metadata": {
-        "description": "The docker tag can be same as release version and is the latest released docker image"
-      }
-    },
     "vmSetupScriptUri": {
       "type": "string",
       "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation/single-vm/setup.sh')]",
@@ -205,6 +191,20 @@
         "cloudapp.chinacloudapi.cn",
         "cloudapp.azure.de"
       ]
+    },
+    "pcsReleaseVersion": {
+      "type": "string",
+      "defaultValue": "DS-1.0.1",
+      "metadata": {
+        "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
+      }
+    },
+    "pcsDockerTag": {
+      "type": "string",
+      "defaultValue": "millenium",
+      "metadata": {
+        "description": "The docker tag can be same as release version and is the latest released docker image"
+      }
     },
     "azureWebsiteName": {
       "type": "string",

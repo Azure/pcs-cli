@@ -32,6 +32,9 @@ data:
   # and resource type "Azure Cosmos DB account" then "Keys" menu.
   docdb.connstring: "{DocumentDB connection string}"
 
+  # Authentication
+  auth.webservice.url: "http://auth-svc:9001/v1"
+
   # Storage Adapter
   storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
 
