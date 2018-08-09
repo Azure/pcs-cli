@@ -331,7 +331,7 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion
-                        const version = '1.0.0';
+                        const version = 'DS-1.0.2';
                         answers.version = version;
                         answers.dockerTag = version;
                     }
