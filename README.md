@@ -55,66 +55,90 @@ How to use the CLI
 Sign in using `pcs login` and credentials for an Azure account.
 
 ## 4. Create a deployment
-### Basic Deployment
-#### Deploy Azure Resources
+*   ## Device Simulation
+    ### Deployment With Hub
+    #### Deploy Azure Resources
 
-1. Run either `pcs` or `pcs -t remotemonitoring -s basic`.  These are equivalent in that they will both deploy
-a basic deployment (i.e. a deployment to a single VM).
-1. Follow the on-screen prompts
-1. The results of the deployment will be saved to a file named `output.json`
+    1. Run `pcs -t devicesimulation`.  This will deploy a basic deployment (i.e. a deployment to a single VM).
+    1. Follow the on-screen prompts
+    2. The results of the deployment will be saved to a file named `output.json`
 
-#### Verify the Web UI and Microservices are deployed
+    #### Verify the Web UI and Microservices are deployed
 
-Click on the link that is shown in the output window to go to the Remote Monitoring web application.
+    Click on the link that is shown in the output window to go to the Device Simulation web application.
 
-### Standard Deployment
+    ### Deployment Without Hub
+    #### Deploy Azure Resources
 
-#### Deploy Azure Resources
+    1. Run `pcs -t devicesimulation-nohub`.  This will deploy a basic deployment (i.e. a deployment to a single VM) without an IoT hub.
+    1. Follow the on-screen prompts
+    2. The results of the deployment will be saved to a file named `output.json`
 
-1. `pcs -t remotemonitoring -s standard --servicePrincipalId {servicePrincipalId} --servicePrincipalSecret {servicePrincipalSecret}`
-1. Follow the on-screen prompts
-1. The results of the deployment will be saved to a file named {deployment-name}-output.json
+    #### Verify the Web UI and Microservices are deployed
 
-**Tip:**
+    Click on the link that is shown in the output window to go to the Device Simulation web application.
 
-> To get more info about service principal creation please go
-[here](https://docs.microsoft.com/cli/azure/create-an-azure-service-principal-azure-cli). Use the `--password` option for service principal creation.
+*   ## Remote Monitoring
+    ### Basic Deployment
+    #### Deploy Azure Resources
 
-**Sample output format:**
-```json
-"resourceGroup" : {
-    "type": "string",
-    "value": "{myResourceGroupName}"
-},
-"iotHubHostName": {
-    "type": "string",
-    "value": "{myIoTHubHostName}"
-},
-"iotHubConnectionString": {
-    "type": "string",
-    "value": "{HostName={hubname}.azure-devices.net;
-    SharedAccessKeyName={policy type};SharedAccessKey={Access Key};}"
-},
-"documentDBConnectionString" : {
-    "type": "string",
-    "value": "{AccountEndpoint={URI};AccountKey={Key};}"
-}
-```
+    1. Run `pcs -t remotemonitoring -s basic`.  This will deploy a basic deployment (i.e. a deployment to a single VM).
+    2. Follow the on-screen prompts
+    3. The results of the deployment will be saved to a file named `output.json`
 
-#### Verify the Web UI and Microservices are deployed
+    #### Verify the Web UI and Microservices are deployed
 
-1. Click on the link that is shown in the output window to go to the Remote Monitoring web application.
-1. It can take upto 5 minutes for the webapp to be ready
-1. Go to {azurewebitesurl}/hubmanager/v1/status to see HubManager microservice status
-1. Go to {azurewebitesurl}/devices/v1/status to see Devices microservice status
+    Click on the link that is shown in the output window to go to the Remote Monitoring web application.
 
-### Local Deployment
-Please look [here](https://docs.microsoft.com/azure/iot-suite/iot-suite-remote-monitoring-deploy-local for more information for using this option)
-1. `pcs -s local`
-1. Follow onscreen prompts to start the deployment
+    ### Standard Deployment
+
+    #### Deploy Azure Resources
+
+    1. `pcs -t remotemonitoring -s standard --servicePrincipalId {servicePrincipalId} --servicePrincipalSecret {servicePrincipalSecret}`
+    2. Follow the on-screen prompts
+    3. The results of the deployment will be saved to a file named {deployment-name}-output.json
+
+    **Tip:**
+
+    > To get more info about service principal creation please go
+    [here](https://docs.microsoft.com/cli/azure/create-an-azure-service-principal-azure-cli). Use the `--password` option for service principal creation.
+
+    **Sample output format:**
+    ```json
+    "resourceGroup" : {
+        "type": "string",
+        "value": "{myResourceGroupName}"
+    },
+    "iotHubHostName": {
+        "type": "string",
+        "value": "{myIoTHubHostName}"
+    },
+    "iotHubConnectionString": {
+        "type": "string",
+        "value": "{HostName={hubname}.azure-devices.net;
+        SharedAccessKeyName={policy type};SharedAccessKey={Access Key};}"
+    },
+    "documentDBConnectionString" : {
+        "type": "string",
+        "value": "{AccountEndpoint={URI};AccountKey={Key};}"
+    }
+    ```
+
+    #### Verify the Web UI and Microservices are deployed
+
+    1. Click on the link that is shown in the output window to go to the Remote Monitoring web application.
+    2. It can take upto 5 minutes for the webapp to be ready
+    3. Go to {azurewebitesurl}/hubmanager/v1/status to see HubManager microservice status
+    4. Go to {azurewebitesurl}/devices/v1/status to see Devices microservice status
+
+    ### Local Deployment
+    Please look [here](https://docs.microsoft.com/azure/iot-suite/iot-suite-remote-monitoring-deploy-local for more information for using this option)
+    1. `pcs -s local`
+    2. Follow onscreen prompts to start the deployment
 
 Deployment Options
 ==================
+> These are availble for `remotemonitoring` solution type only.
 
 ## Overview
 
