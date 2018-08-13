@@ -512,6 +512,8 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
+        data.push('PCS_TELEMETRY_STORAGE_TYPE=' + outputs.telemetryStorageType.value);
+        data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
 
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }
