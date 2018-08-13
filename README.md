@@ -14,6 +14,13 @@ implement a specific IoT scenario or scenarios. Any of the solutions can be cust
 specific requirements. Visit [azureiotsolutions.com](https://www.azureiotsolutions.com) for more
 details or to deploy using the GUI.
 
+### Solution Types
+
+This CLI has the ability to deploy the following solution types:
+
+1. Remote Monitoring.
+1. Device Simulation.
+   
 ### Features
 
 This CLI has the ability to deploy the following configurations of solutions:
@@ -55,29 +62,6 @@ How to use the CLI
 Sign in using `pcs login` and credentials for an Azure account.
 
 ## 4. Create a deployment
-*   ## Device Simulation
-    ### Deployment With Hub
-    #### Deploy Azure Resources
-
-    1. Run `pcs -t devicesimulation`.  This will deploy a basic deployment (i.e. a deployment to a single VM).
-    1. Follow the on-screen prompts
-    2. The results of the deployment will be saved to a file named `output.json`
-
-    #### Verify the Web UI and Microservices are deployed
-
-    Click on the link that is shown in the output window to go to the Device Simulation web application.
-
-    ### Deployment Without Hub
-    #### Deploy Azure Resources
-
-    1. Run `pcs -t devicesimulation-nohub`.  This will deploy a basic deployment (i.e. a deployment to a single VM) without an IoT hub.
-    1. Follow the on-screen prompts
-    2. The results of the deployment will be saved to a file named `output.json`
-
-    #### Verify the Web UI and Microservices are deployed
-
-    Click on the link that is shown in the output window to go to the Device Simulation web application.
-
 *   ## Remote Monitoring
     ### Basic Deployment
     #### Deploy Azure Resources
@@ -135,6 +119,30 @@ Sign in using `pcs login` and credentials for an Azure account.
     Please look [here](https://docs.microsoft.com/azure/iot-suite/iot-suite-remote-monitoring-deploy-local for more information for using this option)
     1. `pcs -s local`
     2. Follow onscreen prompts to start the deployment
+
+*   ## Device Simulation
+    ### Deployment With Hub
+    #### Deploy Azure Resources
+
+    1. Run `pcs -t devicesimulation`.  This will deploy a basic deployment (i.e. a deployment to a single VM).
+    1. Follow the on-screen prompts
+    2. The results of the deployment will be saved to a file named `output.json`
+
+    #### Verify the Web UI and Microservices are deployed
+
+    Click on the link that is shown in the output window to go to the Device Simulation web application.
+
+    ### Deployment Without Hub
+    #### Deploy Azure Resources
+
+    1. Run `pcs -t devicesimulation-nohub`.  This will deploy a basic deployment (i.e. a deployment to a single VM) without an IoT hub.
+    1. Follow the on-screen prompts
+    2. The results of the deployment will be saved to a file named `output.json`
+
+    #### Verify the Web UI and Microservices are deployed
+
+    Click on the link that is shown in the output window to go to the Device Simulation web application.
+
 
 Deployment Options
 ==================
