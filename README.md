@@ -146,7 +146,7 @@ Sign in using `pcs login` and credentials for an Azure account.
 
 Deployment Options
 ==================
-> These are availble for `remotemonitoring` solution type only.
+> These are available for `remotemonitoring` solution type only.
 
 ## Overview
 
