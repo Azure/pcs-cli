@@ -778,6 +778,7 @@
             },
             "resources": [
                 {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
                     "type": "eventsources",
                     "name": "[variables('tsiEventSourceName')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
@@ -797,6 +798,7 @@
                     ]
                 },
                 {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
                     "type": "accessPolicies",
                     "name": "[variables('tsiApplicationAccessPolicy')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
@@ -811,6 +813,7 @@
                     ]
                 },
                 {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
                     "type": "accessPolicies",
                     "name": "[variables('tsiUserAccessPolicy')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
@@ -1243,7 +1246,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh setup.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"', parameters('aadTenantId'), '\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --iothub-name ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, '\"'), ' --iothub-endpoint ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, '\"'), ' --iothub-partitions ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, '\"'), ' --azureblob-account ', concat('\"', parameters('storageName'), '\"'), ' --azureblob-key ', concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --azureblob-endpoint-suffix ',  concat('\"', parameters('storageEndpointSuffix'), '\"'), '  --azuremaps-key ', concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --evenhub-connstring ', concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --eventhub-name ', parameters('eventHubName'), ' --solution-type ', parameters('solutionType'), ' --deployment-id ', parameters('deploymentId'), ' --diagnostics-url ', parameters('diagnosticsEndpointUrl'), ' --aad-appsecret ', parameters('aadClientSecret'), '--tsi-fqdn', reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN)]"
+                    "commandToExecute": "[concat('sh setup.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"', parameters('aadTenantId'), '\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --iothub-name ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, '\"'), ' --iothub-endpoint ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, '\"'), ' --iothub-partitions ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, '\"'), ' --azureblob-account ', concat('\"', parameters('storageName'), '\"'), ' --azureblob-key ', concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --azureblob-endpoint-suffix ',  concat('\"', parameters('storageEndpointSuffix'), '\"'), '  --azuremaps-key ', concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --evenhub-connstring ', concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --eventhub-name ', parameters('eventHubName'), ' --solution-type ', parameters('solutionType'), ' --deployment-id ', parameters('deploymentId'), ' --diagnostics-url ', parameters('diagnosticsEndpointUrl'), ' --aad-appsecret ', parameters('aadClientSecret'), ' --telemetry-storage-type ', parameters('telemetryStorageType'), ' --tsi-fqdn ', if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined'))]"
                 }
             }
         }
@@ -1293,9 +1296,13 @@
             "type": "string",
             "value": "[parameters('aadClientSecret')]"
         },
+        "telemetryStorageType": {
+            "type": "string",
+            "value": "[parameters('telemetryStorageType')]"
+        },
         "tsiDataAccessFQDN": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN]"
+            "value": "[if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined')]"
         }
     }
 }

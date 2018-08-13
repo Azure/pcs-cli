@@ -39,6 +39,7 @@ while [ "$#" -gt 0 ]; do
         --auth-issuer)                  PCS_AUTH_ISSUER="$2" ;;
         --auth-type)                    PCS_WEBUI_AUTH_TYPE="$2" ;;
         --aad-appid)                    PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
+        --aad-appsecret)                PCS_AAD_APPSECRET="$2" ;;
         --aad-tenant)                   PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
         --aad-instance)                 PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
         --release-version)              PCS_RELEASE_VERSION="$2" ;;
@@ -47,7 +48,7 @@ while [ "$#" -gt 0 ]; do
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
         --deployment-id)                PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)              PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
-        --aad-appsecret)                PCS_AAD_APPSECRET="$2" ;;
+        --telemetry-storage-type)       PCS_TELEMETRY_STORAGE_TYPE="$2" ;;
         --tsi-fqdn)                     PCS_TSI_FQDN="$2" ;;
     esac
     shift
@@ -195,6 +196,7 @@ echo "export PCS_AUTH_AAD_GLOBAL_CLIENTID=\"${PCS_AUTH_AAD_GLOBAL_CLIENTID}\""  
 echo "export PCS_AUTH_AAD_GLOBAL_LOGINURI=\"${PCS_AUTH_AAD_GLOBAL_LOGINURI}\""                           >> ${ENVVARS}
 echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
+echo "export PCS_TELEMETRY_STORAGE_TYPE=\"${PCS_TELEMETRY_STORAGE_TYPE}\""                               >> ${ENVVARS}
 echo "export PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""        >> ${ENVVARS}
 echo "export PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_IOTHUBREACT_ACCESS_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                             >> ${ENVVARS}

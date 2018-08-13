@@ -98,6 +98,7 @@ services:
       - PCS_AAD_TENANT
       - PCS_AAD_APPID
       - PCS_AAD_APPSECRET
+      - PCS_TELEMETRY_STORAGE_TYPE
       - PCS_TSI_FQDN
 
   config:
