@@ -163,6 +163,7 @@ services:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_APPLICATION_SECRET
+      - PCS_TELEMETRY_STORAGE_TYPE
 
   diagnostics:
     image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}

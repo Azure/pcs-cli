@@ -58,14 +58,28 @@ export class DeploymentManager implements IDeploymentManager {
 
     public getLocations(): Promise<string[] | undefined> {
         // Currently IotHub is not supported in all the regions so using it to get the available locations
-        return this._client.providers.get('Microsoft.Devices')
-            .then((providers: ResourceModels.Provider) => {
-                if (providers.resourceTypes) {
-                    const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
-                    if (resourceType && resourceType.length) {
-                        return resourceType[0].locations;
-                    }
+        const promises = new Array<Promise<any>>();
+        promises.push(this._client.providers.get('Microsoft.Devices')
+        .then((providers: ResourceModels.Provider) => {
+            if (providers.resourceTypes) {
+                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
+                if (resourceType && resourceType.length) {
+                    return resourceType[0].locations;
                 }
+            }
+        }));
+        promises.push(this._client.providers.get('Microsoft.TimeSeriesInsights')
+        .then((providers: ResourceModels.Provider) => {
+            if (providers.resourceTypes) {
+                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
+                if (resourceType && resourceType.length) {
+                    return resourceType[0].locations;
+                }
+            }
+        }));
+        return Promise.all(promises)
+            .then((results: string[][]) => {
+                return [...new Set(results[0])].filter((x) => new Set(results[1]).has(x));
             });
     }
 
@@ -420,6 +434,12 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.diagnosticsEndpointUrl && answers.diagnosticsEndpointUrl) {
             this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
+        }
+        if (this._parameters.telemetryStorageType) {
+            this._parameters.telemetryStorageType.value = answers.telemetryStorageType;
+        } else {
+            // Use tsi for telemetry storage by default, possible values cloud be 'cosmosdb' and 'tsi'.
+            this._parameters.telemetryStorageType = { value: 'tsi' };
         }
     }
 
