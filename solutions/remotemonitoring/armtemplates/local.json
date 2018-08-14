@@ -229,7 +229,7 @@
                 "tsi", "cosmosdb"
             ],
             "metadata": {
-                "description": "Storage type for telemetry messages, support TSI and CosmosDb"
+                "description": "Storage type for telemetry messages, supports TSI and CosmosDb"
             }
         },
         "tsiEnvironmentName": {
@@ -260,9 +260,9 @@
         },
         "tsiEnvironmentDataRetentionTime": {
             "type": "string",
-            "defaultValue": "P30D",
+            "defaultValue": "P180D",
             "metadata": {
-                "description": "The minimum timespan the environment’s events will be available for query. The value must be specified in the ISO 8601 format, e.g. \"P30D\" for a retention policy of 30 days."
+                "description": "The minimum timespan the environment’s events will be available for query. The value must be specified in the ISO 8601 format, e.g. \"P180D\" for a retention policy of 180 days."
             }
         },
         "tsiEventSourceTimestampPropertyName": {
