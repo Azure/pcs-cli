@@ -224,6 +224,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AADTenantId = answers.aadTenantId;
                     config.AADLoginURL = activeDirectoryEndpointUrl;
                     config.ApplicationId = answers.appId;
+                    config.ServicePrincipalSecret = answers.servicePrincipalSecret;
                     config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                     config.AzureStorageAccountName = outputs.storageAccountName.value;
                     config.AzureStorageEndpointSuffix = storageEndpointSuffix;
@@ -244,6 +245,8 @@ export class DeploymentManager implements IDeploymentManager {
                     config.TLS = answers.certData;
                     config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
                     config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                    config.TelemetryStorgeType = outputs.telemetryStorageType.value;
+                    config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();

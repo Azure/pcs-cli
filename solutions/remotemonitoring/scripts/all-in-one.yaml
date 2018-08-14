@@ -401,6 +401,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_AAD_TENANT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.tenant
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
+        - name: PCS_TELEMETRY_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.storage.type
+        - name: PCS_TSI_FQDN
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.tsi.fqdn
 ---
 apiVersion: v1
 kind: Service
