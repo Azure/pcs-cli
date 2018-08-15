@@ -420,7 +420,8 @@
             "type": "string",
             "defaultValue": "cosmosdb",
             "allowedValues": [
-                "tsi", "cosmosdb"
+                "cosmosdb",
+                "tsi"
             ],
             "metadata": {
                 "description": "Storage type for telemetry messages, supports TSI and CosmosDb"
@@ -437,7 +438,8 @@
             "type": "string",
             "defaultValue": "S1",
             "allowedValues": [
-                "S1", "S2"
+                "S1",
+                "S2"
             ],
             "metadata": {
                 "description": "The name of the sku. For more information, see https://azure.microsoft.com/pricing/details/time-series-insights/"

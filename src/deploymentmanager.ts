@@ -443,9 +443,7 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.diagnosticsEndpointUrl && answers.diagnosticsEndpointUrl) {
             this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
         }
-        if (this._parameters.telemetryStorageType) {
-            this._parameters.telemetryStorageType.value = answers.telemetryStorageType;
-        } else if ( this._template.parameters.telemetryStorageType) {
+        if (this._template.parameters.telemetryStorageType) {
             // Use cosmosdb for telemetry storage for Mooncake environment, use tsi for Global environment
             if (this._environment.name === AzureEnvironment.AzureChina.name) {
                 this._parameters.telemetryStorageType = { value: 'cosmosdb' };
