@@ -102,8 +102,11 @@ services:
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
+      - PCS_CLOUD_TYPE
+      - PCS_SUBSCRIPTION_ID
       - PCS_DEPLOYMENT_ID
       - PCS_SOLUTION_TYPE
+      - PCS_IOTHUB_NAME
       - PCS_DIAGNOSTICS_ENDPOINT_URL
     logging:
       driver: "json-file"
