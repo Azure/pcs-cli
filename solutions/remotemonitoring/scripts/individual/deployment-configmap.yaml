@@ -81,6 +81,9 @@ data:
   asa.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
 
   # Diagnostics
+  diagnostics.cloud.type: "{Cloud environment name}"
+  diagnostics.subscription.id: "{Subscription id}"
+  diagnostics.iothub.name: "{Iot Hub name}"
   diagnostics.deployment.id: "{Deployment Id of the solution}"
   diagnostics.endpoint.url: "{Diagnostics endpoint URL}"
   diagnostics.solution.type: "{Solution type}"
