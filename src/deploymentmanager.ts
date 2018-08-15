@@ -69,9 +69,11 @@ export class DeploymentManager implements IDeploymentManager {
             }
         });
 
-        if (this._environment.name === AzureEnvironment.AzureChina.name) {
+        // Skip checking TSI location if it is China Cloud or solution type is not 'remotemonitoring'
+        if (this._solutionType !== 'remotemonitoring' || this._environment.name === AzureEnvironment.AzureChina.name) {
             return iothubLocationPromise;
         }
+
         promises.push(iothubLocationPromise);
         const tsiLocationPromise = this._client.providers.get('Microsoft.TimeSeriesInsights')
         .then((providers: ResourceModels.Provider) => {
@@ -443,7 +445,7 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.telemetryStorageType) {
             this._parameters.telemetryStorageType.value = answers.telemetryStorageType;
-        } else {
+        } else if ( this._template.parameters.telemetryStorageType) {
             // Use cosmosdb for telemetry storage for Mooncake environment, use tsi for Global environment
             if (this._environment.name === AzureEnvironment.AzureChina.name) {
                 this._parameters.telemetryStorageType = { value: 'cosmosdb' };
