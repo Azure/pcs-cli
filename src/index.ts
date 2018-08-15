@@ -330,8 +330,8 @@ function main() {
                         answers.dockerTag = program.dockerTagOverride;
                     } else {
                         // For a released version the docker tag and version should be same
-                        // Default to latest released verion
-                        const version = '1.0.0';
+                        // Default to latest released verion (different for remotemonitoring and devicesimulation)
+                        const version = (program.type === 'remotemonitoring') ? '1.0.0' : 'DS-1.0.2';
                         answers.version = version;
                         answers.dockerTag = version;
                     }
