@@ -647,7 +647,7 @@
                                     "accountId": "[parameters('documentDbName')]",
                                     "accountKey": "[listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey]",
                                     "database": "[variables('streamingJobsOutputDBName')]",
-                                    "collectionNamePattern": "messages"
+                                    "collectionNamePattern": "[if(equals(parameters('telemetryStorageType'), 'tsi'), 'alarms', 'messages')]"
                                 }
                             }
                         }
