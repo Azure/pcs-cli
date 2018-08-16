@@ -230,6 +230,9 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AzureStorageEndpointSuffix = storageEndpointSuffix;
                     // If we are under the plan limit then we should have received a query key
                     config.AzureMapsKey = outputs.azureMapsKey.value;
+                    config.CloudType = this.getCloudType(this._environment.name);
+                    config.IotHubName = outputs.iotHubHostName;
+                    config.SubscriptionId = outputs.subscriptionId;
                     config.DeploymentId = answers.deploymentId;
                     config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
                     config.DockerTag = answers.dockerTag;
@@ -454,6 +457,9 @@ export class DeploymentManager implements IDeploymentManager {
                 this._parameters.telemetryStorageType = { value: 'tsi' };
             }
         }
+        if (this._template.parameters.cloudType) {
+            this._parameters.cloudType = { value: this.getCloudType(this._environment.name) };
+        }
     }
 
     private waitForWebsiteToBeReady(url: string): Promise<boolean> {
@@ -549,6 +555,17 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
 
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
+    }
+
+    // Internal cloud names for diagnostics
+    private getCloudType(environmentName: string): string {
+        const cloudTypeMaps = {
+            [AzureEnvironment.Azure.name]: 'public',
+            [AzureEnvironment.AzureChina.name]: 'mooncake',
+            [AzureEnvironment.AzureUSGovernment.name]: 'fairfax',
+            [AzureEnvironment.AzureGermanCloud.name]: 'blackforest',
+        };
+        return cloudTypeMaps[environmentName];
     }
 }
 
