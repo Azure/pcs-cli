@@ -7,6 +7,9 @@ export class Config {
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
     public AzureMapsKey: string;
+    public CloudType: string;
+    public SubscriptionId: string;
+    public IotHubName: string;
     public DeploymentId: string;
     public DiagnosticsEndpointUrl: string;
     public DocumentDBConnectionString: string;
