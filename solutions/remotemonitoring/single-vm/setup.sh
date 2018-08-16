@@ -47,7 +47,7 @@ while [ "$#" -gt 0 ]; do
         --evenhub-connstring)           PCS_EVENTHUB_CONNSTRING="$2" ;;
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
         --cloud-type)                   PCS_CLOUD_TYPE="$2" ;;
-        --subscription-id               PCS_SUBSCRIPTION_ID="2" ;;
+        --subscription-id)              PCS_SUBSCRIPTION_ID="$2" ;;
         --deployment-id)                PCS_DEPLOYMENT_ID="$2" ;;
         --iothub-name)                  PCS_IOTHUB_NAME="$2" ;;
         --diagnostics-url)              PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
