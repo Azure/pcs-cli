@@ -421,6 +421,9 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.aadClientId) {
             this._parameters.aadClientId.value = answers.appId;
         }
+        if (this._parameters.aadClientServicePrincipalId && answers.servicePrincipalId) {
+            this._parameters.aadClientServicePrincipalId.value = answers.servicePrincipalId;
+        }
         if (this._parameters.aadClientSecret) {
             // reuse the service principal secret value without creating new value
             this._parameters.aadClientSecret.value = answers.servicePrincipalSecret;
