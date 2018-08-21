@@ -168,6 +168,16 @@
                 "description": "The name of Azure IoT Hub Device Provisioning Service"
             }
         },
+        "provisioningServiceSku": {
+            "type": "string",
+            "defaultValue": "S1",
+            "allowedValues": [
+                "S1"
+            ],
+            "metadata": {
+                "description": "The Azure IoT Hub Device Provisioning Service SKU"
+            }
+        },
         "streamingJobsName": {
             "type": "string",
             "defaultValue": "[concat('streamingjobs-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
@@ -418,7 +428,7 @@
                 ]
             },
             "sku": {
-                "name": "S1",
+                "name": "[parameters('provisioningServiceSku')]",
                 "capacity": 1
             },
             "dependsOn": ["[parameters('iotHubName')]"]
