@@ -251,7 +251,7 @@
         "appServiceSku": "S1",
         "appServiceCapacity": "1",
         "webAppRepoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "webAppRepoBranch": "master",
+        "webAppRepoBranch": "1.0.1",
         "webAppName": "[parameters('azureWebsiteName')]"
     },
     "resources": [
