@@ -31,6 +31,7 @@ import DeployUI from './deployui';
 import { Questions, IQuestions } from './questions';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
+import { genPassword } from './utils';
 import {
     Application,
     ServicePrincipal,
@@ -76,6 +77,7 @@ const RELEASE_VERSION_PATTERN: RegExp = /((\d*\.){2}(\d*\-preview.)(\d*))(\.\d*)
 
 let cachedAuthResponse: any;
 let answers: Answers = {};
+let userPrincipalObjectId: string;
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
@@ -319,6 +321,7 @@ function main() {
                     answers.runtime = program.runtime;
                     answers.deploymentId = uuid.v1();
                     answers.diagnosticsEndpointUrl = program.diagnosticUrl;
+                    answers.userPrincipalObjectId = userPrincipalObjectId;
                     if (program.versionOverride && program.dockerTagOverride) {
                         answers.version = program.versionOverride;
                         answers.dockerTag = program.dockerTagOverride;
@@ -441,7 +444,7 @@ function createServicePrincipal(azureWebsiteName: string,
     const homepage = getWebsiteUrl(azureWebsiteName);
     const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : 'https://graph.windows.net/';
     const existingServicePrincipalSecret: string = program.servicePrincipalSecret;
-    const newServicePrincipalSecret: string = uuid.v4();
+    const newServicePrincipalSecret: string = genPassword();
     const adminAppRoleId = 'a400a00b-f67c-42b7-ba9a-f73d8c67e433';
     const readOnlyAppRoleId = 'e5bbd0f5-128e-4362-9dd1-8f253c6082d7';
     let newServicePrincipal: ServicePrincipal;
@@ -597,6 +600,7 @@ function createAppRoleAssignment(
     };
     return graphClient.sendRequest(meOptions)
     .then((me: any) => {
+        userPrincipalObjectId = me.objectId;
         const options: any = {
             body: {
                 id: roleId,

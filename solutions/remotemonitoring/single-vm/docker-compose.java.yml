@@ -100,6 +100,11 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
       - APPLICATION_SECRET
+      - PCS_AAD_TENANT
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
+      - PCS_TELEMETRY_STORAGE_TYPE
+      - PCS_TSI_FQDN
 
   config:
     image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
@@ -158,6 +163,7 @@ services:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_APPLICATION_SECRET
+      - PCS_TELEMETRY_STORAGE_TYPE
 
   diagnostics:
     image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}

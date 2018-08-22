@@ -58,14 +58,36 @@ export class DeploymentManager implements IDeploymentManager {
 
     public getLocations(): Promise<string[] | undefined> {
         // Currently IotHub is not supported in all the regions so using it to get the available locations
-        return this._client.providers.get('Microsoft.Devices')
-            .then((providers: ResourceModels.Provider) => {
-                if (providers.resourceTypes) {
-                    const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
-                    if (resourceType && resourceType.length) {
-                        return resourceType[0].locations;
-                    }
+        const promises = new Array<Promise<any>>();
+        const iothubLocationPromise = this._client.providers.get('Microsoft.Devices')
+        .then((providers: ResourceModels.Provider) => {
+            if (providers.resourceTypes) {
+                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
+                if (resourceType && resourceType.length) {
+                    return resourceType[0].locations;
                 }
+            }
+        });
+
+        // Skip checking TSI location if it is China Cloud or solution type is not 'remotemonitoring'
+        if (this._solutionType !== 'remotemonitoring' || this._environment.name === AzureEnvironment.AzureChina.name) {
+            return iothubLocationPromise;
+        }
+
+        promises.push(iothubLocationPromise);
+        const tsiLocationPromise = this._client.providers.get('Microsoft.TimeSeriesInsights')
+        .then((providers: ResourceModels.Provider) => {
+            if (providers.resourceTypes) {
+                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
+                if (resourceType && resourceType.length) {
+                    return resourceType[0].locations;
+                }
+            }
+        });
+        promises.push(tsiLocationPromise);
+        return Promise.all(promises)
+            .then((results: string[][]) => {
+                return [...new Set(results[0])].filter((x) => new Set(results[1]).has(x));
             });
     }
 
@@ -399,6 +421,16 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.aadClientId) {
             this._parameters.aadClientId.value = answers.appId;
         }
+        if (this._parameters.aadClientServicePrincipalId && answers.servicePrincipalId) {
+            this._parameters.aadClientServicePrincipalId.value = answers.servicePrincipalId;
+        }
+        if (this._parameters.aadClientSecret) {
+            // reuse the service principal secret value without creating new value
+            this._parameters.aadClientSecret.value = answers.servicePrincipalSecret;
+        }
+        if (this._parameters.userPrincipalObjectId) {
+            this._parameters.userPrincipalObjectId.value = answers.userPrincipalObjectId;
+        }
         if (this._parameters.microServiceRuntime) {
             this._parameters.microServiceRuntime.value = answers.runtime;
         }
@@ -413,6 +445,14 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.diagnosticsEndpointUrl && answers.diagnosticsEndpointUrl) {
             this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
+        }
+        if (this._template.parameters.telemetryStorageType) {
+            // Use cosmosdb for telemetry storage for Mooncake environment, use tsi for Global environment
+            if (this._environment.name === AzureEnvironment.AzureChina.name) {
+                this._parameters.telemetryStorageType = { value: 'cosmosdb' };
+            } else {
+                this._parameters.telemetryStorageType = { value: 'tsi' };
+            }
         }
     }
 
@@ -505,6 +545,8 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
+        data.push('PCS_TELEMETRY_STORAGE_TYPE=' + outputs.telemetryStorageType.value);
+        data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
 
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }
