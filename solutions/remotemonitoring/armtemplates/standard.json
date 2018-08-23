@@ -131,6 +131,23 @@
                 "description": "The Azure IoT Hub tier"
             }
         },
+        "provisioningServiceName": {
+            "type": "string",
+            "defaultValue": "[concat('dps-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "The name of Azure IoT Hub Device Provisioning Service"
+            }
+        },
+        "provisioningServiceSku": {
+            "type": "string",
+            "defaultValue": "S1",
+            "allowedValues": [
+                "S1"
+            ],
+            "metadata": {
+                "description": "The Azure IoT Hub Device Provisioning Service SKU"
+            }
+        },
         "streamingJobsName": {
             "type": "string",
             "defaultValue": "[concat('streamingjobs-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
@@ -352,6 +369,7 @@
         "iotHubKeyName": "iothubowner",
         "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
         "iotHubDefaultEndpoint": "events",
+        "provisioningServiceApiVersion": "2017-11-15",
         "deviceNotificationRouteName": "DeviceNotifications",
         "streamAnalyticsApiVersion": "2016-03-01",
         "consumerGroupName": "streamingJobsConsumerGroup",
@@ -579,6 +597,28 @@
             "dependsOn": [
                 "[variables('eventHubResourceId')]"
             ]
+        },
+        {
+            "name": "[parameters('provisioningServiceName')]",
+            "type": "Microsoft.Devices/provisioningServices",
+            "apiVersion": "[variables('provisioningServiceApiVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[parameters('solutionType')]"
+            },
+            "properties": {
+                "iotHubs": [
+                    {
+                        "connectionString": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
+                        "location": "[variables('location')]"
+                    }
+                ]
+            },
+            "sku": {
+                "name": "[parameters('provisioningServiceSku')]",
+                "capacity": 1
+            },
+            "dependsOn": ["[parameters('iotHubName')]"]
         },
         {
             "comments": "Consumer Group of IoT Hub",
