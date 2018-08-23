@@ -104,6 +104,7 @@ services:
       - PCS_DEPLOYMENT_ID
       - PCS_SOLUTION_TYPE
       - PCS_DIAGNOSTICS_ENDPOINT_URL
+      - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
     logging:
       driver: "json-file"
       options:
