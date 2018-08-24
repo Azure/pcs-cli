@@ -1,0 +1,47 @@
+{
+    "solutionName": {
+      "value": "GEN-UNIQUE-32"
+    },
+    "azureWebsiteName": {
+      "value": "GEN-UNIQUE-32"
+    },
+    "adminUsername": {
+      "value": "delucato"
+    },
+    "adminPassword": {
+      "value": "GEN-PASSWORD"
+    },
+    "remoteEndpointSSLThumbprint": {
+      "value": ""
+    },
+    "remoteEndpointCertificate": {
+      "value": ""
+    },
+    "remoteEndpointCertificateKey": {
+      "value": ""
+    },
+    "aadTenantId": {
+      "value": "[subscription().tenantId]"
+    },
+    "aadClientId": {
+      "value": ""
+    },
+    "domain": {
+      "value": ""
+    },
+    "subscriptionId": {
+      "value": "[subscription().subscriptionId]"
+    },
+    "pcsDockerTag": {
+      "value": "DS-1.0.2"
+    },
+    "pcsReleaseVersion":
+    {
+      "value": "template"
+    },
+    "storageEndpointSuffix":
+    {
+      "value": "NOT USED"
+    }
+  }
+  
