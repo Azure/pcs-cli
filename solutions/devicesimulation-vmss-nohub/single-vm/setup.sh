@@ -23,7 +23,7 @@ export PCS_IOTHUB_CONNSTRING=""
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        --solution-setup-url)      PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/1M/solutions/devicesimulation-vmss
+        --solution-setup-url)      PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/1M/solutions/devicesimulation-vmss-nohub
         --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
         --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
         --hostname)                HOST_NAME="$2" ;;
@@ -31,11 +31,6 @@ while [ "$#" -gt 0 ]; do
         --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
-        --iothub-name)             PCS_IOHUB_NAME="$2" ;;
-        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
-        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
-        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
-        --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
@@ -54,7 +49,7 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-vmss/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-vmss-nohub/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 SETUP_URL="${REPOSITORY}/setup/"
 
@@ -176,12 +171,10 @@ echo ""                                                                         
 echo "export HOST_NAME=\"${HOST_NAME}\""                                                                 >> ${ENVVARS}
 echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
 echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
-echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_DOMAIN=\"${PCS_SUBSCRIPTION_DOMAIN}\""                                     >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
-echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}

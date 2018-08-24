@@ -18,9 +18,9 @@
       },
       "solutionTemplateRepository": {
         "type": "string",
-        "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-vmss",
+        "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-vmss-nohub",
         "metadata": {
-          "description": "The folder where ARM template and setup scripts will be downloaded from during the VM setup (use the parent of 'armtemplate' and 'single-vm' folders, e.g. https://raw.githubusercontent.com/Azure/pcs-cli/master/solutions/devicesimulation-vmss)"
+          "description": "The folder where ARM template and setup scripts will be downloaded from during the VM setup (use the parent of 'armtemplate' and 'single-vm' folders, e.g. https://raw.githubusercontent.com/Azure/pcs-cli/master/solutions/devicesimulation-vmss-nohub)"
         }
       },
       "solutionName": {
@@ -62,47 +62,6 @@
         "defaultValue": "novalue",
         "metadata": {
           "description": "AAD application identifier (GUID)"
-        }
-      },
-      "iotHubName": {
-        "type": "string",
-        "defaultValue": "[concat(parameters('resourcesNamePrefix'), 'iothub')]",
-        "metadata": {
-          "description": "The name of Azure IoT Hub instance."
-        }
-      },
-      "iotHubSku": {
-        "type": "string",
-        "defaultValue": "S3",
-        "allowedValues": [ "F1", "S1", "S2", "S3" ],
-        "metadata": {
-          "description": "The Azure IoT Hub SKU"
-        }
-      },
-      "iotHubTier": {
-        "type": "string",
-        "defaultValue": "Standard",
-        "allowedValues": [ "Free", "Standard" ],
-        "metadata": {
-          "description": "The Azure IoT Hub tier"
-        }
-      },
-      "iotHubUnits": {
-        "type": "int",
-        "defaultValue": 1,
-        "minValue": 1,
-        "maxValue": 100,
-        "metadata": {
-          "description": "The number of IoT Hub units created"
-        }
-      },
-      "iotHubPartitions": {
-        "type": "int",
-        "defaultValue": 32,
-        "minValue": 2,
-        "maxValue": 32,
-        "metadata": {
-          "description": "The number of partitions in IoT Hub"
         }
       },
       "cosmosDbSqlName": {
@@ -167,7 +126,7 @@
       },
       "vmSetupScriptUri": {
         "type": "string",
-        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-vmss/single-vm/setup.sh')]",
+        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-vmss-nohub/single-vm/setup.sh')]",
         "metadata": {
           "description": "The URL of the script used for VM setup"
         }
@@ -277,10 +236,6 @@
       "webAppRepoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
       "webAppRepoBranch": "master",
       "webAppPlanName": "[concat(parameters('azureWebsiteName'), '-plan')]",
-      "iotHubApiVersion": "2018-04-01",
-      "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
-      "iotHubKeyName": "iothubowner",
-      "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
       "cosmosDBApiVersion": "2016-03-19",
       "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbSqlName'))]",
       "location": "[resourceGroup().location]",
@@ -305,31 +260,7 @@
       "vmFQDN": "[concat(parameters('vmssName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
     },
     "resources": [
-      {
-        "comments": "Azure IoT Hub",
-        "apiVersion": "[variables('iotHubApiVersion')]",
-        "type": "Microsoft.Devices/Iothubs",
-        "name": "[parameters('iotHubName')]",
-        "location": "[variables('location')]",
-        "sku": {
-          "name": "[parameters('iotHubSku')]",
-          "tier": "[parameters('iotHubTier')]",
-          "capacity": "[parameters('iotHubUnits')]"
-        },
-        "properties": {
-          "location": "[variables('location')]",
-          "eventHubEndpoints": {
-            "events": {
-                "partitionCount": "[parameters('iotHubPartitions')]",
-                "retentionTimeInDays": 2
-              }
-            }
-        },
-        "tags": {
-          "IotSuiteType": "[parameters('solutionType')]"
-        }
-      },
-      {
+     {
         "comments": "Azure CosmosDB",
         "apiVersion": "[variables('cosmosDBApiVersion')]",
         "type": "Microsoft.DocumentDb/databaseAccounts",
@@ -630,7 +561,7 @@
                       "fileUris": [
                         "[parameters('vmSetupScriptUri')]"
                       ],
-                      "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'),  ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --docdb-name ', concat('\"', parameters('cosmosDbSqlName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --solution-setup-url ', concat('\"', parameters('solutionTemplateRepository'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"', ' --iothub-name ', concat('\"', parameters('iotHubName'), '\"'), ' --iothub-sku ', parameters('iotHubSku'), ' --iothub-tier ', parameters('iotHubTier'), ' --iothub-units ', parameters('iotHubUnits') ,' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"')))]"
+                      "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'),  ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --docdb-name ', concat('\"', parameters('cosmosDbSqlName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --solution-setup-url ', concat('\"', parameters('solutionTemplateRepository'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"' ))]"
                     }
                   }
                 }
@@ -647,10 +578,6 @@
       "resourceGroup" : {
         "type": "string",
         "value": "[resourceGroup().name]"
-      },
-      "iotHubConnectionString": {
-        "type": "string",
-        "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
       },
       "documentDBConnectionString" : {
         "type": "string",
