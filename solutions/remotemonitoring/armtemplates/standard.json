@@ -474,7 +474,7 @@
             "name": "[parameters('documentDBName')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSolutionType": "[variables('solutionType')]"
+                "IotSuiteType": "[variables('solutionType')]"
             },
             "properties": {
                 "name": "[parameters('documentDBName')]",
@@ -548,7 +548,7 @@
                 "capacity": 1
             },
             "tags": {
-                "IotSolutionType": "[variables('solutionType')]"
+                "IotSuiteType": "[variables('solutionType')]"
             },
             "properties": {
                 "location": "[variables('location')]",
@@ -604,7 +604,7 @@
             "apiVersion": "[variables('provisioningServiceApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[variables('solutionType')]"
             },
             "properties": {
                 "iotHubs": [
