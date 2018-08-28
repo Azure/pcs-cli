@@ -85,7 +85,6 @@ services:
       - default_net
     depends_on:
       - auth
-      - diagnostics
       - storageadapter
     environment:
       - PCS_AUTH_WEBSERVICE_URL=http://auth:9001/v1

@@ -247,10 +247,10 @@
         "type": "string",
         "defaultValue": "public",
         "allowedValues": [
-            "public",
-            "mooncake",
-            "fairfax",
-            "blackforest"
+            "Global",
+            "China",
+            "Germany",
+            "Fairfax"
         ],
         "metadata": {
             "description": "Cloud environment name"

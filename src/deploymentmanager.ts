@@ -563,10 +563,10 @@ export class DeploymentManager implements IDeploymentManager {
     // Internal cloud names for diagnostics
     private getCloudType(environmentName: string): string {
         const cloudTypeMaps = {
-            [AzureEnvironment.Azure.name]: 'public',
-            [AzureEnvironment.AzureChina.name]: 'mooncake',
-            [AzureEnvironment.AzureUSGovernment.name]: 'fairfax',
-            [AzureEnvironment.AzureGermanCloud.name]: 'blackforest',
+            [AzureEnvironment.Azure.name]: 'Global',
+            [AzureEnvironment.AzureChina.name]: 'China',
+            [AzureEnvironment.AzureUSGovernment.name]: 'Fairfax',
+            [AzureEnvironment.AzureGermanCloud.name]: 'Germany',
         };
         return cloudTypeMaps[environmentName];
     }
