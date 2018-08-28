@@ -187,6 +187,7 @@ export class K8sManager implements IK8sManager {
         const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
+        configMap.data['security.auth.tenant'] = this._config.AADTenantId;
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
         configMap.data['security.auth.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
         configMap.data['security.application.secret'] = genPassword();
@@ -208,6 +209,8 @@ export class K8sManager implements IK8sManager {
         configMap.data['asa.azureblob.account'] = this._config.AzureStorageAccountName;
         configMap.data['asa.azureblob.key'] = this._config.AzureStorageAccountKey;
         configMap.data['asa.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
+        configMap.data['telemetry.storage.type'] = this._config.TelemetryStorgeType;
+        configMap.data['telemetry.tsi.fqdn'] = this._config.TSIDataAccessFQDN;
         let deploymentConfig = configMap.data['webui-config.js'];
         deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);
