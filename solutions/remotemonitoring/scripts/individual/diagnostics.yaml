@@ -53,6 +53,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.cloud.type
+        - name: PCS_SOLUTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
         - name: PCS_SUBSCRIPTION_ID
           valueFrom:
             configMapKeyRef:

@@ -24,6 +24,7 @@ while [ "$#" -gt 0 ]; do
         --log-level)                    PCS_LOG_LEVEL="$2" ;;
         --runtime)                      APP_RUNTIME="$2" ;;
         --solution-type)                PCS_SOLUTION_TYPE="$2" ;;
+        --solution-name)                PCS_SOLUTION_NAME="$2" ;;
         --iothub-name)                  PCS_IOTHUBREACT_HUB_NAME="$2" ;;
         --iothub-endpoint)              PCS_IOTHUBREACT_HUB_ENDPOINT="$2" ;;
         --iothub-partitions)            PCS_IOTHUBREACT_HUB_PARTITIONS="$2" ;;
@@ -219,6 +220,7 @@ echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""              
 echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                       >> ${ENVVARS}
 echo "export PCS_LOG_LEVEL=\"${PCS_LOG_LEVEL}\""                                                         >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
+echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                                                 >> ${ENVVARS}
 echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}

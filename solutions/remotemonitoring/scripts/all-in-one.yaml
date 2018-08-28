@@ -376,6 +376,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: storageadapter.webservice.url
+        - name: PCS_DIAGNOSTICS_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -857,6 +862,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.solution.type
+        - name: PCS_SOLUTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
         - name: PCS_IOTHUB_NAME
           valueFrom:
             configMapKeyRef:
