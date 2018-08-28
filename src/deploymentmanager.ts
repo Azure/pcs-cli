@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as fetch from 'node-fetch';
+import * as cp from 'child_process';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
@@ -213,7 +214,7 @@ export class DeploymentManager implements IDeploymentManager {
 
                 if (answers.deploymentSku === 'local') {
                     if (answers.setLocalEnv) {
-                        this.setEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                        this.setEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix, answers.setLocalEnv);
                     } else {
                         this.printEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
                     }
@@ -555,32 +556,58 @@ export class DeploymentManager implements IDeploymentManager {
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
     }
 
-    private setEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
+    private setEnvironmentVariables(outputs: any, storageEndpointSuffix: string, environmentFileName: string) {
         const data = [] as string[];
-        data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
-        data.push('PCS_IOTHUB_CONNSTRING=' + outputs.iotHubConnectionString.value);
-        data.push('PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_IOTHUBREACT_HUB_ENDPOINT=Endpoint=' + outputs.eventHubEndpoint.value);
-        data.push('PCS_IOTHUBREACT_HUB_PARTITIONS=' + outputs.eventHubPartitions.value);
-        data.push('PCS_IOTHUBREACT_HUB_NAME=' + outputs.eventHubName.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
-        data.push('PCS_ASA_DATA_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
-        data.push('PCS_ASA_DATA_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
-        data.push('PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
-        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.messagesEventHubConnectionString.value);
-        data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
-        data.push('PCS_AUTH_REQUIRED=false');
-        data.push('PCS_AZUREMAPS_KEY=static');
-        data.push('PCS_TELEMETRY_STORAGE_TYPE=' + outputs.telemetryStorageType.value);
-        data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
+        data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING ' + outputs.iotHubConnectionString.value);
+        data.push('PCS_IOTHUB_CONNSTRING ' + outputs.iotHubConnectionString.value);
+        data.push('PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING ' + outputs.documentDBConnectionString.value);
+        data.push('PCS_TELEMETRY_DOCUMENTDB_CONNSTRING ' + outputs.documentDBConnectionString.value);
+        data.push('PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING ' + outputs.documentDBConnectionString.value);
+        data.push('PCS_IOTHUBREACT_HUB_ENDPOINT=Endpoint ' + outputs.eventHubEndpoint.value);
+        data.push('PCS_IOTHUBREACT_HUB_PARTITIONS ' + outputs.eventHubPartitions.value);
+        data.push('PCS_IOTHUBREACT_HUB_NAME ' + outputs.eventHubName.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT ' + outputs.storageAccountName.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY ' + outputs.storageAccountKey.value);
+        data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX ' + storageEndpointSuffix);
+        data.push('PCS_ASA_DATA_AZUREBLOB_ACCOUNT ' + outputs.storageAccountName.value);
+        data.push('PCS_ASA_DATA_AZUREBLOB_KEY ' + outputs.storageAccountKey.value);
+        data.push('PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX ' + storageEndpointSuffix);
+        data.push('PCS_EVENTHUB_CONNSTRING ' + outputs.messagesEventHubConnectionString.value);
+        data.push('PCS_EVENTHUB_NAME ' + outputs.messagesEventHubName.value);
+        data.push('PCS_AUTH_REQUIRED false');
+        data.push('PCS_AZUREMAPS_KEY static');
+        data.push('PCS_TELEMETRY_STORAGE_TYPE ' + outputs.telemetryStorageType.value);
+        data.push('PCS_TSI_FQDN ' + outputs.tsiDataAccessFQDN.value);
 
-        data.forEach(envvar => {
-            
+        data.forEach((envvar) => {
+            let cmd = '';
+            switch ( os.type() ) {
+                case 'Windows_NT': {
+                    cmd = 'SETX ' + envvar;
+                    break;
+                }
+                case 'Darwin': {
+                    cmd = 'launchctl setenv ' + envvar;
+                    break;
+                }
+                case 'Linux': {
+                    const space = /\s/;
+                    envvar = envvar.replace(space, '=');
+                    cmd = 'echo ' + envvar + ' >> /etc/environment';
+                    break;
+                }
+                default: { 
+                    console.log('The environment could not be set. unable to determine OS.');
+                    break; 
+                 }
+            }
+            cp.exec(cmd);
+
         });
+
+        fs.writeFileSync(environmentFileName, data.join('\n'));
+
+        console.log('The environment variables have been set on this machine. A copy of these variables is saved in the file  \n\ %s', '.env');
     }
 }
 
