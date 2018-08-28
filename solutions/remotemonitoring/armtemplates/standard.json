@@ -352,6 +352,66 @@
                 "description": "Bing Maps region",
                 "comments": "Marked for deletion, unused"
             }
+        },
+        "telemetryStorageType": {
+            "type": "string",
+            "defaultValue": "cosmosdb",
+            "allowedValues": [
+                "cosmosdb",
+                "tsi"
+            ],
+            "metadata": {
+                "description": "Storage type for telemetry messages, supports TSI and CosmosDb"
+            }
+        },
+        "tsiEnvironmentName": {
+            "type": "string",
+            "defaultValue": "[concat('tsi-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "TSI environment name"
+            }
+        },
+        "tsiEnvironmentSkuName": {
+            "type": "string",
+            "defaultValue": "S1",
+            "allowedValues": [
+                "S1",
+                "S2"
+            ],
+            "metadata": {
+                "description": "The name of the sku. For more information, see https://azure.microsoft.com/pricing/details/time-series-insights/"
+            }
+        },
+        "tsiEnvironmentSkuCapacity": {
+            "type": "int",
+            "defaultValue": 1,
+            "minValue": 1,
+            "maxValue": 10,
+            "metadata": {
+                "description": "The unit capacity of the Sku. For more information, see https://azure.microsoft.com/pricing/details/time-series-insights/"
+            }
+        },
+        "tsiEnvironmentDataRetentionTime": {
+            "type": "string",
+            "defaultValue": "P180D",
+            "metadata": {
+                "description": "The minimum timespan the environment’s events will be available for query. The value must be specified in the ISO 8601 format, e.g. \"P180D\" for a retention policy of 180 days."
+            }
+        },
+        "tsiEventSourceTimestampPropertyName": {
+            "type": "string",
+            "defaultValue": "",
+            "maxLength": 90,
+            "metadata": {
+                "description": "The event property that will be used as the event source's timestamp. If a value isn't specified for timestampPropertyName, or if null or empty-string is specified, the event creation time will be used."
+            }
+        },
+        "userPrincipalObjectId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "Object Id of the AAD user that will have access to the environment. Available from the Get-AzureRMADUser or the Get-AzureRMADServicePrincipal cmdlets"
+            }
         }
     },
     "variables": {
@@ -368,12 +428,22 @@
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
         "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
+        "iotHubServiceKeyName": "service",
+        "iotHubServiceKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubServiceKeyName'))]",
         "iotHubDefaultEndpoint": "events",
         "provisioningServiceApiVersion": "2017-11-15",
         "deviceNotificationRouteName": "DeviceNotifications",
         "streamAnalyticsApiVersion": "2016-03-01",
         "consumerGroupName": "streamingJobsConsumerGroup",
         "streamingJobsOutputDBName": "pcs-iothub-stream",
+        "tsiConsumerGroupName": "timeSeriesInsightsConsumerGroup",
+        "tsiEventSourceName": "[parameters('iotHubName')]",
+        "tsiApiVersion": "2017-11-15",
+        "tsiApplicationAccessPolicy": "[concat(parameters('tsiEnvironmentName'), '-application-policy')]",
+        "tsiUserAccessPolicy": "[concat(parameters('tsiEnvironmentName'), '-user-policy')]",
+        "tsiReaderRole": "Reader",
+        "tsiContributorRole": "Contributor",
+        "delimiters": [ ".", "//" ],
         "solutionType": "RemoteMonitoring",
         "adminUsername": "[parameters('adminUsername')]",
         "agentCount": "[parameters('agentCount')]",
@@ -474,7 +544,7 @@
             "name": "[parameters('documentDBName')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSolutionType": "[variables('solutionType')]"
+                "IotSuiteType": "[variables('solutionType')]"
             },
             "properties": {
                 "name": "[parameters('documentDBName')]",
@@ -548,7 +618,7 @@
                 "capacity": 1
             },
             "tags": {
-                "IotSolutionType": "[variables('solutionType')]"
+                "IotSuiteType": "[variables('solutionType')]"
             },
             "properties": {
                 "location": "[variables('location')]",
@@ -604,7 +674,7 @@
             "apiVersion": "[variables('provisioningServiceApiVersion')]",
             "location": "[variables('location')]",
             "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
+                "IotSuiteType": "[variables('solutionType')]"
             },
             "properties": {
                 "iotHubs": [
@@ -627,6 +697,86 @@
             "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
             "dependsOn": [
                 "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
+        },
+        {
+            "comments": "Consumer Group of IoT Hub",
+            "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
+            "apiVersion": "[variables('iotHubApiVersion')]",
+            "name": "[concat(parameters('iotHubName'), '/events/', variables('tsiConsumerGroupName'))]",
+            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
+        },
+        {
+            "comments": "Azure Time Series Insights",
+            "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
+            "type": "Microsoft.TimeSeriesInsights/environments",
+            "name": "[parameters('tsiEnvironmentName')]",
+            "apiVersion": "[variables('tsiApiVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "dataRetentionTime": "[parameters('tsiEnvironmentDataRetentionTime')]"
+            },
+            "sku": {
+                "name": "[parameters('tsiEnvironmentSkuName')]",
+                "capacity": "[parameters('tsiEnvironmentSkuCapacity')]"
+            },
+            "tags": {
+                "IotSuiteType": "[variables('solutionType')]"
+            },
+            "resources": [
+                {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
+                    "type": "eventsources",
+                    "name": "[variables('tsiEventSourceName')]",
+                    "apiVersion": "[variables('tsiApiVersion')]",
+                    "location": "[variables('location')]",
+                    "kind": "Microsoft.EventHub",
+                    "properties": {
+                        "eventSourceResourceId": "[variables('iotHubResourceId')]",
+                        "eventHubName": "[parameters('iotHubName')]",
+                        "serviceBusNamespace": "[split(reference(variables('iotHubResourceId'), variables('iotHubApiVersion')).eventHubEndpoints.events.endpoint, variables('delimiters'))[1]]",
+                        "consumerGroupName": "[variables('tsiConsumerGroupName')]",
+                        "keyName": "[variables('iotHubServiceKeyName')]",
+                        "sharedAccessKey": "[concat(listkeys(variables('iotHubServiceKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
+                        "timestampPropertyName": "[parameters('tsiEventSourceTimestampPropertyName')]"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsiEnvironmentName'))]"
+                    ]
+                },
+                {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
+                    "type": "accessPolicies",
+                    "name": "[variables('tsiApplicationAccessPolicy')]",
+                    "apiVersion": "[variables('tsiApiVersion')]",
+                    "properties": {
+                        "principalObjectId": "[parameters('servicePrincipalClientId')]",
+                        "roles": [
+                            "[variables('tsiReaderRole')]"
+                        ]
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsiEnvironmentName'))]"
+                    ]
+                },
+                {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
+                    "type": "accessPolicies",
+                    "name": "[variables('tsiUserAccessPolicy')]",
+                    "apiVersion": "[variables('tsiApiVersion')]",
+                    "properties": {
+                        "principalObjectId": "[parameters('userPrincipalObjectId')]",
+                        "roles": [
+                            "[variables('tsiContributorRole')]"
+                        ]
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsiEnvironmentName'))]"
+                    ]
+                }
             ]
         },
         {
@@ -752,7 +902,7 @@
                                     "accountId": "[parameters('documentDbName')]",
                                     "accountKey": "[listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey]",
                                     "database": "[variables('streamingJobsOutputDBName')]",
-                                    "collectionNamePattern": "messages"
+                                    "collectionNamePattern": "[if(equals(parameters('telemetryStorageType'), 'tsi'), 'alarms', 'messages')]"
                                 }
                             }
                         }
@@ -977,6 +1127,18 @@
         "streamingJobsName": {
             "type": "string",
             "value": "[parameters('streamingJobsName')]"
+        },
+        "servicePrincipalSecret": {
+            "type": "string",
+            "value": "[parameters('servicePrincipalSecret')]"
+        },
+        "telemetryStorageType": {
+            "type": "string",
+            "value": "[parameters('telemetryStorageType')]"
+        },
+        "tsiDataAccessFQDN": {
+            "type": "string",
+            "value": "[if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined')]"
         }
     }
 }
