@@ -96,7 +96,6 @@ const program = new Command(packageJson.name)
     .option('--domainId <domainId>', 'This can either be an .onmicrosoft.com domain or the Azure object ID for the tenant')
     .option('--solutionName <solutionName>', 'Solution name for your Remote monitoring accelerator')
     .option('--subscriptionId <subscriptionId>', 'SubscriptionId on which this solution should be created')
-    .option('--setLocalEnvironments <file>', 'Globally sets environment variables on the machine and saves it to afile. (Works with sku local).')
     .option('-l, --location <location>', 'Locaion where the solution will be deployed')
     .option('-w, --websiteName <websiteName>', 'Name of the website, default is solution name')
     .option('-u, --username <username>', 'User name for the virtual machine that will be created as part of the solution')
@@ -332,8 +331,6 @@ function main() {
                         answers.dockerTag = 'testing';
                     } else if (program.dockerTagOverride) {
                         answers.dockerTag = program.dockerTagOverride;
-                    } else if (program.setLocalEnvironments) {
-                        answers.setLocalEnv = program.setLocalEnvironments;
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
