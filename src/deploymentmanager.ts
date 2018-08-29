@@ -231,6 +231,7 @@ export class DeploymentManager implements IDeploymentManager {
                     // If we are under the plan limit then we should have received a query key
                     config.AzureMapsKey = outputs.azureMapsKey.value;
                     config.CloudType = this.getCloudType(this._environment.name);
+                    config.SolutionName = answers.solutionName;
                     config.IotHubName = outputs.iotHubHostName;
                     config.SubscriptionId = outputs.subscriptionId;
                     config.DeploymentId = answers.deploymentId;

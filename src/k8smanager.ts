@@ -195,6 +195,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['diagnostics.cloud.type'] = this._config.CloudType;
         configMap.data['diagnostics.subscription.id'] = this._config.SubscriptionId;
+        configMap.data['diagnostics.solution.name'] = this._config.SolutionName;
         configMap.data['diagnostics.iothub.name'] = this._config.IotHubName;
         configMap.data['diagnostics.deployment.id'] = this._config.DeploymentId;
         configMap.data['diagnostics.endpoint.url'] = this._config.DiagnosticsEndpointUrl;

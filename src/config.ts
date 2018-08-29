@@ -9,6 +9,7 @@ export class Config {
     public AzureMapsKey: string;
     public CloudType: string;
     public SubscriptionId: string;
+    public SolutionName: string;
     public IotHubName: string;
     public DeploymentId: string;
     public DiagnosticsEndpointUrl: string;
