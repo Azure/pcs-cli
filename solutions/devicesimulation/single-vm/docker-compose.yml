@@ -106,6 +106,7 @@ services:
       - PCS_SUBSCRIPTION_ID
       - PCS_DEPLOYMENT_ID
       - PCS_SOLUTION_TYPE
+      - PCS_SOLUTION_NAME
       - PCS_IOTHUB_NAME
       - PCS_DIAGNOSTICS_ENDPOINT_URL
     logging:
