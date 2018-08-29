@@ -232,8 +232,8 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AzureMapsKey = outputs.azureMapsKey.value;
                     config.CloudType = this.getCloudType(this._environment.name);
                     config.SolutionName = answers.solutionName;
-                    config.IotHubName = outputs.iotHubHostName;
-                    config.SubscriptionId = outputs.subscriptionId;
+                    config.IotHubName = outputs.iotHubHostName.value;
+                    config.SubscriptionId = outputs.subscriptionId.value;
                     config.DeploymentId = answers.deploymentId;
                     config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
                     config.DockerTag = answers.dockerTag;
