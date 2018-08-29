@@ -230,6 +230,10 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AzureStorageEndpointSuffix = storageEndpointSuffix;
                     // If we are under the plan limit then we should have received a query key
                     config.AzureMapsKey = outputs.azureMapsKey.value;
+                    config.CloudType = this.getCloudType(this._environment.name);
+                    config.SolutionName = answers.solutionName;
+                    config.IotHubName = outputs.iotHubHostName.value;
+                    config.SubscriptionId = outputs.subscriptionId.value;
                     config.DeploymentId = answers.deploymentId;
                     config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
                     config.DockerTag = answers.dockerTag;
@@ -445,9 +449,13 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.deploymentId) {
             this._parameters.deploymentId.value = answers.deploymentId;
+        } else if (this._template.parameters.deploymentId) {
+            this._parameters.deploymentId = { value: answers.deploymentId };
         }
-        if (this._parameters.diagnosticsEndpointUrl && answers.diagnosticsEndpointUrl) {
+        if (this._parameters.diagnosticsEndpointUrl) {
             this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
+        } else if (this._template.parameters.diagnosticsEndpointUrl) {
+            this._parameters.diagnosticsEndpointUrl =  { value: answers.diagnosticsEndpointUrl };
         }
         if (this._template.parameters.telemetryStorageType) {
             // Use cosmosdb for telemetry storage for Mooncake environment, use tsi for Global environment
@@ -456,6 +464,9 @@ export class DeploymentManager implements IDeploymentManager {
             } else {
                 this._parameters.telemetryStorageType = { value: 'tsi' };
             }
+        }
+        if (this._template.parameters.cloudType) {
+            this._parameters.cloudType = { value: this.getCloudType(this._environment.name) };
         }
     }
 
@@ -552,6 +563,17 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
 
         console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
+    }
+
+    // Internal cloud names for diagnostics
+    private getCloudType(environmentName: string): string {
+        const cloudTypeMaps = {
+            [AzureEnvironment.Azure.name]: 'Global',
+            [AzureEnvironment.AzureChina.name]: 'China',
+            [AzureEnvironment.AzureUSGovernment.name]: 'Fairfax',
+            [AzureEnvironment.AzureGermanCloud.name]: 'Germany',
+        };
+        return cloudTypeMaps[environmentName];
     }
 }
 
