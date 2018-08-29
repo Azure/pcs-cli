@@ -835,26 +835,13 @@ function getWebsiteUrl(hostName: string): string {
 }
 
 function getAzureEnvironment(environmentName: string): AzureEnvironment {
-    let environment: any;
-    const lowerCaseEnv = environmentName.toLowerCase();
-    switch (lowerCaseEnv) {
-        case environments[environments.azurecloud]:
-            environment = AzureEnvironment.Azure;
-            break;
-        case environments[environments.azurechinacloud]:
-            environment = AzureEnvironment.AzureChina;
-            break;
-        case environments[environments.azuregermanycloud]:
-            environment = AzureEnvironment.AzureGermanCloud;
-            break;
-        case environments[environments.azureusgovernment]:
-            environment = AzureEnvironment.AzureUSGovernment;
-            break;
-        default:
-            environment = AzureEnvironment.Azure;
-            break;
-    }
-    return environment;
+    const azureEnvironmentMaps = {
+        [environments.azurecloud]: AzureEnvironment.Azure,
+        [environments.azurechinacloud]: AzureEnvironment.AzureChina,
+        [environments.azuregermanycloud]: AzureEnvironment.AzureGermanCloud,
+        [environments.azureusgovernment]: AzureEnvironment.AzureUSGovernment,
+    };
+    return azureEnvironmentMaps[environmentName.toLowerCase()];
 }
 
 function getPatchedDeviceTokenCredentials(options: any) {

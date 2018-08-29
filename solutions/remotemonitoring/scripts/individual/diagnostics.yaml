@@ -48,6 +48,21 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.cors.whitelist
+        - name: PCS_CLOUD_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.cloud.type
+        - name: PCS_SOLUTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
+        - name: PCS_SUBSCRIPTION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.subscription.id
         - name: PCS_DEPLOYMENT_ID
           valueFrom:
             configMapKeyRef:
@@ -58,6 +73,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.solution.type
+        - name: PCS_IOTHUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.iothub.name
 ---
 apiVersion: v1
 kind: Service
