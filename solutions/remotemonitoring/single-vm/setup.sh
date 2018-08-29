@@ -25,7 +25,7 @@ while [ "$#" -gt 0 ]; do
         --runtime)                      APP_RUNTIME="$2" ;;
         --solution-type)                PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)                PCS_SOLUTION_NAME="$2" ;;
-        --iothub-name)                  PCS_IOTHUBREACT_HUB_NAME="$2" ;;
+        --iothub-name)                  PCS_IOTHUB_NAME="$2" ;;
         --iothub-endpoint)              PCS_IOTHUBREACT_HUB_ENDPOINT="$2" ;;
         --iothub-partitions)            PCS_IOTHUBREACT_HUB_PARTITIONS="$2" ;;
         --iothub-connstring)            PCS_IOTHUB_CONNSTRING="$2" ;;
@@ -50,7 +50,6 @@ while [ "$#" -gt 0 ]; do
         --cloud-type)                   PCS_CLOUD_TYPE="$2" ;;
         --subscription-id)              PCS_SUBSCRIPTION_ID="$2" ;;
         --deployment-id)                PCS_DEPLOYMENT_ID="$2" ;;
-        --iothub-name)                  PCS_IOTHUB_NAME="$2" ;;
         --diagnostics-url)              PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
         --telemetry-storage-type)       PCS_TELEMETRY_STORAGE_TYPE="$2" ;;
         --tsi-fqdn)                     PCS_TSI_FQDN="$2" ;;
@@ -204,7 +203,7 @@ echo "export PCS_TELEMETRY_STORAGE_TYPE=\"${PCS_TELEMETRY_STORAGE_TYPE}\""      
 echo "export PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""        >> ${ENVVARS}
 echo "export PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_IOTHUBREACT_ACCESS_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                             >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_HUB_NAME=\"${PCS_IOTHUBREACT_HUB_NAME}\""                                   >> ${ENVVARS}
+echo "export PCS_IOTHUBREACT_HUB_NAME=\"${PCS_IOTHUB_NAME}\""                                            >> ${ENVVARS}
 echo "export PCS_IOTHUBREACT_HUB_ENDPOINT=\"${PCS_IOTHUBREACT_HUB_ENDPOINT}\""                           >> ${ENVVARS}
 echo "export PCS_IOTHUBREACT_HUB_PARTITIONS=\"${PCS_IOTHUBREACT_HUB_PARTITIONS}\""                       >> ${ENVVARS}
 echo "export PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""                 >> ${ENVVARS}
