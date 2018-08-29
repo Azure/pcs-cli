@@ -583,9 +583,6 @@ export class DeploymentManager implements IDeploymentManager {
             cp.exec(cmd);
 
         });
-
-        //fs.writeFileSync(environmentFileName, data.join('\n'));
-        //console.log('The environment variables have been set on this machine. A copy of these variables is saved in the file  \n\ %s', '.env');
     }
 }
 
