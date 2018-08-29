@@ -448,9 +448,13 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._parameters.deploymentId) {
             this._parameters.deploymentId.value = answers.deploymentId;
+        } else if (this._template.parameters.deploymentId) {
+            this._parameters.deploymentId = { value: answers.deploymentId };
         }
-        if (this._parameters.diagnosticsEndpointUrl && answers.diagnosticsEndpointUrl) {
+        if (this._parameters.diagnosticsEndpointUrl) {
             this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
+        } else if (this._template.parameters.diagnosticsEndpointUrl) {
+            this._parameters.diagnosticsEndpointUrl =  { value: answers.diagnosticsEndpointUrl };
         }
         if (this._template.parameters.telemetryStorageType) {
             // Use cosmosdb for telemetry storage for Mooncake environment, use tsi for Global environment
