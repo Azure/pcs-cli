@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as fetch from 'node-fetch';
+import * as cp from 'child_process';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
@@ -212,7 +213,7 @@ export class DeploymentManager implements IDeploymentManager {
                 }
 
                 if (answers.deploymentSku === 'local') {
-                    this.printEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
                 }
                 return Promise.resolve('');
             })
@@ -539,7 +540,7 @@ export class DeploymentManager implements IDeploymentManager {
         });
     }
 
-    private printEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
+    private setAndPrintEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
         const data = [] as string[];
         data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
         data.push('PCS_IOTHUB_CONNSTRING=' + outputs.iotHubConnectionString.value);
@@ -562,7 +563,37 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_TELEMETRY_STORAGE_TYPE=' + outputs.telemetryStorageType.value);
         data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
 
-        console.log('Copy the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
+        this.setEnvironmentVariables(data);
+
+        console.log('Please save the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
+    }
+
+    private setEnvironmentVariables(data: string[]) {
+        data.forEach((envvar) => {
+            let cmd = '';
+            switch ( os.type() ) {
+                case 'Windows_NT': {
+                    cmd = 'SETX ' + envvar;
+                    break;
+                }
+                case 'Darwin': {
+                    cmd = 'launchctl setenv ' + envvar;
+                    break;
+                }
+                case 'Linux': {
+                    const space = /\s/;
+                    envvar = envvar.replace(space, '=');
+                    cmd = 'echo ' + envvar + ' >> /etc/environment';
+                    break;
+                }
+                default: { 
+                    console.log('The environment could not be set. unable to determine OS.');
+                    break; 
+                 }
+            }
+            cp.exec(cmd);
+
+        });
     }
 
     // Internal cloud names for diagnostics
