@@ -201,7 +201,7 @@
     },
     "pcsDockerTag": {
       "type": "string",
-      "defaultValue": "DS-1.0.2",
+      "defaultValue": "staging",
       "metadata": {
         "description": "The docker tag can be same as release version and is the latest released docker image"
       }
