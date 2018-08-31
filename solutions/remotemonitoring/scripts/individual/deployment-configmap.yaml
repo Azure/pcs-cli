@@ -55,13 +55,17 @@ data:
 
   # Telemetry
   telemetry.webservice.url: "http://telemetry-svc:9004/v1"
+  telemetry.storage.type: "tsi"
+  telemetry.tsi.fqdn: "{TSI Data Access FQDN}"
 
   # PCS Config
   config.webservice.url: "http://config-svc:9005/v1"
 
   # Auth
+  security.auth.tenant: "{AAD tenant Id}"
   security.auth.issuer: "{OAuth2 Issuer, e.g. STS URL with Tenant ID}"
   security.auth.audience: "{OAuth2 Audience, e.g. Application ID}"
+  security.auth.serviceprincipal.secret: "{AAD application service principal secret}"
   security.auth.required: "true"
   security.cors.whitelist: ""
   security.application.secret: "{Application secret}"
@@ -77,9 +81,14 @@ data:
   asa.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
 
   # Diagnostics
+  diagnostics.webservice.url: "http://diagnostics-svc:9006/v1"
+  diagnostics.cloud.type: "{Cloud environment name}"
+  diagnostics.subscription.id: "{Subscription id}"
+  diagnostics.iothub.name: "{Iot Hub name}"
   diagnostics.deployment.id: "{Deployment Id of the solution}"
   diagnostics.endpoint.url: "{Diagnostics endpoint URL}"
   diagnostics.solution.type: "{Solution type}"
+  diagnostics.solution.name: "{Solution name}"
 
   # Nginx Template
   nginx.tmpl: |

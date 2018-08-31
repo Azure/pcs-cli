@@ -17,6 +17,9 @@
     "servicePrincipalClientId": {
       "value": "{Added through command line interface}"
     },
+    "userPrincipalObjectId": {
+      "value": "{Added through command line interface}"
+    },
     "remoteEndpointSSLThumbprint": {
       "value": "{Added through command line interface}"
     }
