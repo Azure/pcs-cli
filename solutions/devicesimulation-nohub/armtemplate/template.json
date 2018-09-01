@@ -162,7 +162,7 @@
     },
     "pcsReleaseVersion": {
       "type": "string",
-      "defaultValue": "DS-1.0.2",
+      "defaultValue": "Device-Simulation-Staging",
       "metadata": {
         "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
       }
