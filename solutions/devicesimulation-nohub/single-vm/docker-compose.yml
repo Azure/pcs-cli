@@ -110,6 +110,7 @@ services:
       - PCS_SOLUTION_NAME
       - PCS_IOTHUB_NAME
       - PCS_DIAGNOSTICS_ENDPOINT_URL
+      - PCS_CONFIG_URL=http://config-svc:9005/v1
     logging:
       driver: "json-file"
       options:
