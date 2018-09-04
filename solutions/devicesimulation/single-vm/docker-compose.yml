@@ -65,6 +65,7 @@ services:
       - PCS_RESOURCE_GROUP
       - PCS_IOHUB_NAME
       - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
+      - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
     logging:
       driver: "json-file"
       options:
