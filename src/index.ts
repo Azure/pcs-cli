@@ -334,7 +334,7 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                      const version = (program.type === 'remotemonitoring') ? '1.0.0' : 'Device-Simulation-Staging';
+                        const version = (program.type === 'remotemonitoring') ? '1.0.0' : 'Device-Simulation-Staging';
                         answers.version = version;
                         answers.dockerTag = 'staging';
                     }
