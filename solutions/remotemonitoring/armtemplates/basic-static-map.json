@@ -550,8 +550,6 @@
         "vmFQDN": "[concat(parameters('vmName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]",
         "imagePublisher": "Canonical",
         "imageOffer": "UbuntuServer",
-        "vmStorageAccountContainerName": "vhds",
-        "osDiskName": "[concat(parameters('solutionName'), '-osdisk')]",
         "networkApiVersion": "2017-06-01",
         "vnetName": "[concat(parameters('solutionName'), '-vnet')]",
         "vnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
@@ -1233,10 +1231,6 @@
                     },
                     "osDisk": {
                         "name": "osdisk1",
-                        "vhd": {
-                            "uri": "[concat('http://',parameters('storageName'),'.blob.',parameters('storageEndpointSuffix'),'/',variables('vmStorageAccountContainerName'),'/',variables('osDiskName'),'.vhd')]"
-                        },
-                        "caching": "ReadWrite",
                         "createOption": "FromImage"
                     }
                 },
