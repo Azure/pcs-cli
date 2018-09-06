@@ -421,7 +421,7 @@
         },
         "cloudType": {
             "type": "string",
-            "defaultValue": "public",
+            "defaultValue": "Global",
             "allowedValues": [
                 "Global",
                 "China",
