@@ -84,7 +84,7 @@ services:
     #  - ./my-device-models:/app/data:ro
 
   telemetry:
-    image: azureiotpcs/telemetry-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/telemetry-java:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:
