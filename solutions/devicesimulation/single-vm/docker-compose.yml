@@ -17,7 +17,7 @@ version: '2'
 
 services:
   apigateway-svc:
-    image: azureiotpcsdev/device-simulation-webui:${PCS_DOCKER_TAG}
+    image: azureiotpcsdev/simulation-api-gateway:${PCS_DOCKER_TAG}
     ports:
       - "443:443"
     depends_on:
