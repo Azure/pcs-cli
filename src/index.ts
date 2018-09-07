@@ -19,7 +19,7 @@ import {
     UserTokenCredentials,
     ApplicationTokenCredentials
 } from 'ms-rest-azure';
-import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
+import { SubscriptionClient, SubscriptionModels, ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import GraphRbacManagementClient from 'azure-graph';
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
@@ -288,6 +288,32 @@ function main() {
                         return prompt(getDeploymentQuestions(locations));
                     }
                     throw new Error('Locations list cannot be empty');
+                })
+                .then((ans: Answers) => {
+                    // Use Cosmos DB for telemetry storage for China environment
+                    if (program.environment === AzureEnvironment.AzureChina.name) {
+                        return Promise.resolve(ans);
+                    }
+                    // Check if the selected location support Time Series Insights resource type for Global environment
+                    // Use the default value of template when the location does not support it
+                    const resourceManagementClient = new ResourceManagementClient(
+                        new DeviceTokenCredentials(cachedAuthResponse.credentials),
+                        answers.subscriptionId,
+                        baseUri);
+
+                    ans.telemetryStorageType = 'tsi';
+                    return resourceManagementClient.providers.get('Microsoft.TimeSeriesInsights')
+                    .then((providers: ResourceModels.Provider) => {
+                        if (providers.resourceTypes) {
+                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
+                            if (resourceType && resourceType.length) {
+                                if (new Set(resourceType[0].locations).has(ans.location)) {
+                                    ans.tsiLocation = ans.location;
+                                }
+                            }
+                        }
+                        return ans;
+                    });
                 })
                 .then((ans: Answers) => {
                     answers = {...answers, ...ans};

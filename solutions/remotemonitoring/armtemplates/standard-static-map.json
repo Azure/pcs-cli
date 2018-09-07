@@ -399,6 +399,22 @@
                 "description": "The event property that will be used as the event source's timestamp. If a value isn't specified for timestampPropertyName, or if null or empty-string is specified, the event creation time will be used."
             }
         },
+        "tsiLocation" : {
+            "type": "string",
+            "defaultValue": "eastus",
+            "allowedValues": [
+                "eastus",
+                "eastus2",
+                "westus",
+                "westus2",
+                "westcentralus",
+                "northeurope",
+                "westeurope"
+            ],
+            "metadata": {
+                "description": "The location which supports Time Series Insights resource"
+            }
+        },
         "userPrincipalObjectId": {
             "type": "string",
             "defaultValue": "fakevalue",
