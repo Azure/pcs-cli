@@ -123,12 +123,17 @@ services:
       - storageadapter-svc
     environment:
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
-      - PCS_BINGMAP_KEY
+      - PCS_SOLUTION_TYPE
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+        # These are required vars by Config service sp setting to empty as DS will not use these
+      - PCS_DEVICESIMULATION_WEBSERVICE_URL=""
+      - PCS_TELEMETRY_WEBSERVICE_URL=""
+      - PCS_IOTHUBMANAGER_WEBSERVICE_URL=""
+      - PCS_BINGMAP_KEY=""
     logging:
       driver: "json-file"
       options:
