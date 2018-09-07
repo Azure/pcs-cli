@@ -401,7 +401,7 @@
         },
         "tsiLocation" : {
             "type": "string",
-            "defaultValue": "eastus",
+            "defaultValue": "westus",
             "allowedValues": [
                 "eastus",
                 "eastus2",
@@ -721,7 +721,7 @@
             "type": "Microsoft.TimeSeriesInsights/environments",
             "name": "[parameters('tsiEnvironmentName')]",
             "apiVersion": "[variables('tsiApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[parameters('tsiLocation')]",
             "properties": {
                 "dataRetentionTime": "[parameters('tsiEnvironmentDataRetentionTime')]"
             },
@@ -738,7 +738,7 @@
                     "type": "eventsources",
                     "name": "[variables('tsiEventSourceName')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
-                    "location": "[variables('location')]",
+                    "location": "[parameters('tsiLocation')]",
                     "kind": "Microsoft.EventHub",
                     "properties": {
                         "eventSourceResourceId": "[variables('iotHubResourceId')]",
