@@ -308,7 +308,7 @@ function main() {
                             const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
                             if (resourceType && resourceType.length) {
                                 if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.tsiLocation = ans.location;
+                                    ans.tsiLocation = ans.location.toLowerCase().replace(' ', '');
                                 }
                             }
                         }
