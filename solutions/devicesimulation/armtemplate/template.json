@@ -243,18 +243,32 @@
         "description": "ID of the Azure Subscription where the solution is deployed"
       }
     },
+    "servicePrincipalClientId": {
+      "metadata": {
+        "description": "Client ID (used by cloudprovider)"
+      },
+      "type": "securestring",
+      "defaultValue": "n/a"
+    },
+    "servicePrincipalSecret": {
+      "metadata": {
+        "description": "The Service Principal Client Secret."
+      },
+      "type": "securestring",
+      "defaultValue": "n/a"
+    },
     "cloudType": {
-        "type": "string",
-        "defaultValue": "Global",
-        "allowedValues": [
-            "Global",
-            "China",
-            "Germany",
-            "Fairfax"
-        ],
-        "metadata": {
-            "description": "Cloud environment name"
-        }
+      "type": "string",
+      "defaultValue": "Global",
+      "allowedValues": [
+        "Global",
+        "China",
+        "Germany",
+        "Fairfax"
+      ],
+      "metadata": {
+        "description": "Cloud environment name"
+      }
     },
     "deploymentId": {
       "type": "string",
@@ -631,7 +645,7 @@
                     ]
                 },
               "protectedSettings": {
-                "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-sku ', concat('\"', parameters('storageSkuName'), '\"'), ' --storage-endpoint-suffix ', concat('\"', parameters('storageEndpointSuffix'), '\"'), ' --docdb-name ', concat('\"', parameters('documentDBName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"'), ' --iothub-name ', concat('\"', parameters('iotHubName'), '\"'), ' --iothub-sku ', parameters('iotHubSku'), ' --iothub-tier ', parameters('iotHubTier'), ' --iothub-units ', parameters('iotHubUnits') ,' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'))]"
+                "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-sku ', concat('\"', parameters('storageSkuName'), '\"'), ' --storage-endpoint-suffix ', concat('\"', parameters('storageEndpointSuffix'), '\"'), ' --docdb-name ', concat('\"', parameters('documentDBName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"'),' --sp-client-id ', concat('\"', parameters('servicePrincipalClientId'), '\"'), ' --sp-secret ', concat('\"', parameters('servicePrincipalSecret'), '\"'), ' --iothub-name ', concat('\"', parameters('iotHubName'), '\"'), ' --iothub-sku ', parameters('iotHubSku'), ' --iothub-tier ', parameters('iotHubTier'), ' --iothub-units ', parameters('iotHubUnits') ,' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'))]"
               }
             },
             "tags": {

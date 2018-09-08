@@ -25,6 +25,8 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
         --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
+        --sp-client-id)            PCS_SP_CLIENT_ID="$2" ;;
+        --sp-secret)               PCS_SP_SECRET="$2" ;;
         --hostname)                HOST_NAME="$2" ;;
         --log-level)               PCS_LOG_LEVEL="$2" ;;
         --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
@@ -159,6 +161,8 @@ echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_DOMAIN=\"${PCS_SUBSCRIPTION_DOMAIN}\""                                     >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
+echo "export PCS_SP_CLIENT_ID=\"${PCS_SP_CLIENT_ID}\""                                                   >> ${ENVVARS}
+echo "export PCS_SP_SECRET=\"${PCS_SP_SECRET}\""                                                         >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
 echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
