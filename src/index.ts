@@ -295,7 +295,9 @@ function main() {
                         baseUri);
 
                     ans.telemetryStorageType = 'tsi';
-                    return resourceManagementClient.providers.get('Microsoft.TimeSeriesInsights')
+
+                    const promises = new Array<Promise<any>>();
+                    promises.push(resourceManagementClient.providers.get('Microsoft.TimeSeriesInsights')
                     .then((providers: ResourceModels.Provider) => {
                         if (providers.resourceTypes) {
                             const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
@@ -305,8 +307,22 @@ function main() {
                                 }
                             }
                         }
-                        return ans;
-                    });
+                    }));
+
+                    promises.push(resourceManagementClient.providers.get('Microsoft.Devices')
+                    .then((providers: ResourceModels.Provider) => {
+                        if (providers.resourceTypes) {
+                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType
+                                && x.resourceType.toLowerCase() === 'provisioningservices');
+                            if (resourceType && resourceType.length) {
+                                if (new Set(resourceType[0].locations).has(ans.location)) {
+                                    ans.provisioningServiceLocation = ans.location.toLowerCase().replace(' ', '');
+                                }
+                            }
+                        }
+                    }));
+
+                    return Promise.all(promises).then(() => Promise.resolve(ans));
                 })
                 .then((ans: Answers) => {
                     answers = {...answers, ...ans};
