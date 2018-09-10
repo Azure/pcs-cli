@@ -129,6 +129,7 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
       - APPLICATION_SECRET
+      - PCS_SEED_TEMPLATE
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}

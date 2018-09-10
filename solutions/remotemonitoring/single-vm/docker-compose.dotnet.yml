@@ -123,6 +123,7 @@ services:
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - PCS_SEED_TEMPLATE
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}

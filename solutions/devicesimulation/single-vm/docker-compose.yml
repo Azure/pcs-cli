@@ -133,6 +133,7 @@ services:
       - PCS_DEVICESIMULATION_WEBSERVICE_URL
       - PCS_TELEMETRY_WEBSERVICE_URL
       - PCS_IOTHUBMANAGER_WEBSERVICE_URL
+      - PCS_SEED_TEMPLATE
     logging:
       driver: "json-file"
       options:
