@@ -65,7 +65,7 @@ services:
       - APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/device-simulation-dotnet:DS-1.0.2
     networks:
       - default_net
     depends_on:
