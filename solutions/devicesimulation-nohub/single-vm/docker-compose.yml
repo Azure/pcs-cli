@@ -132,7 +132,7 @@ services:
       - PCS_DEVICESIMULATION_WEBSERVICE_URL
       - PCS_TELEMETRY_WEBSERVICE_URL
       - PCS_IOTHUBMANAGER_WEBSERVICE_URL
-      - PCS_BINGMAP_KEY=""
+      - PCS_BINGMAP_KEY
     logging:
       driver: "json-file"
       options:
