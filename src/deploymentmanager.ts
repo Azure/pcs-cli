@@ -59,8 +59,7 @@ export class DeploymentManager implements IDeploymentManager {
 
     public getLocations(): Promise<string[] | undefined> {
         // Currently IotHub is not supported in all the regions so using it to get the available locations
-        const promises = new Array<Promise<any>>();
-        const iothubLocationPromise = this._client.providers.get('Microsoft.Devices')
+        return this._client.providers.get('Microsoft.Devices')
         .then((providers: ResourceModels.Provider) => {
             if (providers.resourceTypes) {
                 const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
@@ -69,27 +68,6 @@ export class DeploymentManager implements IDeploymentManager {
                 }
             }
         });
-
-        // Skip checking TSI location if it is China Cloud or solution type is not 'remotemonitoring'
-        if (this._solutionType !== 'remotemonitoring' || this._environment.name === AzureEnvironment.AzureChina.name) {
-            return iothubLocationPromise;
-        }
-
-        promises.push(iothubLocationPromise);
-        const tsiLocationPromise = this._client.providers.get('Microsoft.TimeSeriesInsights')
-        .then((providers: ResourceModels.Provider) => {
-            if (providers.resourceTypes) {
-                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
-                if (resourceType && resourceType.length) {
-                    return resourceType[0].locations;
-                }
-            }
-        });
-        promises.push(tsiLocationPromise);
-        return Promise.all(promises)
-            .then((results: string[][]) => {
-                return [...new Set(results[0])].filter((x) => new Set(results[1]).has(x));
-            });
     }
 
     public submit(answers: Answers): Promise<any> {
@@ -460,13 +438,11 @@ export class DeploymentManager implements IDeploymentManager {
                 this._parameters.diagnosticsEndpointUrl =  { value: answers.diagnosticsEndpointUrl };
             }
         }
-        if (this._template.parameters.telemetryStorageType) {
-            // Use cosmosdb for telemetry storage for Mooncake environment, use tsi for Global environment
-            if (this._environment.name === AzureEnvironment.AzureChina.name) {
-                this._parameters.telemetryStorageType = { value: 'cosmosdb' };
-            } else {
-                this._parameters.telemetryStorageType = { value: 'tsi' };
-            }
+        if (this._template.parameters.telemetryStorageType && answers.telemetryStorageType) {
+            this._parameters.telemetryStorageType = { value: answers.telemetryStorageType };
+        }
+        if (this._template.parameters.tsiLocation && answers.tsiLocation) {
+            this._parameters.tsiLocation = { value: answers.tsiLocation };
         }
         if (this._template.parameters.cloudType) {
             this._parameters.cloudType = { value: this.getCloudType(this._environment.name) };
