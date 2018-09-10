@@ -444,6 +444,9 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._template.parameters.tsiLocation && answers.tsiLocation) {
             this._parameters.tsiLocation = { value: answers.tsiLocation };
         }
+        if (this._template.parameters.provisioningServiceLocation && answers.provisioningServiceLocation) {
+            this._parameters.provisioningServiceLocation = { value: answers.provisioningServiceLocation };
+        }
         if (this._template.parameters.cloudType) {
             this._parameters.cloudType = { value: this.getCloudType(this._environment.name) };
         }

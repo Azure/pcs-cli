@@ -131,6 +131,21 @@
                 "description": "The Azure IoT Hub tier"
             }
         },
+        "provisioningServiceLocation": {
+            "type": "string",
+            "defaultValue": "westus",
+            "allowedValues": [
+                "eastus",
+                "westus",
+                "northeurope",
+                "westeurope",
+                "eastasia",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "The location which supports Device Provisioning Service resource"
+            }
+        },
         "provisioningServiceName": {
             "type": "string",
             "defaultValue": "[concat('dps-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
@@ -688,7 +703,7 @@
             "name": "[parameters('provisioningServiceName')]",
             "type": "Microsoft.Devices/provisioningServices",
             "apiVersion": "[variables('provisioningServiceApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[parameters('provisioningServiceLocation')]",
             "tags": {
                 "IotSuiteType": "[variables('solutionType')]"
             },
