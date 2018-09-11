@@ -187,6 +187,7 @@ services:
       - PCS_DEPLOYMENT_ID
       - PCS_IOTHUB_NAME
       - PCS_DIAGNOSTICS_ENDPOINT_URL
+      - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1
 
 networks:
   default_net:
