@@ -708,6 +708,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_SOLUTION_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.solution.type
         - name: PCS_SEED_TEMPLATE
           valueFrom:
             configMapKeyRef:
@@ -827,6 +832,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.endpoint.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key:  config.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:

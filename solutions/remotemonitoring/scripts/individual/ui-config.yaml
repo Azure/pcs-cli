@@ -73,6 +73,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_SOLUTION_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.solution.type
         - name: PCS_SEED_TEMPLATE
           valueFrom:
             configMapKeyRef:

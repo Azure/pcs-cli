@@ -61,6 +61,7 @@ data:
   # PCS Config
   config.webservice.url: "http://config-svc:9005/v1"
   config.seedtemplate: "default"
+  config.solution.type: "{Solution type}"
 
   # Auth
   security.auth.tenant: "{AAD tenant Id}"
