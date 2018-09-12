@@ -77,7 +77,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: config.solution.type
+              key: diagnostics.solution.type
         - name: PCS_SEED_TEMPLATE
           valueFrom:
             configMapKeyRef:
