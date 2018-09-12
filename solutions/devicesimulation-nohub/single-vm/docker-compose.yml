@@ -62,8 +62,8 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_SUBSCRIPTION_DOMAIN
       - PCS_SUBSCRIPTION_ID
-      - PCS_SP_CLIENT_ID
-      - PCS_SP_SECRET
+      - PCS_AAD_SP_CLIENT_ID
+      - PCS_AAD_SECRET
       - PCS_RESOURCE_GROUP
       - PCS_IOHUB_NAME
       - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
