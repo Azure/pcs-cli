@@ -225,6 +225,21 @@
                 "description": "The Azure IoT Hub tier"
             }
         },
+        "provisioningServiceLocation": {
+            "type": "string",
+            "defaultValue": "westus",
+            "allowedValues": [
+                "eastus",
+                "westus",
+                "northeurope",
+                "westeurope",
+                "eastasia",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "The location which supports Device Provisioning Service resource"
+            }
+        },
         "provisioningServiceName": {
             "type": "string",
             "defaultValue": "[concat('dps-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
@@ -497,6 +512,22 @@
             "maxLength": 90,
             "metadata": {
                 "description": "The event property that will be used as the event source's timestamp. If a value isn't specified for timestampPropertyName, or if null or empty-string is specified, the event creation time will be used."
+            }
+        },
+        "tsiLocation" : {
+            "type": "string",
+            "defaultValue": "westus",
+            "allowedValues": [
+                "eastus",
+                "eastus2",
+                "westus",
+                "westus2",
+                "westcentralus",
+                "northeurope",
+                "westeurope"
+            ],
+            "metadata": {
+                "description": "The location which supports Time Series Insights resource"
             }
         },
         "userPrincipalObjectId": {
@@ -774,7 +805,7 @@
             "name": "[parameters('provisioningServiceName')]",
             "type": "Microsoft.Devices/provisioningServices",
             "apiVersion": "[variables('provisioningServiceApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[parameters('provisioningServiceLocation')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
             },
@@ -828,7 +859,7 @@
             "type": "Microsoft.TimeSeriesInsights/environments",
             "name": "[parameters('tsiEnvironmentName')]",
             "apiVersion": "[variables('tsiApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[parameters('tsiLocation')]",
             "properties": {
                 "dataRetentionTime": "[parameters('tsiEnvironmentDataRetentionTime')]"
             },
@@ -845,7 +876,7 @@
                     "type": "eventsources",
                     "name": "[variables('tsiEventSourceName')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
-                    "location": "[variables('location')]",
+                    "location": "[parameters('tsiLocation')]",
                     "kind": "Microsoft.EventHub",
                     "properties": {
                         "eventSourceResourceId": "[variables('iotHubResourceId')]",

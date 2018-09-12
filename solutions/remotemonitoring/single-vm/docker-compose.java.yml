@@ -65,7 +65,7 @@ services:
       - APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/device-simulation-dotnet:DS-1.0.2
     networks:
       - default_net
     depends_on:
@@ -181,7 +181,6 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_CLOUD_TYPE
       - PCS_SUBSCRIPTION_ID
-      - PCS_DEPLOYMENT_ID
       - PCS_SOLUTION_TYPE
       - PCS_SOLUTION_NAME
       - PCS_DEPLOYMENT_ID
