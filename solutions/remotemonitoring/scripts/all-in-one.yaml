@@ -560,11 +560,6 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: config.webservice.url
-        - name: PCS_SEED_TEMPLATE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: config.seedtemplate
         - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -713,6 +708,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_SEED_TEMPLATE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.seedtemplate
 ---
 apiVersion: v1
 kind: Service
