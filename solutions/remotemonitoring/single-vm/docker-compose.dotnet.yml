@@ -62,7 +62,7 @@ services:
       - PCS_APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/device-simulation-dotnet:DS-1.0.2
     networks:
       - default_net
     depends_on:
@@ -116,12 +116,14 @@ services:
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
       - PCS_DEVICESIMULATION_WEBSERVICE_URL=http://devicesimulation:9003/v1
       - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1
+      - PCS_SOLUTION_TYPE
       - PCS_AZUREMAPS_KEY
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - PCS_SEED_TEMPLATE
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}
@@ -178,6 +180,7 @@ services:
       - PCS_DEPLOYMENT_ID
       - PCS_IOTHUB_NAME
       - PCS_DIAGNOSTICS_ENDPOINT_URL
+      - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1
 
 networks:
   default_net:

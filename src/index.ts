@@ -19,7 +19,7 @@ import {
     UserTokenCredentials,
     ApplicationTokenCredentials
 } from 'ms-rest-azure';
-import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
+import { SubscriptionClient, SubscriptionModels, ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import GraphRbacManagementClient from 'azure-graph';
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
@@ -51,13 +51,6 @@ enum solutionSkus {
     basic,
     standard,
     local
-}
-
-enum environments {
-    azurecloud,
-    azurechinacloud,
-    azuregermanycloud,
-    azureusgovernment
 }
 
 const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
@@ -288,6 +281,48 @@ function main() {
                         return prompt(getDeploymentQuestions(locations));
                     }
                     throw new Error('Locations list cannot be empty');
+                })
+                .then((ans: Answers) => {
+                    // Use Cosmos DB for telemetry storage for China environment
+                    if (program.environment === AzureEnvironment.AzureChina.name) {
+                        return Promise.resolve(ans);
+                    }
+                    // Check if the selected location support Time Series Insights resource type for Global environment
+                    // Use the default value of template when the location does not support it
+                    const resourceManagementClient = new ResourceManagementClient(
+                        new DeviceTokenCredentials(cachedAuthResponse.credentials),
+                        answers.subscriptionId,
+                        baseUri);
+
+                    ans.telemetryStorageType = 'tsi';
+
+                    const promises = new Array<Promise<any>>();
+                    promises.push(resourceManagementClient.providers.get('Microsoft.TimeSeriesInsights')
+                    .then((providers: ResourceModels.Provider) => {
+                        if (providers.resourceTypes) {
+                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
+                            if (resourceType && resourceType.length) {
+                                if (new Set(resourceType[0].locations).has(ans.location)) {
+                                    ans.tsiLocation = ans.location.toLowerCase().replace(' ', '');
+                                }
+                            }
+                        }
+                    }));
+
+                    promises.push(resourceManagementClient.providers.get('Microsoft.Devices')
+                    .then((providers: ResourceModels.Provider) => {
+                        if (providers.resourceTypes) {
+                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType
+                                && x.resourceType.toLowerCase() === 'provisioningservices');
+                            if (resourceType && resourceType.length) {
+                                if (new Set(resourceType[0].locations).has(ans.location)) {
+                                    ans.provisioningServiceLocation = ans.location.toLowerCase().replace(' ', '');
+                                }
+                            }
+                        }
+                    }));
+
+                    return Promise.all(promises).then(() => Promise.resolve(ans));
                 })
                 .then((ans: Answers) => {
                     answers = {...answers, ...ans};
@@ -557,8 +592,8 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
-        // Create role assignment only for standard deployment since ACS requires it
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
+        // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
+        if (program.type !== 'remotemonitoring' || program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
             const cachedAuthResp = getCachedAuthResponse();
             return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, cachedAuthResp.credentials);
         }
@@ -836,10 +871,10 @@ function getWebsiteUrl(hostName: string): string {
 
 function getAzureEnvironment(environmentName: string): AzureEnvironment {
     const azureEnvironmentMaps = {
-        [environments.azurecloud]: AzureEnvironment.Azure,
-        [environments.azurechinacloud]: AzureEnvironment.AzureChina,
-        [environments.azuregermanycloud]: AzureEnvironment.AzureGermanCloud,
-        [environments.azureusgovernment]: AzureEnvironment.AzureUSGovernment,
+        azurechinacloud: AzureEnvironment.AzureChina,
+        azurecloud: AzureEnvironment.Azure,
+        azuregermancloud: AzureEnvironment.AzureGermanCloud,
+        azureusgovernment: AzureEnvironment.AzureUSGovernment,
     };
     return azureEnvironmentMaps[environmentName.toLowerCase()];
 }

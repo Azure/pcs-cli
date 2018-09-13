@@ -198,7 +198,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: azureiotpcs/device-simulation-dotnet:{dockerTag}
+        image: azureiotpcs/device-simulation-dotnet:DS-1.0.2
         ports:
         - containerPort: 9003
         env:
@@ -357,7 +357,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-dotnet:{dockerTag}
+        image: azureiotpcs/telemetry-{runtime}:{dockerTag}
         ports:
         - containerPort: 9004
         env:
@@ -708,6 +708,16 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_SOLUTION_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.type
+        - name: PCS_SEED_TEMPLATE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.seedtemplate
 ---
 apiVersion: v1
 kind: Service
@@ -822,6 +832,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.endpoint.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key:  config.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
