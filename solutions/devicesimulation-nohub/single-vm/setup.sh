@@ -45,6 +45,8 @@ while [ "$#" -gt 0 ]; do
         --auth-issuer)             PCS_AUTH_ISSUER="$2" ;;
         --auth-type)               PCS_WEBUI_AUTH_TYPE="$2" ;;
         --aad-appid)               PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
+        --aad-sp-client-id)        PCS_AAD_CLIENT_SP_ID="$2" ;;
+        --aad-app-secret)          PCS_AAD_SECRET="$2" ;;
         --aad-tenant)              PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
         --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
         --cloud-type)              PCS_CLOUD_TYPE="$2" ;;
@@ -159,6 +161,8 @@ echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_DOMAIN=\"${PCS_SUBSCRIPTION_DOMAIN}\""                                     >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
+echo "export PCS_AAD_CLIENT_SP_ID=\"${PCS_AAD_CLIENT_SP_ID}\""                                           >> ${ENVVARS}
+echo "export PCS_AAD_SECRET=\"${PCS_AAD_SECRET}\""                                                       >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
 echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
