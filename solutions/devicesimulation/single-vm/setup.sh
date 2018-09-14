@@ -45,8 +45,11 @@ while [ "$#" -gt 0 ]; do
         --auth-issuer)             PCS_AUTH_ISSUER="$2" ;;
         --auth-type)               PCS_WEBUI_AUTH_TYPE="$2" ;;
         --aad-appid)               PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
+        --aad-sp-client-id)        PCS_AAD_CLIENT_SP_ID="$2" ;;
+        --aad-app-secret)          PCS_AAD_SECRET="$2" ;;
         --aad-tenant)              PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
         --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
+        --cloud-type)              PCS_CLOUD_TYPE="$2" ;;
         --deployment-id)           PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
         --release-version)         PCS_RELEASE_VERSION="$2" ;;
@@ -158,11 +161,21 @@ echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_DOMAIN=\"${PCS_SUBSCRIPTION_DOMAIN}\""                                     >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
+echo "export PCS_AAD_CLIENT_SP_ID=\"${PCS_AAD_CLIENT_SP_ID}\""                                           >> ${ENVVARS}
+echo "export PCS_AAD_SECRET=\"${PCS_AAD_SECRET}\""                                                       >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
 echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
+echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                                                 >> ${ENVVARS}
+echo "export PCS_SEED_TEMPLATE=\"device-simulation-template\""                                           >> ${ENVVARS}
+echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
+# Setting some empty vars as these are required vars by Config service
+echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                                                   >> ${ENVVARS}
+echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                                          >> ${ENVVARS}
+echo "export PCS_IOTHUBMANAGER_WEBSERVICE_URL=\"\""                                                      >> ${ENVVARS}
+echo "export PCS_BINGMAP_KEY=\"\""                                                                       >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

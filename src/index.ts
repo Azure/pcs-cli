@@ -19,7 +19,7 @@ import {
     UserTokenCredentials,
     ApplicationTokenCredentials
 } from 'ms-rest-azure';
-import { SubscriptionClient, SubscriptionModels } from 'azure-arm-resource';
+import { SubscriptionClient, SubscriptionModels, ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import GraphRbacManagementClient from 'azure-graph';
 import AuthorizationManagementClient = require('azure-arm-authorization');
 import ComputeManagementClient = require('azure-arm-compute');
@@ -31,6 +31,7 @@ import DeployUI from './deployui';
 import { Questions, IQuestions } from './questions';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
+import { genPassword } from './utils';
 import {
     Application,
     ServicePrincipal,
@@ -52,13 +53,6 @@ enum solutionSkus {
     local
 }
 
-enum environments {
-    azurecloud,
-    azurechinacloud,
-    azuregermanycloud,
-    azureusgovernment
-}
-
 const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
 /* tslint:disable */
 const invalidPasswordMessage = 'The supplied password must be between 12-72 characters long and must satisfy at least 3 of password complexity requirements from the following: 1) Contains an uppercase character\n2) Contains a lowercase character\n3) Contains a numeric digit\n4) Contains a special character\n5) Control characters are not allowed';
@@ -76,6 +70,7 @@ const RELEASE_VERSION_PATTERN: RegExp = /((\d*\.){2}(\d*\-preview.)(\d*))(\.\d*)
 
 let cachedAuthResponse: any;
 let answers: Answers = {};
+let userPrincipalObjectId: string;
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
@@ -288,6 +283,48 @@ function main() {
                     throw new Error('Locations list cannot be empty');
                 })
                 .then((ans: Answers) => {
+                    // Use Cosmos DB for telemetry storage for China environment
+                    if (program.environment === AzureEnvironment.AzureChina.name) {
+                        return Promise.resolve(ans);
+                    }
+                    // Check if the selected location support Time Series Insights resource type for Global environment
+                    // Use the default value of template when the location does not support it
+                    const resourceManagementClient = new ResourceManagementClient(
+                        new DeviceTokenCredentials(cachedAuthResponse.credentials),
+                        answers.subscriptionId,
+                        baseUri);
+
+                    ans.telemetryStorageType = 'tsi';
+
+                    const promises = new Array<Promise<any>>();
+                    promises.push(resourceManagementClient.providers.get('Microsoft.TimeSeriesInsights')
+                    .then((providers: ResourceModels.Provider) => {
+                        if (providers.resourceTypes) {
+                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
+                            if (resourceType && resourceType.length) {
+                                if (new Set(resourceType[0].locations).has(ans.location)) {
+                                    ans.tsiLocation = ans.location.toLowerCase().replace(' ', '');
+                                }
+                            }
+                        }
+                    }));
+
+                    promises.push(resourceManagementClient.providers.get('Microsoft.Devices')
+                    .then((providers: ResourceModels.Provider) => {
+                        if (providers.resourceTypes) {
+                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType
+                                && x.resourceType.toLowerCase() === 'provisioningservices');
+                            if (resourceType && resourceType.length) {
+                                if (new Set(resourceType[0].locations).has(ans.location)) {
+                                    ans.provisioningServiceLocation = ans.location.toLowerCase().replace(' ', '');
+                                }
+                            }
+                        }
+                    }));
+
+                    return Promise.all(promises).then(() => Promise.resolve(ans));
+                })
+                .then((ans: Answers) => {
                     answers = {...answers, ...ans};
                     if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
                         return askPwdAgain();
@@ -319,6 +356,7 @@ function main() {
                     answers.runtime = program.runtime;
                     answers.deploymentId = uuid.v1();
                     answers.diagnosticsEndpointUrl = program.diagnosticUrl;
+                    answers.userPrincipalObjectId = userPrincipalObjectId;
                     if (program.versionOverride && program.dockerTagOverride) {
                         answers.version = program.versionOverride;
                         answers.dockerTag = program.dockerTagOverride;
@@ -441,7 +479,7 @@ function createServicePrincipal(azureWebsiteName: string,
     const homepage = getWebsiteUrl(azureWebsiteName);
     const baseUri = options.environment ? options.environment.activeDirectoryGraphResourceId : 'https://graph.windows.net/';
     const existingServicePrincipalSecret: string = program.servicePrincipalSecret;
-    const newServicePrincipalSecret: string = uuid.v4();
+    const newServicePrincipalSecret: string = genPassword();
     const adminAppRoleId = 'a400a00b-f67c-42b7-ba9a-f73d8c67e433';
     const readOnlyAppRoleId = 'e5bbd0f5-128e-4362-9dd1-8f253c6082d7';
     let newServicePrincipal: ServicePrincipal;
@@ -554,8 +592,8 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
-        // Create role assignment only for standard deployment since ACS requires it
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
+        // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
+        if (program.type !== 'remotemonitoring' || program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
             const cachedAuthResp = getCachedAuthResponse();
             return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, cachedAuthResp.credentials);
         }
@@ -597,6 +635,7 @@ function createAppRoleAssignment(
     };
     return graphClient.sendRequest(meOptions)
     .then((me: any) => {
+        userPrincipalObjectId = me.objectId;
         const options: any = {
             body: {
                 id: roleId,
@@ -831,26 +870,13 @@ function getWebsiteUrl(hostName: string): string {
 }
 
 function getAzureEnvironment(environmentName: string): AzureEnvironment {
-    let environment: any;
-    const lowerCaseEnv = environmentName.toLowerCase();
-    switch (lowerCaseEnv) {
-        case environments[environments.azurecloud]:
-            environment = AzureEnvironment.Azure;
-            break;
-        case environments[environments.azurechinacloud]:
-            environment = AzureEnvironment.AzureChina;
-            break;
-        case environments[environments.azuregermanycloud]:
-            environment = AzureEnvironment.AzureGermanCloud;
-            break;
-        case environments[environments.azureusgovernment]:
-            environment = AzureEnvironment.AzureUSGovernment;
-            break;
-        default:
-            environment = AzureEnvironment.Azure;
-            break;
-    }
-    return environment;
+    const azureEnvironmentMaps = {
+        azurechinacloud: AzureEnvironment.AzureChina,
+        azurecloud: AzureEnvironment.Azure,
+        azuregermancloud: AzureEnvironment.AzureGermanCloud,
+        azureusgovernment: AzureEnvironment.AzureUSGovernment,
+    };
+    return azureEnvironmentMaps[environmentName.toLowerCase()];
 }
 
 function getPatchedDeviceTokenCredentials(options: any) {

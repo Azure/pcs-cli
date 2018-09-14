@@ -198,7 +198,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: azureiotpcs/device-simulation-dotnet:{dockerTag}
+        image: azureiotpcs/device-simulation-dotnet:DS-1.0.2
         ports:
         - containerPort: 9003
         env:
@@ -357,7 +357,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-dotnet:{dockerTag}
+        image: azureiotpcs/telemetry-{runtime}:{dockerTag}
         ports:
         - containerPort: 9004
         env:
@@ -376,6 +376,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: storageadapter.webservice.url
+        - name: PCS_DIAGNOSTICS_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -401,6 +406,31 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_AAD_TENANT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.tenant
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
+        - name: PCS_TELEMETRY_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.storage.type
+        - name: PCS_TSI_FQDN
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.tsi.fqdn
 ---
 apiVersion: v1
 kind: Service
@@ -678,6 +708,16 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_SOLUTION_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.type
+        - name: PCS_SEED_TEMPLATE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.seedtemplate
 ---
 apiVersion: v1
 kind: Service
@@ -792,6 +832,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.endpoint.url
+        - name: PCS_CONFIG_WEBSERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key:  config.webservice.url
         - name: PCS_AUTH_ISSUER
           valueFrom:
             configMapKeyRef:
@@ -812,6 +857,16 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.cors.whitelist
+        - name: PCS_CLOUD_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.cloud.type
+        - name: PCS_SUBSCRIPTION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.subscription.id
         - name: PCS_DEPLOYMENT_ID
           valueFrom:
             configMapKeyRef:
@@ -822,6 +877,16 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.solution.type
+        - name: PCS_SOLUTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
+        - name: PCS_IOTHUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.iothub.name
 ---
 apiVersion: v1
 kind: Service

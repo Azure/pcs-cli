@@ -2,10 +2,15 @@ export class Config {
     public AADTenantId: string;
     public AADLoginURL: string;
     public ApplicationId: string;
+    public ServicePrincipalSecret: string;
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
     public AzureMapsKey: string;
+    public CloudType: string;
+    public SubscriptionId: string;
+    public SolutionName: string;
+    public IotHubName: string;
     public DeploymentId: string;
     public DiagnosticsEndpointUrl: string;
     public DocumentDBConnectionString: string;
@@ -29,4 +34,6 @@ export class Config {
     };
     public MessagesEventHubConnectionString: string;
     public MessagesEventHubName: string;
+    public TelemetryStorgeType: string;
+    public TSIDataAccessFQDN: string;
 }
