@@ -294,7 +294,7 @@
         },
         "tsiLocation" : {
             "type": "string",
-            "defaultValue": "eastus",
+            "defaultValue": "eastus2",
             "allowedValues": [
                 "eastus",
                 "eastus2",
