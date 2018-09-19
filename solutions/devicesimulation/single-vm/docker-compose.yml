@@ -54,7 +54,7 @@ services:
       - diagnostics-svc
     environment:
       - PCS_LOG_LEVEL
-      - PCS_IOTHUB_CONNSTRING
+      - PCS_IOTHUB_CONNSTRING=none
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AUTH_ISSUER
@@ -69,8 +69,8 @@ services:
       - PCS_AAD_SECRET
       - PCS_RESOURCE_GROUP
       - PCS_IOHUB_NAME
-      - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
-      - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+     - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1      
+     - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
     logging:
       driver: "json-file"
       options:

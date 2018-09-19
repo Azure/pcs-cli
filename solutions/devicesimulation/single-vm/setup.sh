@@ -31,15 +31,9 @@ while [ "$#" -gt 0 ]; do
         --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
-        --iothub-name)             PCS_IOHUB_NAME="$2" ;;
-        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
-        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
-        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
-        --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
-        --storage-sku)             PCS_STORAGE_SKU="$2" ;;
-        --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
+         --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
         --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
         --ssl-certificate-key)     PCS_CERTIFICATE_KEY="$2" ;;
         --auth-audience)           PCS_AUTH_AUDIENCE="$2" ;;
@@ -68,6 +62,7 @@ SETUP_URL="${REPOSITORY}/setup/"
 ### Install Docker
 
 install_docker_ce() {
+    apt-get update
     # Remove old packages if installed
     set +e
     apt-get remove docker docker-engine docker.io
@@ -154,7 +149,9 @@ echo "  aad : {"                                      >> ${WEBUICONFIG_SAFE}
 echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_SAFE}
 echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_SAFE}
 echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_SAFE}
-echo "  }"                                            >> ${WEBUICONFIG_SAFE}
+echo "  },"                                           >> ${WEBUICONFIG_SAFE}
+echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_SAFE}
+echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_SAFE}
 echo "}"                                              >> ${WEBUICONFIG_SAFE}
 
 echo "var DeploymentConfig = {"                        > ${WEBUICONFIG_UNSAFE}
@@ -165,7 +162,9 @@ echo "  aad : {"                                      >> ${WEBUICONFIG_UNSAFE}
 echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_UNSAFE}
 echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_UNSAFE}
 echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_UNSAFE}
-echo "  }"                                            >> ${WEBUICONFIG_UNSAFE}
+echo "  },"                                           >> ${WEBUICONFIG_UNSAFE}
+echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_UNSAFE}
+echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_UNSAFE}
 echo "}"                                              >> ${WEBUICONFIG_UNSAFE}
 
 cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
