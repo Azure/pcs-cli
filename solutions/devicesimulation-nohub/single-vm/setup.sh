@@ -23,6 +23,7 @@ export PCS_IOTHUB_CONNSTRING=""
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
+        --solution-setup-url)      PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/1M/solutions/devicesimulation-vmss-nohub
         --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
         --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
         --hostname)                HOST_NAME="$2" ;;
@@ -30,15 +31,8 @@ while [ "$#" -gt 0 ]; do
         --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
-        --iothub-name)             PCS_IOHUB_NAME="$2" ;;
-        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
-        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
-        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
-        --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
-        --storage-sku)             PCS_STORAGE_SKU="$2" ;;
-        --storage-endpoint-suffix) PCS_STORAGE_ENDPOINT_SUFFIX="$2" ;;
         --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
         --ssl-certificate-key)     PCS_CERTIFICATE_KEY="$2" ;;
         --auth-audience)           PCS_AUTH_AUDIENCE="$2" ;;
@@ -49,15 +43,38 @@ while [ "$#" -gt 0 ]; do
         --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
         --deployment-id)           PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
-        --release-version)         PCS_RELEASE_VERSION="$2" ;;
         --docker-tag)              PCS_DOCKER_TAG="$2" ;;
+        --release-version)         PCS_RELEASE_VERSION="$2" ;;
     esac
     shift
 done
 
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-vmss-nohub/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 SETUP_URL="${REPOSITORY}/setup/"
+
+# ========================================================================
+
+### Install Docker
+
+install_docker_ce() {
+    # Remove old packages if installed
+    set +e
+    apt-get remove docker docker-engine docker.io
+    set -e
+    # Install Docker's GPG key
+    apt-get -y --force-yes --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
+    # Add Docker repository to get up to date packages
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+    apt-get update
+    # Install
+    apt-get -y install docker-ce docker-compose
+    # Test
+    docker run --rm hello-world && docker rmi hello-world
+}
+
+install_docker_ce
 
 # ========================================================================
 
@@ -89,7 +106,7 @@ cd ${APP_PATH}
 
 # Docker compose file
 
-DOCKERCOMPOSE_SOURCE="${REPOSITORY}/docker-compose.yml"
+DOCKERCOMPOSE_SOURCE="${PCS_SOLUTION_SETUP_URL}/single-vm/docker-compose.yml"
 wget $DOCKERCOMPOSE_SOURCE -O ${DOCKERCOMPOSE}
 sed -i 's/${PCS_DOCKER_TAG}/'${PCS_DOCKER_TAG}'/g' ${DOCKERCOMPOSE}
 
@@ -154,12 +171,10 @@ echo ""                                                                         
 echo "export HOST_NAME=\"${HOST_NAME}\""                                                                 >> ${ENVVARS}
 echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
 echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
-echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_DOMAIN=\"${PCS_SUBSCRIPTION_DOMAIN}\""                                     >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
-echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
@@ -185,12 +200,26 @@ wget $SETUP_URL/nanorc -O /tmp/nanorc && cat /tmp/nanorc >> /etc/nanorc
 echo "### CUSTOMIZATIONS ###" >> /etc/bash.bashrc
 wget $SETUP_URL/bashrc -O /tmp/bashrc && cat /tmp/bashrc >> /etc/bash.bashrc
 
+# Optional script to customize Bash shell, to be executed manually by the user
+wget https://aka.ms/bashir-setup -O /etc/bashir-script \
+    && chmod 444 /etc/bashir-script \
+    && echo 'cat /etc/bashir-script | bash && . ~/.bashir && echo "Restart Bash to see the changes (e.g. exit and login again)."' > /usr/local/bin/bashir-setup \
+    && chmod 755 /usr/local/bin/bashir-setup
+
 # ========================================================================
 
 # Auto-start after reboots
 wget $SETUP_URL/init -O /etc/init.d/azure-iot-solution \
     && chmod 755 /etc/init.d/azure-iot-solution \
     && update-rc.d azure-iot-solution defaults
+
+# ========================================================================
+
+# Allow SSH on a secondary port
+
+echo "Port 22" >> /etc/ssh/sshd_config
+echo "Port 10022" >> /etc/ssh/sshd_config
+service ssh restart
 
 # ========================================================================
 
