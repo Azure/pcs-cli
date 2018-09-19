@@ -50,45 +50,6 @@
           "description": "The storage SKU name"
         }
       },
-      "documentDBName": {
-        "type": "string",
-        "defaultValue": "[concat('documentdb-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
-        "metadata": {
-          "description": "The name of the CosmosDB"
-        }
-      },
-      "docDBConsistencyLevel": {
-        "type": "string",
-        "allowedValues": [
-          "Strong",
-          "BoundedStaleness",
-          "Session",
-          "ConsistentPrefix",
-          "Eventual"
-        ],
-        "defaultValue": "Strong",
-        "metadata": {
-          "description": "The CosmosDB default consistency level for this account."
-        }
-      },
-      "docDBMaxStalenessPrefix": {
-        "type": "int",
-        "minValue": 10,
-        "maxValue": 1000,
-        "defaultValue": 10,
-        "metadata": {
-          "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
-        }
-      },
-      "docDBMaxIntervalInSeconds": {
-        "type": "int",
-        "minValue": 5,
-        "maxValue": 600,
-        "defaultValue": 5,
-        "metadata": {
-          "description": "When CosmosDB consistency level is set to BoundedStaleness, then this value is required, otherwise it can be ignored."
-        }
-      },
       "resourcesNamePrefix": {
         "type": "string",
         "defaultValue": "[toLower(concat(take(parameters('solutionName'), 20), '-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 3), '-'))]",
@@ -308,19 +269,6 @@
         "defaultValue": "Undefined",
         "metadata": {
           "description": "Diagnostics service endpoint url"
-        }
-      },
-      "storageEndpointSuffix":
-      {
-        "type": "string",
-        "defaultValue": "core.windows.net",
-        "allowedValues": [
-          "core.windows.net",
-          "core.chinacloudapi.cn",
-          "core.cloudapi.de"
-        ],
-        "metadata": {
-          "description": "NOT USED"
         }
       }
     },
