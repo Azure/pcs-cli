@@ -197,7 +197,7 @@ echo "export PCS_SEED_TEMPLATE=\"device-simulation-template\""                  
 echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
-echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                             >> ${ENVVARS}
+echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

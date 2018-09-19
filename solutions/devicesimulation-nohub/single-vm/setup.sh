@@ -31,6 +31,7 @@ while [ "$#" -gt 0 ]; do
         --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
+        --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
@@ -187,6 +188,7 @@ echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                        
 echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
+echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
 # Setting some empty vars as these are required vars by Config service
 echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                                                   >> ${ENVVARS}
 echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                                          >> ${ENVVARS}
