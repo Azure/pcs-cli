@@ -33,7 +33,7 @@ while [ "$#" -gt 0 ]; do
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
-         --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
+        --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
         --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
         --ssl-certificate-key)     PCS_CERTIFICATE_KEY="$2" ;;
         --auth-audience)           PCS_AUTH_AUDIENCE="$2" ;;

@@ -74,8 +74,7 @@ let userPrincipalObjectId: string;
 
 const program = new Command(packageJson.name)
     .version(packageJson.version, '-v, --version')
-    .option('-t, --type <type>', 
-            'Solution Type: remotemonitoring, devicesimulation, devicesimulation-nohub',
+    .option('-t, --type <type>', 'Solution Type: remotemonitoring, devicesimulation, devicesimulation-nohub',
             /^(remotemonitoring|devicesimulation|devicesimulation-nohub|test)$/i,
             'remotemonitoring')
     .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or local', /^(basic|standard|local)$/i, 'basic')
