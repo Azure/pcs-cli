@@ -312,13 +312,14 @@
                 "description": "Configure all linux machines with the SSH RSA public key string.  Your key should include three parts, for example 'ssh-rsa AAAAB...snip...UcyupgH azureuser@linuxvm'"
             }
         },
-        "servicePrincipalClientId": {
+        "aadClientId": {
             "metadata": {
                 "description": "Client ID (used by cloudprovider)"
             },
             "type": "securestring",
             "defaultValue": "n/a"
         },
+
         "servicePrincipalSecret": {
             "metadata": {
                 "description": "The Service Principal Client Secret."
@@ -442,6 +443,13 @@
             "defaultValue": "fakevalue",
             "metadata": {
                 "description": "Object Id of the AAD user that will have access to the environment. Available from the Get-AzureRMADUser or the Get-AzureRMADServicePrincipal cmdlets"
+            }
+        },
+        "aadClientServicePrincipalId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "Service principal Id of the AAD application that will have access to the environment. Available from the Get-AzureRMADServicePrincipal cmdlets"
             }
         }
     },
@@ -784,7 +792,7 @@
                     "name": "[variables('tsiApplicationAccessPolicy')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
                     "properties": {
-                        "principalObjectId": "[parameters('servicePrincipalClientId')]",
+                        "principalObjectId": "[parameters('aadClientId')]",
                         "roles": [
                             "[variables('tsiReaderRole')]"
                         ]
@@ -1048,7 +1056,7 @@
                     }
                 },
                 "servicePrincipalProfile": {
-                    "ClientId": "[parameters('servicePrincipalClientId')]",
+                    "ClientId": "[parameters('aadClientId')]",
                     "Secret": "[parameters('servicePrincipalSecret')]"
                 }
             }
