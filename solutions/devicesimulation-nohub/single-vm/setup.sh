@@ -23,7 +23,7 @@ export PCS_IOTHUB_CONNSTRING=""
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        --solution-setup-url)      PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/1M/solutions/devicesimulation-vmss-nohub
+        --solution-setup-url)      PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub
         --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
         --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
         --hostname)                HOST_NAME="$2" ;;
@@ -52,7 +52,7 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-vmss-nohub/single-vm"
+REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 SETUP_URL="${REPOSITORY}/setup/"
 
