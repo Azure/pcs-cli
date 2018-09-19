@@ -26,6 +26,12 @@
     "aadClientId": {
       "value": "{Added through command line interface}"
     },
+    "aadClientServicePrincipalId": {
+      "value": "{Added through command line interface}"
+    },
+    "aadClientSecret": {
+      "value": "{Added through command line interface}"
+    },
     "microServiceRuntime": {
       "value": "{Added through command line interface}"
     },
@@ -39,6 +45,9 @@
       "value": "{Added through command line interface}"
     },
     "diagnosticsEndpointUrl": {
+      "value": "{Added through command line interface}"
+    },
+    "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
     }
 }
