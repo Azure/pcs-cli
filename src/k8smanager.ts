@@ -199,7 +199,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['diagnostics.solution.name'] = this._config.SolutionName;
         configMap.data['diagnostics.iothub.name'] = this._config.IotHubName;
         configMap.data['diagnostics.deployment.id'] = this._config.DeploymentId;
-        configMap.data['diagnostics.endpoint.url'] = this._config.DiagnosticsEndpointUrl;
+        configMap.data['diagnostics.endpoint.url'] = this._config.DiagnosticsEndpointUrl || '';
         configMap.data['diagnostics.solution.type'] = this._config.SolutionType;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
         configMap.data['iothubreact.hub.name'] = this._config.EventHubName;
