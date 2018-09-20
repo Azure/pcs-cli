@@ -54,7 +54,7 @@ services:
       - diagnostics-svc
     environment:
       - PCS_LOG_LEVEL
-      - PCS_IOTHUB_CONNSTRING=none
+      - PCS_IOTHUB_CONNSTRING
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
