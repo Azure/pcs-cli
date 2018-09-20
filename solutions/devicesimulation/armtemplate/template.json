@@ -217,6 +217,33 @@
         "description": "ID of the Azure Subscription where the solution is deployed"
       }
     },
+    "aadClientServicePrincipalId": {
+      "metadata": {
+        "description": "Client ID (used by cloudprovider)"
+      },
+      "type": "securestring",
+      "defaultValue": "n/a"
+    },
+    "aadClientSecret": {
+      "metadata": {
+        "description": "The Service Principal Client Secret."
+      },
+      "type": "securestring",
+      "defaultValue": "n/a"
+    },
+    "cloudType": {
+      "type": "string",
+      "defaultValue": "Global",
+      "allowedValues": [
+        "Global",
+        "China",
+        "Germany",
+        "Fairfax"
+      ],
+      "metadata": {
+        "description": "Cloud environment name"
+      }
+    },
     "deploymentId": {
       "type": "string",
       "defaultValue": "Undefined",
@@ -599,7 +626,7 @@
                     "fileUris": [
                       "[parameters('vmSetupScriptUri')]"
                     ],
-                    "commandToExecute": "[concat('sh setup.sh --log-level Info --hostname ', '\"', variables('vmFQDN'), '\"', ' --docdb-connstring ', '\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"', ' --ssl-certificate ', '\"', parameters('remoteEndpointCertificate'), '\"', ' --ssl-certificate-key ', '\"', parameters('remoteEndpointCertificateKey'), '\"', ' --auth-type aad ', ' --auth-audience ', '\"', parameters('aadClientId'), '\"', ' --aad-appid ', '\"', parameters('aadClientId'), '\"', ' --aad-tenant ', '\"', parameters('aadTenantId'), '\"', ' --auth-issuer ', '\"', 'https://sts.windows.net/', parameters('aadTenantId'), '/', '\"', ' --aad-instance ', '\"', parameters('aadInstance'), '\"', ' --resource-group ', '\"', parameters('solutionName'), '\"', ' --solution-type ', '\"', parameters('solutionType'), '\"', ' --deployment-id ', '\"', parameters('deploymentId'), '\"', ' --diagnostics-url ', '\"', parameters('diagnosticsEndpointUrl'), '\"',  ' --storage-connstring ', '\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"', ' --docdb-name ', '\"', parameters('cosmosDbSqlName'), '\"', ' --solution-name ', '\"', parameters('solutionName'), '\"', ' --solution-setup-url ', '\"', parameters('solutionTemplateRepository'), '\"', ' --docker-tag ', '\"', parameters('pcsDockerTag'), '\"', ' --subscription-domain ', '\"', parameters('domain'), '\"', ' --subscription-id ', '\"', parameters('subscriptionId'), '\"' )]"
+                    "commandToExecute": "[concat('sh setup.sh --log-level Info --hostname ', '\"', variables('vmFQDN'), '\"', ' --docdb-connstring ', '\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"', ' --ssl-certificate ', '\"', parameters('remoteEndpointCertificate'), '\"', ' --ssl-certificate-key ', '\"', parameters('remoteEndpointCertificateKey'), '\"', ' --auth-type aad ', ' --auth-audience ', '\"', parameters('aadClientId'), '\"', ' --aad-appid ', '\"', parameters('aadClientId'), '\"', ' --aad-tenant ', '\"', parameters('aadTenantId'), '\"', ' --auth-issuer ', '\"', 'https://sts.windows.net/', parameters('aadTenantId'), '/', '\"', ' --aad-instance ', '\"', parameters('aadInstance'), '\"', ' --resource-group ', '\"', parameters('solutionName'), '\"', ' --solution-type ', '\"', parameters('solutionType'), '\"', ' --deployment-id ', '\"', parameters('deploymentId'), '\"', ' --diagnostics-url ', '\"', parameters('diagnosticsEndpointUrl'), '\"',  ' --storage-connstring ', '\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"', ' --docdb-name ', '\"', parameters('cosmosDbSqlName'), '\"', ' --solution-name ', '\"', parameters('solutionName'), '\"', ' --solution-setup-url ', '\"', parameters('solutionTemplateRepository'), '\"', ' --docker-tag ', '\"', parameters('pcsDockerTag'), '\"', ' --subscription-domain ', '\"', parameters('domain'), '\"', ' --subscription-id ',  concat('\"', parameters('subscriptionId'), '\"'),' --aad-sp-client-id ', concat('\"', parameters('aadClientServicePrincipalId'), '\"'), ' --aad-app-secret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'))]"
                   }
                 }
               }
