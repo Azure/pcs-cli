@@ -18,7 +18,7 @@
       },
       "solutionTemplateRepository": {
         "type": "string",
-        "defaultValue": "https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-nohub",
+        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-nohub')]",
         "metadata": {
           "description": "The folder where ARM template and setup scripts will be downloaded from during the VM setup (use the parent of 'armtemplate' and 'single-vm' folders, e.g. https://raw.githubusercontent.com/Azure/pcs-cli/master/solutions/devicesimulation-vmss-nohub)"
         }
