@@ -380,12 +380,6 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.servicePrincipalSecret) {
             this._parameters.servicePrincipalSecret.value = answers.servicePrincipalSecret;
         }
-        if (this._parameters.servicePrincipalClientId) {
-            // According to the document, the service principal client id can use appId. When using servicePrincipalId
-            // of answer ACS deployment always fails and complains application was not found.
-            // more detail here: https://docs.microsoft.com/en-us/azure/container-service/kubernetes/container-service-kubernetes-service-principal
-            this._parameters.servicePrincipalClientId.value = answers.appId;
-        }
         if (this._parameters.sshRSAPublicKey) {
             this._parameters.sshRSAPublicKey.value = fs.readFileSync(answers.sshFilePath, 'UTF-8');
         }
