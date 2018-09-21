@@ -31,10 +31,10 @@ while [ "$#" -gt 0 ]; do
         --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
-        --iothub-name)             PCS_IOHUB_NAME="$2" ;;	
-        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;	
-        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;	
-        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;	
+        --iothub-name)             PCS_IOHUB_NAME="$2" ;;
+        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
+        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
+        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
         --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
@@ -246,7 +246,6 @@ wget $SETUP_URL/init -O /etc/init.d/azure-iot-solution \
 # Allow SSH on a secondary port
 
 echo "Port 22" >> /etc/ssh/sshd_config
-echo "Port 10022" >> /etc/ssh/sshd_config
 service ssh restart
 
 # ========================================================================

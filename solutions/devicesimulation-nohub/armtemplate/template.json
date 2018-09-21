@@ -443,7 +443,7 @@
               "properties": {
                 "protocol": "TCP",
                 "sourcePortRange": "*",
-                "destinationPortRange": "10022",
+                "destinationPortRange": "22",
                 "sourceAddressPrefix": "*",
                 "destinationAddressPrefix": "*",
                 "access": "Allow",
