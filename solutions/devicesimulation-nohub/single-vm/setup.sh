@@ -177,6 +177,7 @@ echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                          
 echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                                          >> ${ENVVARS}
 echo "export PCS_IOTHUBMANAGER_WEBSERVICE_URL=\"\""                                                      >> ${ENVVARS}
 echo "export PCS_BINGMAP_KEY=\"\""                                                                       >> ${ENVVARS}
+echo "export PCS_AZUREMAPS_KEY=\"\""                                                                     >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
@@ -185,6 +186,7 @@ echo ""                                                                         
 echo "# Format: true | false"                                                                            >> ${ENVVARS}
 echo "# empty => Auth required"                                                                          >> ${ENVVARS}
 echo "export PCS_AUTH_REQUIRED=\"\""                                                                     >> ${ENVVARS}
+echo "export PCS_AUTH_WEBSERVICE_URL=\"\""                                                               >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "# Format: { 'origins': ['*'], 'methods': ['*'], 'headers': ['*'] }"                                >> ${ENVVARS}
 echo "# empty => CORS support disabled"                                                                  >> ${ENVVARS}
