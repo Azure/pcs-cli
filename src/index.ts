@@ -592,10 +592,9 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
-        // Create role assignment only for standard deployment since ACS requires it
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-            const cachedAuthResp = getCachedAuthResponse();
-            return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, cachedAuthResp.credentials);
+        // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
+        if (program.type !== 'remotemonitoring' || program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
+            return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
         }
         return sp.appId;
     })

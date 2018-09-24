@@ -32,6 +32,12 @@
   "subscriptionId": {
     "value": "{Added through command line interface}"
   },
+  "aadClientServicePrincipalId": {
+    "value": "{Added through command line interface}"
+  },
+  "aadClientSecret": {
+    "value": "{Added through command line interface}"
+  },
   "pcsReleaseVersion": {
     "value": "{Added through command line interface}"
   },
