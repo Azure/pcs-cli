@@ -437,19 +437,6 @@
                 "priority": 101,
                 "direction": "Inbound"
               }
-            },
-            {
-              "name": "SSH_alt",
-              "properties": {
-                "protocol": "TCP",
-                "sourcePortRange": "*",
-                "destinationPortRange": "22",
-                "sourceAddressPrefix": "*",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 102,
-                "direction": "Inbound"
-              }
             }
           ]
         },

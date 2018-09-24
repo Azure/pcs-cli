@@ -243,11 +243,4 @@ wget $SETUP_URL/init -O /etc/init.d/azure-iot-solution \
 
 # ========================================================================
 
-# Allow SSH on a secondary port
-
-echo "Port 22" >> /etc/ssh/sshd_config
-service ssh restart
-
-# ========================================================================
-
 nohup /app/start.sh > /dev/null 2>&1&
