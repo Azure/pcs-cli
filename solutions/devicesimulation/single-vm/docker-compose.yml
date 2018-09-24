@@ -143,4 +143,3 @@ services:
       options:
         max-size: "10240k"
         max-file: "10"
-        
