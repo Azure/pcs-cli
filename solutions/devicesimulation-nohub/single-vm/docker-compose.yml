@@ -137,6 +137,7 @@ services:
       - PCS_TELEMETRY_WEBSERVICE_URL
       - PCS_IOTHUBMANAGER_WEBSERVICE_URL
       - PCS_BINGMAP_KEY
+      - PCS_AZUREMAPS_KEY
     logging:
       driver: "json-file"
       options:

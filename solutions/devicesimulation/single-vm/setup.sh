@@ -178,6 +178,7 @@ echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                          
 echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                                          >> ${ENVVARS}
 echo "export PCS_IOTHUBMANAGER_WEBSERVICE_URL=\"\""                                                      >> ${ENVVARS}
 echo "export PCS_BINGMAP_KEY=\"\""                                                                       >> ${ENVVARS}
+echo "export PCS_AZUREMAPS_KEY=\"\""                                                                     >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
