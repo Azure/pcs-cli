@@ -148,7 +148,9 @@ echo "  aad : {"                                      >> ${WEBUICONFIG_SAFE}
 echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_SAFE}
 echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_SAFE}
 echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_SAFE}
-echo "  }"                                            >> ${WEBUICONFIG_SAFE}
+echo "  },"                                           >> ${WEBUICONFIG_SAFE}
+echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_SAFE}
+echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_SAFE}
 echo "}"                                              >> ${WEBUICONFIG_SAFE}
 
 echo "var DeploymentConfig = {"                        > ${WEBUICONFIG_UNSAFE}
@@ -159,7 +161,9 @@ echo "  aad : {"                                      >> ${WEBUICONFIG_UNSAFE}
 echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_UNSAFE}
 echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_UNSAFE}
 echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_UNSAFE}
-echo "  }"                                            >> ${WEBUICONFIG_UNSAFE}
+echo "  },"                                           >> ${WEBUICONFIG_SAFE}
+echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_SAFE}
+echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_SAFE}
 echo "}"                                              >> ${WEBUICONFIG_UNSAFE}
 
 cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
