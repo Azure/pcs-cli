@@ -187,7 +187,6 @@ echo ""                                                                         
 echo "# Format: true | false"                                                                            >> ${ENVVARS}
 echo "# empty => Auth required"                                                                          >> ${ENVVARS}
 echo "export PCS_AUTH_REQUIRED=\"\""                                                                     >> ${ENVVARS}
-echo "export PCS_AUTH_WEBSERVICE_URL=\"\""                                                               >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "# Format: { 'origins': ['*'], 'methods': ['*'], 'headers': ['*'] }"                                >> ${ENVVARS}
 echo "# empty => CORS support disabled"                                                                  >> ${ENVVARS}
