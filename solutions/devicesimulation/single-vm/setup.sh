@@ -169,7 +169,7 @@ echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                      
 echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
 echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                                                 >> ${ENVVARS}
-echo "export PCS_SEED_TEMPLATE=\"device-simulation-template\""                                           >> ${ENVVARS}
+echo "export PCS_SEED_TEMPLATE=\"\""                                                                     >> ${ENVVARS}
 echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
@@ -187,7 +187,6 @@ echo ""                                                                         
 echo "# Format: true | false"                                                                            >> ${ENVVARS}
 echo "# empty => Auth required"                                                                          >> ${ENVVARS}
 echo "export PCS_AUTH_REQUIRED=\"\""                                                                     >> ${ENVVARS}
-echo "export PCS_AUTH_WEBSERVICE_URL=\"\""                                                               >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "# Format: { 'origins': ['*'], 'methods': ['*'], 'headers': ['*'] }"                                >> ${ENVVARS}
 echo "# empty => CORS support disabled"                                                                  >> ${ENVVARS}
