@@ -85,7 +85,7 @@
         "description": "AAD application identifier (GUID)"
       }
     },
-    "cosmosDbSqlName": {
+    "documentDBName": {
       "type": "string",
       "defaultValue": "[concat(parameters('resourcesNamePrefix'), 'db')]",
       "metadata": {
@@ -289,8 +289,7 @@
         "description": "Diagnostics service endpoint url"
       }
     },
-    "storageEndpointSuffix":
-    {
+    "storageEndpointSuffix": {
       "type": "string",
       "defaultValue": "core.windows.net",
       "allowedValues": [
