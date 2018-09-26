@@ -86,7 +86,7 @@
         "description": "AAD application identifier (GUID)"
       }
     },
-    "cosmosDbSqlName": {
+    "documentDBName": {
       "type": "string",
       "defaultValue": "[concat(parameters('resourcesNamePrefix'), 'db')]",
       "metadata": {
@@ -322,7 +322,7 @@
     "webAppRepoBranch": "master",
     "webAppPlanName": "[concat(parameters('azureWebsiteName'), '-plan')]",
     "cosmosDBApiVersion": "2016-03-19",
-    "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbSqlName'))]",
+    "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
     "location": "[resourceGroup().location]",
     "addressPrefix": "10.0.0.0/16",
     "subnetPrefix": "10.0.0.0/24",
@@ -369,10 +369,10 @@
       "comments": "Azure CosmosDB",
       "apiVersion": "[variables('cosmosDBApiVersion')]",
       "type": "Microsoft.DocumentDb/databaseAccounts",
-      "name": "[parameters('cosmosDbSqlName')]",
+      "name": "[parameters('documentDBName')]",
       "location": "[variables('location')]",
       "properties": {
-        "name": "[parameters('cosmosDbSqlName')]",
+        "name": "[parameters('documentDBName')]",
         "databaseAccountOfferType": "standard",
         "consistencyPolicy": {
           "defaultConsistencyLevel": "[parameters('cosmosDbSqlConsistencyLevel')]",
@@ -667,7 +667,7 @@
                     "fileUris": [
                       "[parameters('vmSetupScriptUri')]"
                     ],
-                    "commandToExecute": "[concat('sh setup.sh --log-level Info --hostname ', '\"', variables('vmFQDN'), '\"', ' --docdb-connstring ', '\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"', ' --ssl-certificate ', '\"', parameters('remoteEndpointCertificate'), '\"', ' --ssl-certificate-key ', '\"', parameters('remoteEndpointCertificateKey'), '\"', ' --auth-type aad ', ' --auth-audience ', '\"', parameters('aadClientId'), '\"', ' --aad-appid ', '\"', parameters('aadClientId'), '\"', ' --aad-tenant ', '\"', parameters('aadTenantId'), '\"', ' --auth-issuer ', '\"', 'https://sts.windows.net/', parameters('aadTenantId'), '/', '\"', ' --aad-instance ', '\"', parameters('aadInstance'), '\"', ' --resource-group ', '\"', parameters('solutionName'), '\"', ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --solution-type ', '\"', parameters('solutionType'), '\"', ' --deployment-id ', '\"', parameters('deploymentId'), '\"', ' --diagnostics-url ', '\"', parameters('diagnosticsEndpointUrl'), '\"',  ' --storage-connstring ', '\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"', ' --docdb-name ', '\"', parameters('cosmosDbSqlName'), '\"', ' --solution-name ', '\"', parameters('solutionName'), '\"', ' --solution-setup-url ', '\"', parameters('solutionTemplateRepository'), '\"', ' --docker-tag ', '\"', parameters('pcsDockerTag'), '\"', ' --subscription-domain ', '\"', parameters('domain'), '\"', ' --subscription-id ',  concat('\"', parameters('subscriptionId'), '\"'),' --aad-sp-client-id ', concat('\"', parameters('aadClientServicePrincipalId'), '\"'), ' --aad-app-secret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --iothub-name ', concat('\"', parameters('iotHubName'), '\"'), ' --iothub-sku ', parameters('iotHubSku'), ' --iothub-tier ', parameters('iotHubTier'), ' --iothub-units ', parameters('iotHubUnits') ,' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'))]"
+                    "commandToExecute": "[concat('sh setup.sh --log-level Info --hostname ', '\"', variables('vmFQDN'), '\"', ' --docdb-connstring ', '\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"', ' --ssl-certificate ', '\"', parameters('remoteEndpointCertificate'), '\"', ' --ssl-certificate-key ', '\"', parameters('remoteEndpointCertificateKey'), '\"', ' --auth-type aad ', ' --auth-audience ', '\"', parameters('aadClientId'), '\"', ' --aad-appid ', '\"', parameters('aadClientId'), '\"', ' --aad-tenant ', '\"', parameters('aadTenantId'), '\"', ' --auth-issuer ', '\"', 'https://sts.windows.net/', parameters('aadTenantId'), '/', '\"', ' --aad-instance ', '\"', parameters('aadInstance'), '\"', ' --resource-group ', '\"', parameters('solutionName'), '\"', ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --solution-type ', '\"', parameters('solutionType'), '\"', ' --deployment-id ', '\"', parameters('deploymentId'), '\"', ' --diagnostics-url ', '\"', parameters('diagnosticsEndpointUrl'), '\"',  ' --storage-connstring ', '\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"', ' --docdb-name ', '\"', parameters('documentDBName'), '\"', ' --solution-name ', '\"', parameters('solutionName'), '\"', ' --solution-setup-url ', '\"', parameters('solutionTemplateRepository'), '\"', ' --docker-tag ', '\"', parameters('pcsDockerTag'), '\"', ' --subscription-domain ', '\"', parameters('domain'), '\"', ' --subscription-id ',  concat('\"', parameters('subscriptionId'), '\"'),' --aad-sp-client-id ', concat('\"', parameters('aadClientServicePrincipalId'), '\"'), ' --aad-app-secret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --iothub-name ', concat('\"', parameters('iotHubName'), '\"'), ' --iothub-sku ', parameters('iotHubSku'), ' --iothub-tier ', parameters('iotHubTier'), ' --iothub-units ', parameters('iotHubUnits') ,' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'))]"
                   }
                 }
               }
