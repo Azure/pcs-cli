@@ -126,7 +126,7 @@
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue": "user",
+      "defaultValue": "azureuser",
       "metadata": {
         "description": "Admin username on all VMs."
       }
