@@ -38,7 +38,7 @@
       },
       "solutionType": {
         "type": "string",
-        "defaultValue": "DeviceSimulationV1",
+        "defaultValue": "DeviceSimulation",
         "metadata": {
           "description": "The type of the solution"
         }
