@@ -85,7 +85,7 @@
           "description": "AAD application identifier (GUID)"
         }
       },
-      "cosmosDbSqlName": {
+      "documentDBName": {
         "type": "string",
         "defaultValue": "[concat(parameters('resourcesNamePrefix'), 'db')]",
         "metadata": {
@@ -126,7 +126,7 @@
       },
       "adminUsername": {
         "type": "string",
-        "defaultValue": "user",
+        "defaultValue": "azureuser",
         "metadata": {
           "description": "Admin username on all VMs."
         }
@@ -286,7 +286,7 @@
       "webAppRepoBranch": "master",
       "webAppPlanName": "[concat(parameters('azureWebsiteName'), '-plan')]",
       "cosmosDBApiVersion": "2016-03-19",
-      "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbSqlName'))]",
+      "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
       "location": "[resourceGroup().location]",
       "addressPrefix": "10.0.0.0/16",
       "subnetPrefix": "10.0.0.0/24",
@@ -313,10 +313,10 @@
         "comments": "Azure CosmosDB",
         "apiVersion": "[variables('cosmosDBApiVersion')]",
         "type": "Microsoft.DocumentDb/databaseAccounts",
-        "name": "[parameters('cosmosDbSqlName')]",
+        "name": "[parameters('documentDBName')]",
         "location": "[variables('location')]",
         "properties": {
-          "name": "[parameters('cosmosDbSqlName')]",
+          "name": "[parameters('documentDBName')]",
           "databaseAccountOfferType": "standard",
           "consistencyPolicy": {
             "defaultConsistencyLevel": "[parameters('cosmosDbSqlConsistencyLevel')]",
@@ -611,7 +611,8 @@
                       "fileUris": [
                         "[parameters('vmSetupScriptUri')]"
                       ],
-                      "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --resource-group-location ', '\"', variables('location'), '\"',  ' --vmss-name ', '\"', parameters('vmssName'), '\"', ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'),  ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-connstring ', concat('\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --docdb-name ', concat('\"', parameters('cosmosDbSqlName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --solution-setup-url ', concat('\"', parameters('solutionTemplateRepository'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --aad-sp-client-id ', concat('\"', parameters('aadClientServicePrincipalId'), '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'), ' --aad-app-secret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"' ))]"
+
+                      "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'),  ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-connstring ', concat('\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --docdb-name ', concat('\"', parameters('documentDBName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --solution-setup-url ', concat('\"', parameters('solutionTemplateRepository'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --aad-sp-client-id ', concat('\"', parameters('aadClientServicePrincipalId'), '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'), ' --aad-app-secret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --subscription-id ', concat('\"', parameters('subscriptionId'), '\"' ))]"
                     }
                   }
                 }
