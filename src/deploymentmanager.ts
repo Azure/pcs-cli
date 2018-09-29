@@ -545,6 +545,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_AAD_TENANT=' + answers.aadTenantId);
         data.push('PCS_AAD_APPID=' + answers.appId);
         data.push('PCS_AAD_APPSECRET=' + answers.servicePrincipalSecret);
+        data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
 
         this.setEnvironmentVariables(data);
 
