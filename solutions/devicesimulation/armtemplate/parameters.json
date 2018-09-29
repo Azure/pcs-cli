@@ -43,5 +43,8 @@
   },
   "pcsDockerTag": {
     "value": "{Added through command line interface}"
+  },
+  "storageEndpointSuffix": {
+    "value": "{Added through command line interface}"
   }
 }
