@@ -14,7 +14,10 @@
     "sshRSAPublicKey": {
       "value": "{Added through command line interface}"
     },
-    "servicePrincipalClientId": {
+    "aadClientId": {
+      "value": "{Added through command line interface}"
+    },
+    "aadClientServicePrincipalId": {
       "value": "{Added through command line interface}"
     },
     "userPrincipalObjectId": {
