@@ -333,6 +333,18 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
+                        const dateTime = Date.now().toString();
+                        answers.azureWebsiteName = 'local-deployment-' + dateTime;
+                    } else {
+                        answers.adminPassword = ans.pwdFirstAttempt;
+                        answers.sshFilePath = ans.sshFilePath;
+                    }
+                    deployUI.start('Registering application in the Azure Active Directory');
+                    return createServicePrincipal(answers.azureWebsiteName,
+                                                  answers.subscriptionId,
+                                                  cachedAuthResponse.credentials,
+                                                  cachedAuthResponse.isServicePrincipal);
+                    /*if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
                         // For local deployment we don't need to create Application in AAD hence skipping the creation by resolving empty promise
                         return Promise.resolve({
                             appId: '', 
@@ -348,7 +360,7 @@ function main() {
                                                       answers.subscriptionId,
                                                       cachedAuthResponse.credentials,
                                                       cachedAuthResponse.isServicePrincipal);
-                    }
+                    }*/
                 })
                 .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
                     cachedAuthResponse.credentials.tokenAudience = null;
@@ -374,9 +386,10 @@ function main() {
                         answers.dockerTag = version;
                     }
 
-                    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
+                    /*if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
                         return deploymentManager.submit(answers);
-                    } else if (appId && servicePrincipalSecret) {
+                    } else*/ 
+                    if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.credentials.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
                         deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});

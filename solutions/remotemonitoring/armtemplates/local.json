@@ -307,6 +307,20 @@
             "metadata": {
                 "description": "The location which supports Time Series Insights resource"
             }
+        },
+        "userPrincipalObjectId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "Object Id of the AAD user that will have access to the environment. Available from the Get-AzureRMADUser or the Get-AzureRMADServicePrincipal cmdlets"
+            }
+        },
+        "aadClientServicePrincipalId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "Service principal Id of the AAD application that will have access to the environment. Available from the Get-AzureRMADServicePrincipal cmdlets"
+            }
         }
     },
     "variables": {
@@ -575,6 +589,36 @@
                         "keyName": "[variables('iotHubServiceKeyName')]",
                         "sharedAccessKey": "[concat(listkeys(variables('iotHubServiceKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
                         "timestampPropertyName": "[parameters('tsiEventSourceTimestampPropertyName')]"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsiEnvironmentName'))]"
+                    ]
+                },
+                {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
+                    "type": "accessPolicies",
+                    "name": "[variables('tsiApplicationAccessPolicy')]",
+                    "apiVersion": "[variables('tsiApiVersion')]",
+                    "properties": {
+                        "principalObjectId": "[parameters('aadClientServicePrincipalId')]",
+                        "roles": [
+                            "[variables('tsiReaderRole')]"
+                        ]
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsiEnvironmentName'))]"
+                    ]
+                },
+                {
+                    "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
+                    "type": "accessPolicies",
+                    "name": "[variables('tsiUserAccessPolicy')]",
+                    "apiVersion": "[variables('tsiApiVersion')]",
+                    "properties": {
+                        "principalObjectId": "[parameters('userPrincipalObjectId')]",
+                        "roles": [
+                            "[variables('tsiContributorRole')]"
+                        ]
                     },
                     "dependsOn": [
                         "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsiEnvironmentName'))]"

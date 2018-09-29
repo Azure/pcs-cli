@@ -191,7 +191,7 @@ export class DeploymentManager implements IDeploymentManager {
                 }
 
                 if (answers.deploymentSku === 'local') {
-                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, answers, storageEndpointSuffix);
                 }
                 return Promise.resolve('');
             })
@@ -521,7 +521,7 @@ export class DeploymentManager implements IDeploymentManager {
         });
     }
 
-    private setAndPrintEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
+    private setAndPrintEnvironmentVariables(outputs: any, answers: Answers, storageEndpointSuffix: string) {
         const data = [] as string[];
         data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
         data.push('PCS_IOTHUB_CONNSTRING=' + outputs.iotHubConnectionString.value);
@@ -542,7 +542,9 @@ export class DeploymentManager implements IDeploymentManager {
         data.push('PCS_AUTH_REQUIRED=false');
         data.push('PCS_AZUREMAPS_KEY=static');
         data.push('PCS_TELEMETRY_STORAGE_TYPE=' + outputs.telemetryStorageType.value);
-        data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
+        data.push('PCS_AAD_TENANT=' + answers.aadTenantId);
+        data.push('PCS_AAD_APPID=' + answers.appId);
+        data.push('PCS_AAD_APPSECRET=' + answers.servicePrincipalSecret);
 
         this.setEnvironmentVariables(data);
 
