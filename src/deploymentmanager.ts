@@ -551,16 +551,16 @@ export class DeploymentManager implements IDeploymentManager {
             let cmd = '';
             switch ( os.type() ) {
                 case 'Windows_NT': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'SETX ' + envvar;
                     break;
                 }
                 case 'Darwin': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'launchctl setenv ' + envvar;
                     break;
                 }
                 case 'Linux': {
-                    const space = /\s/;
-                    envvar = envvar.replace(space, '=');
                     cmd = 'echo ' + envvar + ' >> /etc/environment';
                     break;
                 }
