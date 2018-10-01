@@ -54,6 +54,7 @@ services:
       - diagnostics-svc
     environment:
       - PCS_LOG_LEVEL
+      - PCS_SOLUTION_TYPE
       - PCS_IOTHUB_CONNSTRING=none
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_AUTH_ISSUER
@@ -71,7 +72,8 @@ services:
       - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AZURE_STORAGE_ACCOUNT
-      - PCS_SOLUTION_TYPE
+      - PCS_RESOURCE_GROUP_LOCATION
+      - PCS_VMSS_NAME
     logging:
       driver: "json-file"
       options:
