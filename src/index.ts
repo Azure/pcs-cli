@@ -343,15 +343,6 @@ function main() {
                                                   answers.subscriptionId,
                                                   cachedAuthResponse.credentials,
                                                   cachedAuthResponse.isServicePrincipal);
-                    } else {
-                        answers.adminPassword = ans.pwdFirstAttempt;
-                        answers.sshFilePath = ans.sshFilePath;
-                        deployUI.start('Registering application in the Azure Active Directory');
-                        return createServicePrincipal(answers.azureWebsiteName,
-                                                      answers.subscriptionId,
-                                                      cachedAuthResponse.credentials,
-                                                      cachedAuthResponse.isServicePrincipal);
-                    }*/
                 })
                 .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
                     cachedAuthResponse.credentials.tokenAudience = null;
