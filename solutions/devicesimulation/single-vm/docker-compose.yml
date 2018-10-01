@@ -126,7 +126,7 @@ services:
         max-file: "10"
 
   config-svc:
-    image: azureiotpcsdev/pcs-config-dotnet:DS-1.0.2
+    image: azureiotpcs/pcs-config-dotnet:DS-1.0.2
     depends_on:
       - storageadapter-svc
     environment:
