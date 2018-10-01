@@ -333,8 +333,7 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        const dateTime = Date.now().toString();
-                        answers.azureWebsiteName = 'local-deployment-' + dateTime;
+                        answers.azureWebsiteName = program.solutionName;
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
