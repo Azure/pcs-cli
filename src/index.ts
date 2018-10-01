@@ -385,9 +385,6 @@ function main() {
                         answers.dockerTag = version;
                     }
 
-                    /*if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        return deploymentManager.submit(answers);
-                    } else*/ 
                     if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.credentials.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
