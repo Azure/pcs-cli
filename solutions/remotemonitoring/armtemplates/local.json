@@ -889,6 +889,10 @@
         "tsiDataAccessFQDN": {
             "type": "string",
             "value": "[if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined')]"
+        },
+        "iotHubName" : {
+            "type": "string",
+            "value": "[parameters('iotHubName')]"
         }
     }
 }
