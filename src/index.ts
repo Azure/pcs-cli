@@ -343,14 +343,6 @@ function main() {
                                                   answers.subscriptionId,
                                                   cachedAuthResponse.credentials,
                                                   cachedAuthResponse.isServicePrincipal);
-                    /*if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        // For local deployment we don't need to create Application in AAD hence skipping the creation by resolving empty promise
-                        return Promise.resolve({
-                            appId: '', 
-                            domainName: ans.domainName || '',
-                            objectId: '',
-                            servicePrincipalId: '',
-                            servicePrincipalSecret: '' });
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
