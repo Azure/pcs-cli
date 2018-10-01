@@ -70,6 +70,7 @@ services:
       - PCS_IOHUB_NAME
       - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+      - PCS_AZURE_STORAGE_ACCOUNT
       - PCS_SOLUTION_TYPE
     logging:
       driver: "json-file"
@@ -123,7 +124,7 @@ services:
         max-file: "10"
 
   config-svc:
-    image: azureiotpcsdev/pcs-config-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcsdev/pcs-config-dotnet:DS-1.0.2
     depends_on:
       - storageadapter-svc
     environment:
