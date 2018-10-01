@@ -13,6 +13,7 @@ import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
+import { genPassword } from './utils';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
@@ -545,6 +546,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
         data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
         data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || ''}`);
+        data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
 
         this.setEnvironmentVariables(data);
 
