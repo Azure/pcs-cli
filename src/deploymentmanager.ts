@@ -377,6 +377,9 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.adminPassword) {
             this._parameters.adminPassword.value = answers.adminPassword;
         }
+        if (this._parameters.subscriptionId) {
+            this._parameters.subscriptionId.value = answers.subscriptionId;
+        }
         if (this._parameters.servicePrincipalSecret) {
             this._parameters.servicePrincipalSecret.value = answers.servicePrincipalSecret;
         }
