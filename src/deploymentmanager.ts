@@ -23,7 +23,7 @@ type DeploymentOperationsListResult = ResourceModels.DeploymentOperationsListRes
 type DeploymentOperation = ResourceModels.DeploymentOperation;
 type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
-const MAX_RETRY = 36;
+const MAX_RETRY = 60;
 const KUBEDIR = os.homedir() + path.sep + '.kube';
 
 export interface IDeploymentManager {

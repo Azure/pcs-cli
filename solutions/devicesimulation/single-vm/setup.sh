@@ -54,6 +54,8 @@ while [ "$#" -gt 0 ]; do
         --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
         --docker-tag)              PCS_DOCKER_TAG="$2" ;;
         --release-version)         PCS_RELEASE_VERSION="$2" ;;
+        --resource-group-location) PCS_RESOURCE_GROUP_LOCATION="$2" ;;
+        --vmss-name)               PCS_VMSS_NAME="$2" ;;
     esac
     shift
 done
@@ -206,6 +208,8 @@ echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                 
 echo "export PCS_IOTHUBMANAGER_WEBSERVICE_URL=\"\""                                                      >> ${ENVVARS}	
 echo "export PCS_BINGMAP_KEY=\"\""                                                                       >> ${ENVVARS}
 echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
+echo "export PCS_RESOURCE_GROUP_LOCATION=\"${PCS_RESOURCE_GROUP_LOCATION}\""                             >> ${ENVVARS}
+echo "export PCS_VMSS_NAME=\"${PCS_VMSS_NAME}\""                                                         >> ${ENVVARS}
 echo "export PCS_AZUREMAPS_KEY=\"\""                                                                     >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}

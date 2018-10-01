@@ -49,6 +49,8 @@ while [ "$#" -gt 0 ]; do
         --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
         --docker-tag)              PCS_DOCKER_TAG="$2" ;;
         --release-version)         PCS_RELEASE_VERSION="$2" ;;
+        --resource-group-location) PCS_RESOURCE_GROUP_LOCATION="$2" ;;
+        --vmss-name)               PCS_VMSS_NAME="$2" ;;
     esac
     shift
 done
@@ -161,9 +163,9 @@ echo "  aad : {"                                      >> ${WEBUICONFIG_UNSAFE}
 echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_UNSAFE}
 echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_UNSAFE}
 echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_UNSAFE}
-echo "  },"                                           >> ${WEBUICONFIG_SAFE}
-echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_SAFE}
-echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_SAFE}
+echo "  },"                                           >> ${WEBUICONFIG_UNSAFE}
+echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_UNSAFE}
+echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_UNSAFE}
 echo "}"                                              >> ${WEBUICONFIG_UNSAFE}
 
 cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
@@ -193,6 +195,8 @@ echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                              
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
 echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
+echo "export PCS_RESOURCE_GROUP_LOCATION=\"${PCS_RESOURCE_GROUP_LOCATION}\""                             >> ${ENVVARS}
+echo "export PCS_VMSS_NAME=\"${PCS_VMSS_NAME}\""                                                         >> ${ENVVARS}
 # Setting some empty vars as these are required vars by Config service
 echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                                                   >> ${ENVVARS}
 echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                                          >> ${ENVVARS}
