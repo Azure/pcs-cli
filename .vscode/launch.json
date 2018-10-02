@@ -175,6 +175,20 @@
             "outFiles": [
                 "${workspaceRoot}/publish/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs local",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "-s", "local",
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
         }
     ]
 }
