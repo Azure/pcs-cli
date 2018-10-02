@@ -538,6 +538,9 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_AZUREMAPS_KEY=static`);
         data.push(`PCS_TELEMETRY_STORAGE_TYPE=${outputs.telemetryStorageType.value}`);
         data.push(`PCS_TSI_FQDN="${outputs.tsiDataAccessFQDN.value}"`);
+        data.push(`PCS_AAD_TENANT=${answers.aadTenantId}`);
+        data.push(`PCS_AAD_APPID=${answers.appId}`);
+        data.push(`PCS_AAD_APPSECRET="${answers.servicePrincipalSecret}"`);
         data.push(`PCS_SEED_TEMPLATE=default`);
         data.push(`PCS_CLOUD_TYPE=${this.getCloudType(this._environment.name)}`);
         data.push(`PCS_SUBSCRIPTION_ID=${this._subscriptionId}`);
@@ -558,16 +561,16 @@ export class DeploymentManager implements IDeploymentManager {
             let cmd = '';
             switch ( os.type() ) {
                 case 'Windows_NT': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'SETX ' + envvar;
                     break;
                 }
                 case 'Darwin': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'launchctl setenv ' + envvar;
                     break;
                 }
                 case 'Linux': {
-                    const space = /\s/;
-                    envvar = envvar.replace(space, '=');
                     cmd = 'echo ' + envvar + ' >> /etc/environment';
                     break;
                 }
@@ -577,7 +580,6 @@ export class DeploymentManager implements IDeploymentManager {
                  }
             }
             cp.exec(cmd);
-
         });
     }
 
