@@ -580,7 +580,6 @@ export class DeploymentManager implements IDeploymentManager {
                  }
             }
             cp.exec(cmd);
-
         });
     }
 
