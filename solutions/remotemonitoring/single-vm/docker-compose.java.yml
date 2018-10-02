@@ -130,6 +130,7 @@ services:
       - PCS_APPLICATION_SECRET
       - APPLICATION_SECRET
       - PCS_SEED_TEMPLATE
+      - PCS_OFFICE365_CONNECTION_URL
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}

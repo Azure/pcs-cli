@@ -36,4 +36,5 @@ export class Config {
     public MessagesEventHubName: string;
     public TelemetryStorgeType: string;
     public TSIDataAccessFQDN: string;
+    public Office365ConnectionUrl: string;
 }

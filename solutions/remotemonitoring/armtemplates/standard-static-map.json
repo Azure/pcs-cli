@@ -2,6 +2,13 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "aadTenantId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "The AAD tenant identifier (GUID)"
+            }
+        },
         "solutionName": {
             "type": "string",
             "metadata": {
@@ -429,6 +436,13 @@
             "metadata": {
                 "description": "Service principal Id of the AAD application that will have access to the environment. Available from the Get-AzureRMADServicePrincipal cmdlets"
             }
+        },
+        "azurePortalUrl": {
+            "type": "string",
+            "defaultValue": "https://portal.azure.com",
+            "metadata": {
+                "description": "Azure portal url"
+            }
         }
     },
     "variables": {
@@ -479,7 +493,13 @@
         "branch": "master",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
-        "storageApiVersion": "2017-06-01"
+        "storageApiVersion": "2017-06-01",
+        "logicAppsName": "[concat('logicapps-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+        "logicAppsApiVersion": "2016-06-01",
+        "logicAppsConnectionApiVersion": "2016-06-01",
+        "office365ConnectionName": "office365-connector",
+        "office365ConnectionDisplayName": "Office365 Connector",
+        "office365ConnectionUrl": "[concat(parameters('azurePortalUrl'), '/#@', parameters('aadTenantId'), '/resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/', variables('office365ConnectionName'), '/edit' )]"
     },
     "resources": [
         {
@@ -1051,6 +1071,134 @@
             "sku": {
                 "name": "[parameters('storageSkuName')]"
             }
+        },
+        {
+            "comments": "Azure Logic Apps",
+            "type": "Microsoft.Logic/workflows",
+            "name": "[variables('logicAppsName')]",
+            "apiVersion": "[variables('logicAppsApiVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[variables('solutionType')]"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                        "For_each": {
+                            "actions": {
+                                "Send_an_email": {
+                                    "inputs": {
+                                        "body": {
+                                            "Body": "@body('Parse_JSON')?['template']",
+                                            "Subject": "Rule Notification ",
+                                            "To": "@items('For_each')"
+                                        },
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['office365']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/Mail"
+                                    },
+                                    "runAfter": {},
+                                    "type": "ApiConnection"
+                                }
+                            },
+                            "foreach": "@body('Parse_JSON')?['emailAddress']",
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "Parse_JSON": {
+                        "type": "ParseJson",
+                        "inputs": {
+                            "content": "@triggerBody()",
+                            "schema": {
+                                "properties": {
+                                    "emailAddress": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    },
+                                    "template": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "runAfter": {}
+                        }
+                    },
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                "properties": {
+                                    "emailAddress": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                    },
+                                    "template": {
+                                    "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "office365": {
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/office365')]",
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('office365ConnectionName'))]",
+                                "connectionName": "[variables('office365ConnectionName')]"
+                            }
+                        }
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', variables('office365ConnectionName'))]"
+            ]
+        },
+        {
+            "comments": "Azure Logic Apps Connector",
+            "type": "Microsoft.Web/Connections",
+            "name": "[variables('office365ConnectionName')]",
+            "apiVersion": "[variables('logicAppsConnectionApiVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[variables('solutionType')]"
+            },
+            "properties": {
+                "api": {
+                    "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/office365')]"
+                },
+                "displayName": "[variables('office365ConnectionDisplayName')]"
+            }
         }
     ],
     "outputs": {
@@ -1145,6 +1293,10 @@
         "tsiDataAccessFQDN": {
             "type": "string",
             "value": "[if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined')]"
+        },
+        "office365ConnectionUrl": {
+            "type": "string",
+            "value": "[variables('office365ConnectionUrl')]"
         }
     }
 }

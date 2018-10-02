@@ -124,6 +124,7 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
       - PCS_SEED_TEMPLATE
+      - PCS_OFFICE365_CONNECTION_URL
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}

@@ -83,7 +83,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: config.seedtemplate
-
+        - name: PCS_OFFICE365_CONNECTION_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.office365.connection.url
 ---
 apiVersion: v1
 kind: Service

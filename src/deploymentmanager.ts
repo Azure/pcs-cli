@@ -231,6 +231,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.MessagesEventHubName = outputs.messagesEventHubName.value;
                     config.TelemetryStorgeType = outputs.telemetryStorageType.value;
                     config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
+                    config.Office365ConnectionUrl = outputs.office365ConnectionUrl.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -550,6 +551,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
         data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || ''}`);
         data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
+        data.push(`PCS_OFFICE365_CONNECTION_URL="${outputs.office365ConnectionUrl.value}"`);
 
         this.setEnvironmentVariables(data);
 

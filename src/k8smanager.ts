@@ -216,6 +216,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['asa.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
         configMap.data['telemetry.storage.type'] = this._config.TelemetryStorgeType;
         configMap.data['telemetry.tsi.fqdn'] = this._config.TSIDataAccessFQDN;
+        configMap.data['config.office365.connection.url'] = this._config.Office365ConnectionUrl;
         let deploymentConfig = configMap.data['webui-config.js'];
         deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);

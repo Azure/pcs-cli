@@ -543,6 +543,13 @@
             "metadata": {
                 "description": "Service principal Id of the AAD application that will have access to the environment. Available from the Get-AzureRMADServicePrincipal cmdlets"
             }
+        },
+        "azurePortalUrl": {
+            "type": "string",
+            "defaultValue": "https://portal.azure.com",
+            "metadata": {
+                "description": "Azure portal url"
+            }
         }
     },
     "variables": {
@@ -598,7 +605,13 @@
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "azureMapsName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-map')]",
         "azureMapsVersion": "2017-01-01-preview",
-        "azureMapsPricingSpec": "S0"
+        "azureMapsPricingSpec": "S0",
+        "logicAppsName": "[concat('logicapps-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+        "logicAppsApiVersion": "2016-06-01",
+        "logicAppsConnectionApiVersion": "2016-06-01",
+        "office365ConnectionName": "office365-connector",
+        "office365ConnectionDisplayName": "Office365 Connector",
+        "office365ConnectionUrl": "[concat(parameters('azurePortalUrl'), '/#@', parameters('aadTenantId'), '/resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/', variables('office365ConnectionName'), '/edit' )]"
     },
     "resources": [
         {
@@ -1339,8 +1352,136 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh setup.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"', parameters('aadTenantId'), '\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --iothub-name ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, '\"'), ' --iothub-endpoint ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, '\"'), ' --iothub-partitions ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, '\"'), ' --azureblob-account ', concat('\"', parameters('storageName'), '\"'), ' --azureblob-key ', concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --azureblob-endpoint-suffix ',  concat('\"', parameters('storageEndpointSuffix'), '\"'), '  --azuremaps-key ', concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --evenhub-connstring ', concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --eventhub-name ', parameters('eventHubName'), ' --solution-type ', parameters('solutionType'), ' --solution-name ', parameters('solutionName'), ' --cloud-type ', parameters('cloudType'), ' --subscription-id ', subscription().subscriptionId, ' --iothub-name ', parameters('iotHubName'), ' --deployment-id ', parameters('deploymentId'), ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --aad-appsecret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --telemetry-storage-type ', parameters('telemetryStorageType'), ' --tsi-fqdn ', if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined'))]"
+                    "commandToExecute": "[concat('sh setup.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"', parameters('aadTenantId'), '\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --iothub-name ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, '\"'), ' --iothub-endpoint ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.endpoint, '\"'), ' --iothub-partitions ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.partitionCount, '\"'), ' --azureblob-account ', concat('\"', parameters('storageName'), '\"'), ' --azureblob-key ', concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --azureblob-endpoint-suffix ',  concat('\"', parameters('storageEndpointSuffix'), '\"'), '  --azuremaps-key ', concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --evenhub-connstring ', concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('eventHubKeyName'), ';SharedAccessKey=', listkeys(variables('eventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --eventhub-name ', parameters('eventHubName'), ' --solution-type ', parameters('solutionType'), ' --solution-name ', parameters('solutionName'), ' --cloud-type ', parameters('cloudType'), ' --subscription-id ', subscription().subscriptionId, ' --iothub-name ', parameters('iotHubName'), ' --deployment-id ', parameters('deploymentId'), ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --aad-appsecret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --telemetry-storage-type ', parameters('telemetryStorageType'), ' --tsi-fqdn ', if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined'), ' --office365-connection-url ', variables('office365ConnectionUrl'))]"
                 }
+            }
+        },
+        {
+            "comments": "Azure Logic Apps",
+            "type": "Microsoft.Logic/workflows",
+            "name": "[variables('logicAppsName')]",
+            "apiVersion": "[variables('logicAppsApiVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[parameters('solutionType')]"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                        "For_each": {
+                            "actions": {
+                                "Send_an_email": {
+                                    "inputs": {
+                                        "body": {
+                                            "Body": "@body('Parse_JSON')?['template']",
+                                            "Subject": "Rule Notification ",
+                                            "To": "@items('For_each')"
+                                        },
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['office365']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/Mail"
+                                    },
+                                    "runAfter": {},
+                                    "type": "ApiConnection"
+                                }
+                            },
+                            "foreach": "@body('Parse_JSON')?['emailAddress']",
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "Parse_JSON": {
+                        "type": "ParseJson",
+                        "inputs": {
+                            "content": "@triggerBody()",
+                            "schema": {
+                                "properties": {
+                                    "emailAddress": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    },
+                                    "template": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "runAfter": {}
+                        }
+                    },
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                "properties": {
+                                    "emailAddress": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                    },
+                                    "template": {
+                                    "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "office365": {
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/office365')]",
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('office365ConnectionName'))]",
+                                "connectionName": "[variables('office365ConnectionName')]"
+                            }
+                        }
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', variables('office365ConnectionName'))]"
+            ]
+        },
+        {
+            "comments": "Azure Logic Apps Connector",
+            "type": "Microsoft.Web/Connections",
+            "name": "[variables('office365ConnectionName')]",
+            "apiVersion": "[variables('logicAppsConnectionApiVersion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "IotSuiteType": "[parameters('solutionType')]"
+            },
+            "properties": {
+                "api": {
+                    "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/office365')]"
+                },
+                "displayName": "[variables('office365ConnectionDisplayName')]"
             }
         }
     ],
@@ -1396,6 +1537,10 @@
         "tsiDataAccessFQDN": {
             "type": "string",
             "value": "[if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined')]"
+        },
+        "office365ConnectionUrl": {
+            "type": "string",
+            "value": "[variables('office365ConnectionUrl')]"
         }
     }
 }
