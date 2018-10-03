@@ -303,7 +303,7 @@ function main() {
                             const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
                             if (resourceType && resourceType.length) {
                                 if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.tsiLocation = ans.location.toLowerCase().replace(' ', '');
+                                    ans.tsiLocation = ans.location.split(' ').join('').toLowerCase();
                                 }
                             }
                         }
@@ -316,7 +316,7 @@ function main() {
                                 && x.resourceType.toLowerCase() === 'provisioningservices');
                             if (resourceType && resourceType.length) {
                                 if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.provisioningServiceLocation = ans.location.toLowerCase().replace(' ', '');
+                                    ans.provisioningServiceLocation = ans.location.split(' ').join('').toLowerCase();
                                 }
                             }
                         }
@@ -363,7 +363,7 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                        const version = (program.type === 'remotemonitoring') ? '1.0.0' : 'DS-1.0.2';
+                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'DS-1.0.2';
                         answers.version = version;
                         answers.dockerTag = version;
                     }
