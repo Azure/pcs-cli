@@ -220,14 +220,15 @@ for a subscription can be found in the
 Configuration
 =============
 
-## Kubernetes Dashboard
-
-1. Go to ~\{HOMEDIR}\.kube\config-{solutionname}-cluster and rename it to ~\{HOMEDIR}\.kube\config. Please take a backup of your ~\{HOMEDIR}\.kube\config file if it exists
+## Kubectl setup
+#### Rename config-*{solutionname}*-cluster to config where *solutionname* is your solution name from step 1 of standard deployment
 1. {HOMEDIR} for windows - C:\Users\xyz, for mac - /Users/xyz
-1. To view Kubernetes dashboard, run the following command, which will start a local
-web proxy for your cluster (it will start a local server at http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/):
+1. `cd .kube`
+1. `move config-{solutionname}-cluster config`
 
-`kubectl proxy`
+## Kubernetes Dashboard
+1. `kubectl proxy` This should start service dashboard on localhost
+1. Click this url: http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/
 
 ## CLI Options
 
