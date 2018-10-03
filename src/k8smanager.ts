@@ -1,4 +1,4 @@
-const k8s = require('@kubernetes/typescript-node');
+const k8s = require('@kubernetes/client-node');
 const btoa = require('btoa');
 
 import * as chalk from 'chalk';
