@@ -130,6 +130,20 @@
                 "description": "Authorization Rule Name for Event Hub endpoint in Iot Hub"
             }
         },
+        "actionsEventHubName": {
+            "type": "string",
+            "defaultValue": "[concat('actions-eventhub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "The name of the Event Hub for actions"
+            }
+        },
+        "actionsEventHubAuthorizationName": {
+            "type": "string",
+            "defaultValue": "[concat('streamAnalytics-', parameters('actionsEventHubName'))]",
+            "metadata": {
+                "description": "Authorization Rule Name for Event Hub endpoint in Stream Analytics"
+            }
+        },
         "serviceBusEndpointSuffix": {
             "type": "string",
             "defaultValue": "servicebus.windows.net",
@@ -363,6 +377,7 @@
         "eventHubNamespaceResourceId": "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]",
         "eventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
         "eventHubRouteKeyResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/AuthorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('eventHubAuthorizationName'))]",
+        "actionsEventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('actionsEventHubName'))]",
         "iotHubApiVersion": "2017-01-19",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
@@ -476,6 +491,37 @@
             "dependsOn": [
                 "[variables('eventHubNamespaceResourceId')]",
                 "[variables('eventHubResourceId')]"
+            ]
+        },
+        {
+            "comments": "Azure Event Hub For Triggering Actions",
+            "type": "Microsoft.EventHub/namespaces/eventhubs",
+            "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('actionsEventHubName'))]",
+            "apiVersion": "[variables('eventHubApiVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "messageRetentionInDays": "[parameters('eventHubRetentionInDays')]",
+                "partitionCount": "[parameters('eventHubPartitionCount')]",
+                "status": "Active"
+            },
+            "dependsOn": [
+                "[variables('eventHubNamespaceResourceId')]"
+            ]
+        },
+        {
+            "comments": "Event Hub Authorization for Actions",
+            "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+            "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('actionsEventHubName'), '/', parameters('actionsEventHubAuthorizationName'))]",
+            "apiVersion": "[variables('eventHubApiVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "rights": [
+                    "Listen"
+                ]
+            },
+            "dependsOn": [
+                "[variables('eventHubNamespaceResourceId')]",
+                "[variables('actionsEventHubResourceId')]"
             ]
         },
         {
@@ -792,14 +838,35 @@
                                 }
                             }
                         }
+                    },
+                    {
+                        "name": "Actions",
+                        "properties": {
+                            "datasource": {
+                                "type": "Microsoft.ServiceBus/EventHub",
+                                "properties": {
+                                    "serviceBusNamespace": "[parameters('eventHubNamespaceName')]",
+                                    "sharedAccessPolicyName": "[parameters('actionsEventHubAuthorizationName')]",
+                                    "sharedAccessPolicyKey": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('actionsEventHubName'), parameters('actionsEventHubAuthorizationName')), variables('eventHubApiVersion')).primaryKey]",
+                                    "eventHubName": "[parameters('actionsEventHubName')]"
+                                }
+                            },
+                            "serialization": {
+                                "type": "Json",
+                                "properties": {
+                                    "encoding": "UTF8",
+                                    "format": "LineSeparated"
+                                }
+                            }
+                        }
                     }
                 ],
                 "functions": [
                     {
                         "name": "flattenMeasurements",
                         "properties": {
-                          "type": "Scalar",
-                          "properties": {
+                            "type": "Scalar",
+                            "properties": {
                                 "inputs": [
                                     {
                                         "dataType": "record"
