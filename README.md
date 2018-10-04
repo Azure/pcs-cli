@@ -250,8 +250,8 @@ See [Contributing.md](CONTRIBUTING.md)
 Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the [MIT](LICENSE) License.
 
-[build-badge]: https://img.shields.io/travis/Azure/pcs-cli.svg
-[build-url]: https://travis-ci.org/Azure/pcs-cli
+[build-badge]: https://solutionaccelerators.visualstudio.com/pcs-cli/_apis/build/status/Azure.pcs-cli
+[build-url]: https://solutionaccelerators.visualstudio.com/pcs-cli/_build?definitionId=42
 [issues-badge]: https://img.shields.io/github/issues/azure/pcs-cli.svg
 [issues-url]: https://github.com/azure/pcs-cli/issues
 [gitter-badge]: https://img.shields.io/gitter/room/azure/iot-solutions.js.svg
