@@ -791,6 +791,9 @@
                         "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsiEnvironmentName'))]"
                     ]
                 }
+            ],
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
             ]
         },
         {
