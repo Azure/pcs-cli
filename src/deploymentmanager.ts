@@ -13,6 +13,7 @@ import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
+import { genPassword } from './utils';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
@@ -23,7 +24,7 @@ type DeploymentOperationsListResult = ResourceModels.DeploymentOperationsListRes
 type DeploymentOperation = ResourceModels.DeploymentOperation;
 type DeploymentValidateResult = ResourceModels.DeploymentValidateResult;
 
-const MAX_RETRY = 36;
+const MAX_RETRY = 60;
 const KUBEDIR = os.homedir() + path.sep + '.kube';
 
 export interface IDeploymentManager {
@@ -191,7 +192,7 @@ export class DeploymentManager implements IDeploymentManager {
                 }
 
                 if (answers.deploymentSku === 'local') {
-                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, answers, storageEndpointSuffix);
                 }
                 return Promise.resolve('');
             })
@@ -380,12 +381,6 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.servicePrincipalSecret) {
             this._parameters.servicePrincipalSecret.value = answers.servicePrincipalSecret;
         }
-        if (this._parameters.servicePrincipalClientId) {
-            // According to the document, the service principal client id can use appId. When using servicePrincipalId
-            // of answer ACS deployment always fails and complains application was not found.
-            // more detail here: https://docs.microsoft.com/en-us/azure/container-service/kubernetes/container-service-kubernetes-service-principal
-            this._parameters.servicePrincipalClientId.value = answers.appId;
-        }
         if (this._parameters.sshRSAPublicKey) {
             this._parameters.sshRSAPublicKey.value = fs.readFileSync(answers.sshFilePath, 'UTF-8');
         }
@@ -521,28 +516,40 @@ export class DeploymentManager implements IDeploymentManager {
         });
     }
 
-    private setAndPrintEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
+    private setAndPrintEnvironmentVariables(outputs: any, answers: Answers, storageEndpointSuffix: string) {
         const data = [] as string[];
-        data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
-        data.push('PCS_IOTHUB_CONNSTRING=' + outputs.iotHubConnectionString.value);
-        data.push('PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_IOTHUBREACT_HUB_ENDPOINT=Endpoint=' + outputs.eventHubEndpoint.value);
-        data.push('PCS_IOTHUBREACT_HUB_PARTITIONS=' + outputs.eventHubPartitions.value);
-        data.push('PCS_IOTHUBREACT_HUB_NAME=' + outputs.eventHubName.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
-        data.push('PCS_ASA_DATA_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
-        data.push('PCS_ASA_DATA_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
-        data.push('PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
-        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.messagesEventHubConnectionString.value);
-        data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
-        data.push('PCS_AUTH_REQUIRED=false');
-        data.push('PCS_AZUREMAPS_KEY=static');
-        data.push('PCS_TELEMETRY_STORAGE_TYPE=' + outputs.telemetryStorageType.value);
-        data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
+        data.push(`PCS_IOTHUBREACT_ACCESS_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
+        data.push(`PCS_IOTHUB_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
+        data.push(`PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
+        data.push(`PCS_TELEMETRY_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
+        data.push(`PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
+        data.push(`PCS_IOTHUBREACT_HUB_ENDPOINT="Endpoint=${outputs.eventHubEndpoint.value}"`);
+        data.push(`PCS_IOTHUBREACT_HUB_PARTITIONS=${outputs.eventHubPartitions.value}`);
+        data.push(`PCS_IOTHUBREACT_HUB_NAME=${outputs.eventHubName.value}`);
+        data.push(`PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
+        data.push(`PCS_IOTHUBREACT_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
+        data.push(`PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=${storageEndpointSuffix}`);
+        data.push(`PCS_ASA_DATA_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
+        data.push(`PCS_ASA_DATA_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
+        data.push(`PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=${storageEndpointSuffix}`);
+        data.push(`PCS_EVENTHUB_CONNSTRING="${outputs.messagesEventHubConnectionString.value}"`);
+        data.push(`PCS_EVENTHUB_NAME="${outputs.messagesEventHubName.value}"`);
+        data.push(`PCS_AUTH_REQUIRED=false`);
+        data.push(`PCS_AZUREMAPS_KEY=static`);
+        data.push(`PCS_TELEMETRY_STORAGE_TYPE=${outputs.telemetryStorageType.value}`);
+        data.push(`PCS_TSI_FQDN="${outputs.tsiDataAccessFQDN.value}"`);
+        data.push(`PCS_AAD_TENANT=${answers.aadTenantId}`);
+        data.push(`PCS_AAD_APPID=${answers.appId}`);
+        data.push(`PCS_AAD_APPSECRET="${answers.servicePrincipalSecret}"`);
+        data.push(`PCS_SEED_TEMPLATE=default`);
+        data.push(`PCS_CLOUD_TYPE=${this.getCloudType(this._environment.name)}`);
+        data.push(`PCS_SUBSCRIPTION_ID=${this._subscriptionId}`);
+        data.push(`PCS_SOLUTION_TYPE=${this._solutionType}`);
+        data.push(`PCS_SOLUTION_NAME=${answers.solutionName}`);
+        data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
+        data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
+        data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || ''}`);
+        data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
 
         this.setEnvironmentVariables(data);
 
@@ -554,16 +561,16 @@ export class DeploymentManager implements IDeploymentManager {
             let cmd = '';
             switch ( os.type() ) {
                 case 'Windows_NT': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'SETX ' + envvar;
                     break;
                 }
                 case 'Darwin': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'launchctl setenv ' + envvar;
                     break;
                 }
                 case 'Linux': {
-                    const space = /\s/;
-                    envvar = envvar.replace(space, '=');
                     cmd = 'echo ' + envvar + ' >> /etc/environment';
                     break;
                 }
@@ -573,7 +580,6 @@ export class DeploymentManager implements IDeploymentManager {
                  }
             }
             cp.exec(cmd);
-
         });
     }
 
