@@ -229,9 +229,12 @@ export class DeploymentManager implements IDeploymentManager {
                     config.TLS = answers.certData;
                     config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
                     config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                    config.ActionsEventHubConnectionString = outputs.actionsEventHubConnectionString.value;
+                    config.ActionsEventHubName = outputs.actionsEventHubName.value;
                     config.TelemetryStorgeType = outputs.telemetryStorageType.value;
                     config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
                     config.Office365ConnectionUrl = outputs.office365ConnectionUrl.value;
+                    config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -446,6 +449,9 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._template.parameters.cloudType) {
             this._parameters.cloudType = { value: this.getCloudType(this._environment.name) };
         }
+        if (this._template.parameters.azurePortalUrl) {
+            this._parameters.azurePortalUrl = { value: this._environment.portalUrl };
+        }
     }
 
     private waitForWebsiteToBeReady(url: string): Promise<boolean> {
@@ -524,17 +530,16 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
         data.push(`PCS_TELEMETRY_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
         data.push(`PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
-        data.push(`PCS_IOTHUBREACT_HUB_ENDPOINT="Endpoint=${outputs.eventHubEndpoint.value}"`);
-        data.push(`PCS_IOTHUBREACT_HUB_PARTITIONS=${outputs.eventHubPartitions.value}`);
-        data.push(`PCS_IOTHUBREACT_HUB_NAME=${outputs.eventHubName.value}`);
-        data.push(`PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
-        data.push(`PCS_IOTHUBREACT_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
-        data.push(`PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=${storageEndpointSuffix}`);
         data.push(`PCS_ASA_DATA_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
         data.push(`PCS_ASA_DATA_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
         data.push(`PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=${storageEndpointSuffix}`);
+        data.push(`PCS_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
+        data.push(`PCS_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
+        data.push(`PCS_AZUREBLOB_ENDPOINT_SUFFIX=${storageEndpointSuffix}`);
         data.push(`PCS_EVENTHUB_CONNSTRING="${outputs.messagesEventHubConnectionString.value}"`);
         data.push(`PCS_EVENTHUB_NAME="${outputs.messagesEventHubName.value}"`);
+        data.push(`PCS_ACTION_EVENTHUB_CONNSTRING="${outputs.actionsEventHubConnectionString.value}"`);
+        data.push(`PCS_ACTION_EVENTHUB_NAME="${outputs.actionsEventHubName.value}"`);
         data.push(`PCS_AUTH_REQUIRED=false`);
         data.push(`PCS_AZUREMAPS_KEY=static`);
         data.push(`PCS_TELEMETRY_STORAGE_TYPE=${outputs.telemetryStorageType.value}`);
@@ -552,6 +557,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || ''}`);
         data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
         data.push(`PCS_OFFICE365_CONNECTION_URL="${outputs.office365ConnectionUrl.value}"`);
+        data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
 
         this.setEnvironmentVariables(data);
 

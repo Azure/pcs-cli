@@ -34,7 +34,10 @@ export class Config {
     };
     public MessagesEventHubConnectionString: string;
     public MessagesEventHubName: string;
+    public ActionsEventHubConnectionString: string;
+    public ActionsEventHubName: string;
     public TelemetryStorgeType: string;
     public TSIDataAccessFQDN: string;
     public Office365ConnectionUrl: string;
+    public LogicAppEndpointUrl: string;
 }

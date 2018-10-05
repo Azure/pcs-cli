@@ -32,20 +32,15 @@ data:
   # and resource type "Azure Cosmos DB account" then "Keys" menu.
   docdb.connstring: "{DocumentDB connection string}"
 
+  azureblob.account: "{Azure Blob account name}"
+  azureblob.key: "{Azure Blob account key}"
+  azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
+
   # Authentication
   auth.webservice.url: "http://auth-svc:9001/v1"
 
   # Storage Adapter
   storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
-
-  # Telemetry Agent
-  iothubreact.hub.name: "{Iot Hub React name}"
-  iothubreact.hub.endpoint: "{Iot Hub React endpoint}"
-  iothubreact.hub.partitions: "{Iot Hub React partitions}"
-  iothubreact.access.connstring: "{Iot Hub React connection string}"
-  iothubreact.azureblob.account: "{Azure Blob account name}"
-  iothubreact.azureblob.key: "{Azure Blob account key}"
-  iothubreact.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
 
   # IoT Hub Manager
   iothubmanager.webservice.url: "http://iothub-manager-svc:9002/v1"
@@ -57,6 +52,9 @@ data:
   telemetry.webservice.url: "http://telemetry-svc:9004/v1"
   telemetry.storage.type: "tsi"
   telemetry.tsi.fqdn: "{TSI Data Access FQDN}"
+  action.eventhub.connstring: "{Action Event hub connection string}"
+  action.eventhub.name: "{Action Event hub name}"
+  logicapp.endpoint.url: "{LogicApp endpoint url}"
 
   # PCS Config
   config.webservice.url: "http://config-svc:9005/v1"
@@ -78,9 +76,6 @@ data:
   # ASA Manager
   asa.eventhub.connstring: "{Event hub connection string}"
   asa.eventhub.name: "{Event hub name}"
-  asa.azureblob.account: "{Azure Blob account name}"
-  asa.azureblob.key: "{Azure Blob account key}"
-  asa.azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
 
   # Diagnostics
   diagnostics.webservice.url: "http://diagnostics-svc:9006/v1"

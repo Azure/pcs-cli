@@ -86,6 +86,36 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: telemetry.tsi.fqdn
+        - name: PCS_AZUREBLOB_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azureblob.account
+        - name: PCS_AZUREBLOB_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azureblob.key
+        - name: PCS_AZUREBLOB_ENDPOINT_SUFFIX
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azureblob.endpointsuffix
+        - name: PCS_ACTION_EVENTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: action.eventhub.connstring
+        - name: PCS_ACTION_EVENTHUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: action.eventhub.name
+        - name: PCS_LOGICAPP_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: logicapp.endpoint.url
 ---
 apiVersion: v1
 kind: Service
