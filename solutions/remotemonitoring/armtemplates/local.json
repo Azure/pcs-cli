@@ -380,6 +380,7 @@
         "actionsEventHubKeyName": "RootManageSharedAccessKey",
         "actionsEventHubKeyResourceId": "[resourceId('Microsoft.EventHub/namespaces/AuthorizationRules', parameters('eventHubNamespaceName'), variables('actionsEventHubKeyName'))]",
         "actionsEventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('actionsEventHubName'))]",
+        "actionsEventHubAuthorizationResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('actionsEventHubName'), parameters('actionsEventHubAuthorizationName'))]",
         "iotHubApiVersion": "2017-01-19",
         "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
@@ -725,6 +726,7 @@
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
                 "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
+                "[variables('actionsEventHubAuthorizationResourceId')]",
                 "[variables('documentDBResourceId')]"
             ],
             "properties": {
