@@ -757,6 +757,7 @@
             "location": "[variables('location')]",
             "properties": {
                 "rights": [
+                    "Send",
                     "Listen"
                 ]
             },
