@@ -1197,8 +1197,8 @@
                                 "Send_an_email": {
                                     "inputs": {
                                         "body": {
-                                            "Body": "@body('Parse_JSON')?['template']",
-                                            "Subject": "Rule Notification ",
+                                            "Body": "@body('Parse_JSON')?['body']",
+                                            "Subject": "@body('Parse_JSON')?['subject']",
                                             "To": "@items('For_each')"
                                         },
                                         "host": {
@@ -1213,7 +1213,7 @@
                                     "type": "ApiConnection"
                                 }
                             },
-                            "foreach": "@body('Parse_JSON')?['emailAddress']",
+                            "foreach": "@body('Parse_JSON')?['recipients']",
                             "runAfter": {
                                 "Parse_JSON": [
                                     "Succeeded"
@@ -1222,27 +1222,32 @@
                             "type": "Foreach"
                         },
                         "Parse_JSON": {
-                        "type": "ParseJson",
-                        "inputs": {
-                            "content": "@triggerBody()",
-                            "schema": {
-                                "properties": {
-                                    "emailAddress": {
-                                        "items": {
+                            "inputs": {
+                                "content": "@triggerBody()",
+                                "schema": {
+                                    "properties": {
+                                        "body": {
                                             "type": "string"
                                         },
-                                        "type": "array"
+                                        "recipients": {
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        }
                                     },
-                                    "template": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        },
-                        "runAfter": {}
+                                    "type": "object"
+                                }
+                            },
+                            "runAfter": {},
+                            "type": "ParseJson"
                         }
                     },
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {},
                     "parameters": {
                         "$connections": {
                             "defaultValue": {},
@@ -1251,28 +1256,29 @@
                     },
                     "triggers": {
                         "manual": {
-                            "type": "Request",
-                            "kind": "Http",
                             "inputs": {
                                 "schema": {
-                                "properties": {
-                                    "emailAddress": {
-                                    "items": {
-                                        "type": "string"
+                                    "properties": {
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "recipients": {
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        }
                                     },
-                                    "type": "array"
-                                    },
-                                    "template": {
-                                    "type": "string"
-                                    }
-                                },
-                                "type": "object"
+                                    "type": "object"
                                 }
-                            }
+                            },
+                            "kind": "Http",
+                            "type": "Request"
                         }
-                    },
-                    "contentVersion": "1.0.0.0",
-                    "outputs": {}
+                    }
                 },
                 "parameters": {
                     "$connections": {
