@@ -15,6 +15,7 @@ import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 import { genPassword } from './utils';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
+import { IAzureHelper, AzureHelper } from './azurehelper';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -42,6 +43,7 @@ export class DeploymentManager implements IDeploymentManager {
     private _subscriptionId: string;
     private _client: ResourceManagementClient;
     private _streamAnalyticsClient: StreamAnalyticsManagementClient;
+    private _azureHelper: IAzureHelper;
 
     constructor(credentials: ServiceClientCredentials,
                 environment: AzureEnvironment,
@@ -56,6 +58,7 @@ export class DeploymentManager implements IDeploymentManager {
         const baseUri = environment ? environment.resourceManagerEndpointUrl : undefined;
         this._client = new ResourceManagementClient(this._credentials, subscriptionId, baseUri);
         this._streamAnalyticsClient = new StreamAnalyticsManagementClient(this._credentials, subscriptionId, baseUri);
+        this._azureHelper = new AzureHelper(environment, subscriptionId, credentials);
     }
 
     public getLocations(): Promise<string[] | undefined> {
@@ -157,6 +160,12 @@ export class DeploymentManager implements IDeploymentManager {
         return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
+                return this._azureHelper.assignContributorRoleOnResourceGroup(answers.servicePrincipalId, answers.solutionName)
+                    .then((assigned: boolean) => {
+                        return assigned;
+                    });
+            })
+            .then((assigned) => {
                 if (environment && environment.portalUrl) {
                     portalUrl = environment.portalUrl;
                 }
