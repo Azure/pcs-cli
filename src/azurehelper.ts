@@ -9,6 +9,7 @@ export interface IAzureHelper {
     assignOwnerRoleOnSubscription(principalId: string): Promise<boolean>;
     assignOwnerRoleOnResourceGroup(principalId: string, resourceGroupName: string): Promise<boolean>;
     createRoleAssignmentWithRetry(principalId: string, roleId: string, scope: string): Promise<boolean>;
+    getAuthIssuserUrl(tenantId: string): string;
     getStorageEndpointSuffix(): string;
     getVMFQDNSuffix(): string;
     getServiceBusEndpointSuffix(): string;
@@ -97,6 +98,16 @@ export class AzureHelper implements IAzureHelper {
         return promise;
     }
 
+    public getAuthIssuserUrl(tenantId: string): string {
+        switch (this._environment.name) {
+            case AzureEnvironment.AzureChina.name:
+                return `https://sts.chinacloudapi.cn/${tenantId}`;
+            default:
+                // use default parameter values of global azure environment
+                return `https://sts.windows.net/${tenantId}`;
+        }
+    }
+
     public getStorageEndpointSuffix(): string {
         let storageEndpointSuffix = this._environment.storageEndpointSuffix;
         if (storageEndpointSuffix.startsWith('.')) {
@@ -130,7 +141,7 @@ export class AzureHelper implements IAzureHelper {
     }
 
     public getPortalUrl(): string {
-        return this._environment.portalUrl || 'https://portal.azure.com';
+        return this._environment.portalUrl || AzureEnvironment.Azure.portalUrl;
     }
 
     // Internal cloud names for diagnostics

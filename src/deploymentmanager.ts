@@ -171,6 +171,7 @@ export class DeploymentManager implements IDeploymentManager {
                     const config = new Config();
                     config.AADTenantId = answers.aadTenantId;
                     config.AADLoginURL = this._environment.activeDirectoryEndpointUrl;
+                    config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
                     config.ApplicationId = answers.appId;
                     config.ServicePrincipalSecret = answers.servicePrincipalSecret;
                     config.AzureStorageAccountKey = outputs.storageAccountKey.value;
@@ -517,12 +518,14 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_ASA_DATA_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
         data.push(`PCS_ASA_DATA_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
         data.push(`PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=${this._azureHelper.getStorageEndpointSuffix()}`);
-        data.push(`PCS_AZUREBLOB_CONNSTRING=${outputs.storageConnectionString.value}`);
+        data.push(`PCS_AZUREBLOB_CONNSTRING="${outputs.storageConnectionString.value}"`);
         data.push(`PCS_EVENTHUB_CONNSTRING="${outputs.messagesEventHubConnectionString.value}"`);
         data.push(`PCS_EVENTHUB_NAME="${outputs.messagesEventHubName.value}"`);
         data.push(`PCS_ACTION_EVENTHUB_CONNSTRING="${outputs.actionsEventHubConnectionString.value}"`);
         data.push(`PCS_ACTION_EVENTHUB_NAME="${outputs.actionsEventHubName.value}"`);
         data.push(`PCS_AUTH_REQUIRED=false`);
+        data.push(`PCS_AUTH_ISSUER="${this._azureHelper.getAuthIssuserUrl(answers.aadTenantId)}"`);
+        data.push(`PCS_AUTH_AUDIENCE=${answers.appId}`);
         data.push(`PCS_AZUREMAPS_KEY=static`);
         data.push(`PCS_TELEMETRY_STORAGE_TYPE=${outputs.telemetryStorageType.value}`);
         data.push(`PCS_TSI_FQDN="${outputs.tsiDataAccessFQDN.value}"`);

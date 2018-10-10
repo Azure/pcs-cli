@@ -800,6 +800,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.auth.required
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
         - name: PCS_CORS_WHITELIST
           valueFrom:
             configMapKeyRef:
