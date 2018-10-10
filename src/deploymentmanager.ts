@@ -7,6 +7,7 @@ import * as cp from 'child_process';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
+import { ContainerServiceClient, ContainerServiceModels} from 'azure-arm-containerservice';
 import StreamAnalyticsManagementClient = require('azure-arm-streamanalytics');
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
@@ -15,6 +16,9 @@ import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 import { genPassword } from './utils';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
+import { safeLoad, safeDump } from 'js-yaml';
+import { merge } from 'lodash';
+import { NetworkManagementClient, NetworkManagementModels } from 'azure-arm-network';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -188,7 +192,7 @@ export class DeploymentManager implements IDeploymentManager {
 
                 if (answers.deploymentSku === 'standard') {
                     deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
-                    return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
+                    return this.downloadKubeUserCredentials(deploymentProperties.outputs);
                 }
 
                 if (answers.deploymentSku === 'local') {
@@ -200,40 +204,64 @@ export class DeploymentManager implements IDeploymentManager {
                 if (answers.deploymentSku === 'standard') {
                     deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                     const outputs = deploymentProperties.outputs;
-                    const config = new Config();
-                    config.AADTenantId = answers.aadTenantId;
-                    config.AADLoginURL = activeDirectoryEndpointUrl;
-                    config.ApplicationId = answers.appId;
-                    config.ServicePrincipalSecret = answers.servicePrincipalSecret;
-                    config.AzureStorageAccountKey = outputs.storageAccountKey.value;
-                    config.AzureStorageAccountName = outputs.storageAccountName.value;
-                    config.AzureStorageEndpointSuffix = storageEndpointSuffix;
-                    // If we are under the plan limit then we should have received a query key
-                    config.AzureMapsKey = outputs.azureMapsKey.value;
-                    config.CloudType = this.getCloudType(this._environment.name);
-                    config.SolutionName = answers.solutionName;
-                    config.IotHubName = outputs.iotHubHostName.value;
-                    config.SubscriptionId = outputs.subscriptionId.value;
-                    config.DeploymentId = answers.deploymentId;
-                    config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
-                    config.DockerTag = answers.dockerTag;
-                    config.DNS = outputs.agentFQDN.value;
-                    config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
-                    config.EventHubEndpoint = outputs.eventHubEndpoint.value;
-                    config.EventHubName = outputs.eventHubName.value;
-                    config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
-                    config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
-                    config.LoadBalancerIP = outputs.loadBalancerIp.value;
-                    config.Runtime = answers.runtime;
-                    config.SolutionType = this._solutionType;
-                    config.TLS = answers.certData;
-                    config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
-                    config.MessagesEventHubName = outputs.messagesEventHubName.value;
-                    config.TelemetryStorgeType = outputs.telemetryStorageType.value;
-                    config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
-                    const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
-                    deployUI.start('Setting up Kubernetes');
-                    return k8sMananger.setupAll();
+                    const aksClusterName: string = outputs.containerServiceName.value;
+                    const client = new NetworkManagementClient(this._credentials, this._subscriptionId);
+                    const aksResourGroup: string = 
+                    `MC_${outputs.resourceGroup.value}_${aksClusterName}_${answers.location}`;
+                    const networkParam: NetworkManagementModels.PublicIPAddress = {
+                        dnsSettings: {
+                            domainNameLabel: `agent-${aksClusterName}`
+                        },
+                        idleTimeoutInMinutes: 4,
+                        location: answers.location,
+                        publicIPAllocationMethod: 'Static',
+                        sku: {
+                            name: 'Basic'
+                        }
+                    };
+                    return client.publicIPAddresses.createOrUpdate(aksResourGroup, `${aksClusterName}-public-ip`, networkParam)
+                    .then((value: NetworkManagementModels.PublicIPAddress) => {
+                        const config = new Config();
+                        if (value.dnsSettings && value.dnsSettings.fqdn) {
+                            config.DNS = value.dnsSettings.fqdn;
+                        }
+                        if (value.ipAddress) {
+                            config.LoadBalancerIP = value.ipAddress;
+                        }
+                        config.AADTenantId = answers.aadTenantId;
+                        config.AADLoginURL = activeDirectoryEndpointUrl;
+                        config.ApplicationId = answers.appId;
+                        config.ServicePrincipalSecret = answers.servicePrincipalSecret;
+                        config.AzureStorageAccountKey = outputs.storageAccountKey.value;
+                        config.AzureStorageAccountName = outputs.storageAccountName.value;
+                        config.AzureStorageEndpointSuffix = storageEndpointSuffix;
+                        // If we are under the plan limit then we should have received a query key
+                        config.AzureMapsKey = outputs.azureMapsKey.value;
+                        config.CloudType = this.getCloudType(this._environment.name);
+                        config.SolutionName = answers.solutionName;
+                        config.IotHubName = outputs.iotHubHostName.value;
+                        config.SubscriptionId = outputs.subscriptionId.value;
+                        config.DeploymentId = answers.deploymentId;
+                        config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
+                        config.DockerTag = answers.dockerTag;
+                        // config.DNS = outputs.agentFQDN.value;
+                        config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                        config.EventHubEndpoint = outputs.eventHubEndpoint.value;
+                        config.EventHubName = outputs.eventHubName.value;
+                        config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
+                        config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
+                        // config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                        config.Runtime = answers.runtime;
+                        config.SolutionType = this._solutionType;
+                        config.TLS = answers.certData;
+                        config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
+                        config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                        config.TelemetryStorgeType = outputs.telemetryStorageType.value;
+                        config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
+                        const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
+                        deployUI.start('Setting up Kubernetes');
+                        return k8sMananger.setupAll();
+                    });
                 }
                 return Promise.resolve();
             })
@@ -304,6 +332,46 @@ export class DeploymentManager implements IDeploymentManager {
                 }
                 deployUI.stop({ err });
             });
+    }
+
+    private downloadKubeUserCredentials(outputs: any): Promise<any> {
+        const configPath = KUBEDIR + '/config';
+        let mergedConfig;
+        if (!fs.existsSync(KUBEDIR)) {
+            fs.mkdirSync(KUBEDIR);
+        }
+        if (fs.existsSync(configPath)) {
+            mergedConfig = safeLoad(fs.readFileSync(configPath, 'UTF-8'));
+        }
+        const client = new ContainerServiceClient(this._credentials, this._subscriptionId);
+        return client.managedClusters.listClusterUserCredentials(outputs.resourceGroup.value, outputs.containerServiceName.value)
+        .then( (result: ContainerServiceModels.CredentialResults) => {
+            if (result.kubeconfigs) {
+                const buffer = result.kubeconfigs[0].value;
+                let newConfig;
+                if (buffer) {
+                    const strConfig = buffer.toString();
+                    console.log(result.kubeconfigs[0].name);
+                    console.log();
+                    console.log(strConfig);
+                    newConfig = safeLoad(buffer.toString());
+                    mergedConfig = newConfig;
+                    if (!mergedConfig) {
+                        mergedConfig = newConfig;
+                    } else {
+                        merge(mergedConfig, newConfig);
+                    }
+                    const newKubeConfigStr = safeDump(mergedConfig, {
+                        indent: 2
+                    });
+                    fs.writeFileSync(configPath, newKubeConfigStr, { encoding: 'UTF-8' });
+                }
+            }
+            return configPath;
+        })
+        .catch( (error) => {
+            console.log(error);
+        });
     }
 
     private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<string> {

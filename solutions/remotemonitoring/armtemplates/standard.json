@@ -328,6 +328,20 @@
             "type": "securestring",
             "defaultValue": "n/a"
         },
+        "kubernetesVersion": {
+            "type": "string",
+            "defaultValue": "1.11.2",
+            "allowedValues": [
+                "1.7.7",
+                "1.8.1",
+                "1.9.2",
+                "1.9.6",
+                "1.11.2"
+            ],
+            "metadata": {
+                "description": "The version of the Kubernetes running in AKS."
+            }
+        },
         "azureWebsiteName": {
             "type": "string",
             "metadata": {
@@ -488,7 +502,7 @@
         "adminUsername": "[parameters('adminUsername')]",
         "agentCount": "[parameters('agentCount')]",
         "publicIPName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-public-ip')]",
-        "clusterName": "[concat(resourceGroup().name, '-cluster')]",
+        "aksName": "[concat(resourceGroup().name, '-cluster')]",
         "agentsEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-agents')]",
         "domainNameLabel": "[concat('agent-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
         "agentVMSize": "[parameters('agentVMSize')]",
@@ -496,6 +510,7 @@
         "mastersEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-mgmt')]",
         "orchestratorType": "Kubernetes",
         "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
+        "aksDnsPrefix": "[concat('aks', uniqueString(resourceGroup().id))]",
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
@@ -1029,33 +1044,30 @@
             }
         },
         {
-            "apiVersion": "2016-09-30",
-            "type": "Microsoft.ContainerService/containerServices",
+            "apiVersion": "2017-08-31",
+            "type": "Microsoft.ContainerService/managedClusters",
             "location": "[resourceGroup().location]",
-            "name": "[variables('clusterName')]",
+            "name": "[variables('aksName')]",
             "properties": {
-                "orchestratorProfile": {
-                    "orchestratorType": "[variables('orchestratorType')]"
-                },
-                "masterProfile": {
-                    "count": "[variables('masterCount')]",
-                    "dnsPrefix": "[variables('mastersEndpointDNSNamePrefix')]"
-                },
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                "dnsPrefix": "[variables('aksDnsPrefix')]",
                 "agentPoolProfiles": [
-                    {
-                        "name": "agentpools",
-                        "count": "[variables('agentCount')]",
-                        "vmSize": "[variables('agentVMSize')]",
-                        "dnsPrefix": "[variables('agentsEndpointDNSNamePrefix')]"
-                    }
+                {
+                    "name": "agentpool",
+                    "count": 2,
+                    "vmSize": "[parameters('agentVMSize')]",
+                    "osType": "Linux",
+                    "storageProfile": "ManagedDisks"
+                }
                 ],
                 "linuxProfile": {
-                    "adminUsername": "[variables('adminUsername')]",
+                    "adminUsername": "[parameters('adminUsername')]",
                     "ssh": {
                         "publicKeys": [
-                            {
-                                "keyData": "[variables('sshRSAPublicKey')]"
-                            }
+                        {
+                            "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                            "keyData": "[parameters('sshRSAPublicKey')]"
+                        }
                         ]
                     }
                 },
@@ -1113,19 +1125,15 @@
         },
         "containerServiceName": {
             "type": "string",
-            "value": "[variables('clusterName')]"
+            "value": "[variables('aksName')]"
         },
         "masterFQDN": {
             "type": "string",
-            "value": "[reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn]"
+            "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', variables('aksName'))).fqdn]"
         },
         "adminUsername": {
             "type": "string",
             "value": "[variables('adminUsername')]"
-        },
-        "sshMaster0": {
-            "type": "string",
-            "value": "[concat('ssh ', variables('adminUsername'), '@', reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn, ' -A -p 22')]"
         },
         "loadBalancerIp": {
             "type": "string",

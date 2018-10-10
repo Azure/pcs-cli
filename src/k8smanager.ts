@@ -35,7 +35,7 @@ export class K8sManager implements IK8sManager {
     private _secret: any;
     private _deployUI: DeployUI;
 
-    constructor(namespace: string, kubeConfigFilePath: string, config: Config) {
+    constructor(namespace: string, contextName: string, kubeConfigFilePath: string, config: Config) {
         this._namespace = namespace;
         this._configFilePath = kubeConfigFilePath;
         this._config = config;
@@ -43,6 +43,13 @@ export class K8sManager implements IK8sManager {
 
         const kc = new k8s.KubeConfig();
         kc.loadFromFile(kubeConfigFilePath);
+        const contexts = kc.getContexts();
+        contexts.forEach( (context: any) => {
+            if (context.name === contextName) {
+                kc.setContext(context);
+            }
+        });
+
         this._betaApi = new k8s.Extensions_v1beta1Api(kc.getCurrentCluster().server);
         this._betaApi.authentications.default = kc;
 
