@@ -209,6 +209,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['azureblob.account'] = this._config.AzureStorageAccountName;
         configMap.data['azureblob.key'] = this._config.AzureStorageAccountKey;
         configMap.data['azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
+        configMap.data['azureblob.connstring'] = this._config.AzureStorageConnectionString;
         configMap.data['telemetry.storage.type'] = this._config.TelemetryStorgeType;
         configMap.data['telemetry.tsi.fqdn'] = this._config.TSIDataAccessFQDN;
         configMap.data['logicapp.endpoint.url'] = this._config.LogicAppEndpointUrl;

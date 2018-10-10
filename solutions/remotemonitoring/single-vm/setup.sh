@@ -30,6 +30,7 @@ while [ "$#" -gt 0 ]; do
         --azureblob-account)            PCS_AZUREBLOB_ACCOUNT="$2" ;;
         --azureblob-key)                PCS_AZUREBLOB_KEY="$2" ;;
         --azureblob-endpoint-suffix)    PCS_AZUREBLOB_ENDPOINT_SUFFIX="$2" ;;
+        --azureblob-connstring)         PCS_AZUREBLOB_CONNSTRING="$2" ;;
         --docdb-connstring)             PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --azuremaps-key)                PCS_AZUREMAPS_KEY="$2" ;;
         --ssl-certificate)              PCS_CERTIFICATE="$2" ;;
@@ -210,6 +211,7 @@ echo "export PCS_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_AZUREBLOB_ENDPOINT_SUFFIX}\""
 echo "export PCS_ASA_DATA_AZUREBLOB_ACCOUNT=\"${PCS_AZUREBLOB_ACCOUNT}\""                                >> ${ENVVARS}
 echo "export PCS_ASA_DATA_AZUREBLOB_KEY=\"${PCS_AZUREBLOB_KEY}\""                                        >> ${ENVVARS}
 echo "export PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_AZUREBLOB_ENDPOINT_SUFFIX}\""                >> ${ENVVARS}
+echo "export PCS_AZUREBLOB_CONNSTRING=\"${PCS_AZUREBLOB_CONNSTRING}\""                                   >> ${ENVVARS}
 echo "export PCS_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                                     >> ${ENVVARS}
 echo "export PCS_EVENTHUB_NAME=\"${PCS_EVENTHUB_NAME}\""                                                 >> ${ENVVARS}
 echo "export PCS_ACTION_EVENTHUB_CONNSTRING=\"${PCS_ACTION_EVENTHUB_CONNSTRING}\""                       >> ${ENVVARS}

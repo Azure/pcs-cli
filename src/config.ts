@@ -6,6 +6,7 @@ export class Config {
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
+    public AzureStorageConnectionString: string;
     public AzureMapsKey: string;
     public CloudType: string;
     public SubscriptionId: string;
