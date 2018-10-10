@@ -9,6 +9,11 @@ export interface IAzureHelper {
     assignOwnerRoleOnSubscription(principalId: string): Promise<boolean>;
     assignOwnerRoleOnResourceGroup(principalId: string, resourceGroupName: string): Promise<boolean>;
     createRoleAssignmentWithRetry(principalId: string, roleId: string, scope: string): Promise<boolean>;
+    getStorageEndpointSuffix(): string;
+    getVMFQDNSuffix(): string;
+    getServiceBusEndpointSuffix(): string;
+    getPortalUrl(): string;
+    getCloudType(): string;
 }
 
 export class AzureHelper implements IAzureHelper {
@@ -90,6 +95,53 @@ export class AzureHelper implements IAzureHelper {
                 this.SLEEP_TIME);
         });
         return promise;
+    }
+
+    public getStorageEndpointSuffix(): string {
+        let storageEndpointSuffix = this._environment.storageEndpointSuffix;
+        if (storageEndpointSuffix.startsWith('.')) {
+            storageEndpointSuffix = storageEndpointSuffix.substring(1);
+        }
+        return storageEndpointSuffix;
+    }
+
+    public getVMFQDNSuffix(): string {
+        switch (this._environment.name) {
+            case AzureEnvironment.AzureChina.name:
+                return 'cloudapp.chinacloudapi.cn';
+            case AzureEnvironment.AzureGermanCloud.name:
+                return 'cloudapp.azure.de';
+            case AzureEnvironment.AzureUSGovernment.name:
+                return 'cloudapp.azure.us';
+            default:
+                // use default parameter values of global azure environment
+                return 'cloudapp.azure.com';
+        }
+    }
+
+    public getServiceBusEndpointSuffix(): string {
+        switch (this._environment.name) {
+            case AzureEnvironment.AzureChina.name:
+                return 'servicebus.chinacloudapi.cn';
+            default:
+                // use default parameter values of global azure environment
+                return 'servicebus.windows.net';
+        }
+    }
+
+    public getPortalUrl(): string {
+        return this._environment.portalUrl || 'https://portal.azure.com';
+    }
+
+    // Internal cloud names for diagnostics
+    public getCloudType(): string {
+        const cloudTypeMaps = {
+            [AzureEnvironment.Azure.name]: 'Global',
+            [AzureEnvironment.AzureChina.name]: 'China',
+            [AzureEnvironment.AzureUSGovernment.name]: 'Fairfax',
+            [AzureEnvironment.AzureGermanCloud.name]: 'Germany',
+        };
+        return cloudTypeMaps[this._environment.name];
     }
 
     private getPatchedDeviceTokenCredentials(options: any) {

@@ -431,21 +431,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: telemetry.tsi.fqdn
-        - name: PCS_AZUREBLOB_ACCOUNT
+        - name: PCS_AZUREBLOB_CONNSTRING
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: azureblob.account
-        - name: PCS_AZUREBLOB_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.key
-        - name: PCS_AZUREBLOB_ENDPOINT_SUFFIX
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.endpointsuffix
+              key: azureblob.connstring
         - name: PCS_ACTION_EVENTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:

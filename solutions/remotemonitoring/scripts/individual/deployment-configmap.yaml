@@ -35,6 +35,7 @@ data:
   azureblob.account: "{Azure Blob account name}"
   azureblob.key: "{Azure Blob account key}"
   azureblob.endpointsuffix: "{Azure Blob account endpoint suffix}"
+  azureblob.connstring: "{Azure Blob connection string}"
 
   # Authentication
   auth.webservice.url: "http://auth-svc:9001/v1"
