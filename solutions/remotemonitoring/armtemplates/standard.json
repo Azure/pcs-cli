@@ -1135,6 +1135,10 @@
             "type": "string",
             "value": "[variables('adminUsername')]"
         },
+        "publicIPResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+        },
         "loadBalancerIp": {
             "type": "string",
             "value": "[reference(variables('publicIPName')).ipAddress]"

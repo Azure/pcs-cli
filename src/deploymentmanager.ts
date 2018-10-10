@@ -208,26 +208,13 @@ export class DeploymentManager implements IDeploymentManager {
                     const client = new NetworkManagementClient(this._credentials, this._subscriptionId);
                     const aksResourGroup: string = 
                     `MC_${outputs.resourceGroup.value}_${aksClusterName}_${answers.location}`;
-                    const networkParam: NetworkManagementModels.PublicIPAddress = {
-                        dnsSettings: {
-                            domainNameLabel: `agent-${aksClusterName}`
-                        },
-                        idleTimeoutInMinutes: 4,
-                        location: answers.location,
-                        publicIPAllocationMethod: 'Static',
-                        sku: {
-                            name: 'Basic'
-                        }
+                    const moveInfo: ResourceModels.ResourcesMoveInfo = {
+                        resources: [ outputs.publicIPResourceId.value ],
+                        targetResourceGroup: aksResourGroup
                     };
-                    return client.publicIPAddresses.createOrUpdate(aksResourGroup, `${aksClusterName}-public-ip`, networkParam)
-                    .then((value: NetworkManagementModels.PublicIPAddress) => {
+                    return this._client.resources.moveResources(outputs.resourceGroup.value, moveInfo)
+                    .then( () => {
                         const config = new Config();
-                        if (value.dnsSettings && value.dnsSettings.fqdn) {
-                            config.DNS = value.dnsSettings.fqdn;
-                        }
-                        if (value.ipAddress) {
-                            config.LoadBalancerIP = value.ipAddress;
-                        }
                         config.AADTenantId = answers.aadTenantId;
                         config.AADLoginURL = activeDirectoryEndpointUrl;
                         config.ApplicationId = answers.appId;
@@ -244,13 +231,13 @@ export class DeploymentManager implements IDeploymentManager {
                         config.DeploymentId = answers.deploymentId;
                         config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
                         config.DockerTag = answers.dockerTag;
-                        // config.DNS = outputs.agentFQDN.value;
+                        config.DNS = outputs.agentFQDN.value;
                         config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
                         config.EventHubEndpoint = outputs.eventHubEndpoint.value;
                         config.EventHubName = outputs.eventHubName.value;
                         config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
                         config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
-                        // config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                        config.LoadBalancerIP = outputs.loadBalancerIp.value;
                         config.Runtime = answers.runtime;
                         config.SolutionType = this._solutionType;
                         config.TLS = answers.certData;
@@ -261,7 +248,65 @@ export class DeploymentManager implements IDeploymentManager {
                         const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
                         deployUI.start('Setting up Kubernetes');
                         return k8sMananger.setupAll();
+                    })
+                    .catch((error) => {
+                        throw error;
                     });
+
+                    // const networkParam: NetworkManagementModels.PublicIPAddress = {
+                    //     dnsSettings: {
+                    //         domainNameLabel: `agent-${aksClusterName}`
+                    //     },
+                    //     idleTimeoutInMinutes: 4,
+                    //     location: answers.location,
+                    //     publicIPAllocationMethod: 'Static',
+                    //     sku: {
+                    //         name: 'Basic'
+                    //     }
+                    // };
+                    // return client.publicIPAddresses.createOrUpdate(aksResourGroup, `${aksClusterName}-public-ip`, networkParam)
+                    // .then((value: NetworkManagementModels.PublicIPAddress) => {
+                    //     const config = new Config();
+                    //     if (value.dnsSettings && value.dnsSettings.fqdn) {
+                    //         config.DNS = value.dnsSettings.fqdn;
+                    //     }
+                    //     if (value.ipAddress) {
+                    //         config.LoadBalancerIP = value.ipAddress;
+                    //     }
+                    //     config.AADTenantId = answers.aadTenantId;
+                    //     config.AADLoginURL = activeDirectoryEndpointUrl;
+                    //     config.ApplicationId = answers.appId;
+                    //     config.ServicePrincipalSecret = answers.servicePrincipalSecret;
+                    //     config.AzureStorageAccountKey = outputs.storageAccountKey.value;
+                    //     config.AzureStorageAccountName = outputs.storageAccountName.value;
+                    //     config.AzureStorageEndpointSuffix = storageEndpointSuffix;
+                    //     // If we are under the plan limit then we should have received a query key
+                    //     config.AzureMapsKey = outputs.azureMapsKey.value;
+                    //     config.CloudType = this.getCloudType(this._environment.name);
+                    //     config.SolutionName = answers.solutionName;
+                    //     config.IotHubName = outputs.iotHubHostName.value;
+                    //     config.SubscriptionId = outputs.subscriptionId.value;
+                    //     config.DeploymentId = answers.deploymentId;
+                    //     config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
+                    //     config.DockerTag = answers.dockerTag;
+                    //     // config.DNS = outputs.agentFQDN.value;
+                    //     config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                    //     config.EventHubEndpoint = outputs.eventHubEndpoint.value;
+                    //     config.EventHubName = outputs.eventHubName.value;
+                    //     config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
+                    //     config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
+                    //     // config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                    //     config.Runtime = answers.runtime;
+                    //     config.SolutionType = this._solutionType;
+                    //     config.TLS = answers.certData;
+                    //     config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
+                    //     config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                    //     config.TelemetryStorgeType = outputs.telemetryStorageType.value;
+                    //     config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
+                    //     const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
+                    //     deployUI.start('Setting up Kubernetes');
+                    //     return k8sMananger.setupAll();
+                    // });
                 }
                 return Promise.resolve();
             })
