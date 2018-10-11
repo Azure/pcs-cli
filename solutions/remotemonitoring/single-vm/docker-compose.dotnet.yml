@@ -129,6 +129,7 @@ services:
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
       - PCS_SEED_TEMPLATE
+      - PCS_ARM_ENDPOINT_URL
       - PCS_OFFICE365_CONNECTION_URL
 
   storageadapter:

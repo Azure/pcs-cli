@@ -8,6 +8,7 @@ export class Config {
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
     public AzureStorageConnectionString: string;
+    public AzureResourceManagerEndpointUrl: string;
     public AzureMapsKey: string;
     public CloudType: string;
     public SubscriptionId: string;

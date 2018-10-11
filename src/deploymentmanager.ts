@@ -178,6 +178,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.AzureStorageAccountName = outputs.storageAccountName.value;
                     config.AzureStorageEndpointSuffix = this._azureHelper.getStorageEndpointSuffix();
                     config.AzureStorageConnectionString = outputs.storageConnectionString.value;
+                    config.AzureResourceManagerEndpointUrl = this._environment.resourceManagerEndpointUrl;
                     // If we are under the plan limit then we should have received a query key
                     config.AzureMapsKey = outputs.azureMapsKey.value;
                     config.CloudType = this._azureHelper.getCloudType();
@@ -543,6 +544,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
         data.push(`PCS_OFFICE365_CONNECTION_URL="${outputs.office365ConnectionUrl.value}"`);
         data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
+        data.push(`PCS_ARM_ENDPOINT_URL="${this._environment.resourceManagerEndpointUrl}"`);
 
         this.setEnvironmentVariables(data);
 

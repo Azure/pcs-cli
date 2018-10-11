@@ -135,6 +135,7 @@ services:
       - PCS_APPLICATION_SECRET
       - APPLICATION_SECRET
       - PCS_SEED_TEMPLATE
+      - PCS_ARM_ENDPOINT_URL
       - PCS_OFFICE365_CONNECTION_URL
 
   storageadapter:

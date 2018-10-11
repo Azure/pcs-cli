@@ -739,6 +739,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: config.seedtemplate
+        - name: PCS_ARM_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azure.resourcemanager.endpoint.url
         - name: PCS_OFFICE365_CONNECTION_URL
           valueFrom:
             configMapKeyRef:
