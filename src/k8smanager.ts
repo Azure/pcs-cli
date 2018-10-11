@@ -187,6 +187,7 @@ export class K8sManager implements IK8sManager {
         const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
+        configMap.data['security.auth.aad.endpoint.url'] = this._config.AzureActiveDirectoryEndpointUrl;
         configMap.data['security.auth.tenant'] = this._config.AADTenantId;
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
         configMap.data['security.auth.issuer'] = this._config.AuthIssuerURL;

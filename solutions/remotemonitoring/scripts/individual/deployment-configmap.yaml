@@ -65,6 +65,7 @@ data:
   config.office365.connection.url: "{Office365 Connection Url}"
 
   # Auth
+  security.auth.aad.endpoint.url: "{AAD endpoint url}"
   security.auth.tenant: "{AAD tenant Id}"
   security.auth.issuer: "{OAuth2 Issuer, e.g. STS URL with Tenant ID}"
   security.auth.audience: "{OAuth2 Audience, e.g. Application ID}"

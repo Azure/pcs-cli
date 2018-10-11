@@ -57,6 +57,7 @@ while [ "$#" -gt 0 ]; do
         --office365-connection-url)     PCS_OFFICE365_CONNECTION_URL="$2" ;;
         --logicapp-endpoint-url)        PCS_LOGICAPP_ENDPOINT_URL="$2" ;;
         --arm-endpoint-url)             PCS_ARM_ENDPOINT_URL="$2" ;;
+        --aad-endpoint-url)             PCS_AAD_ENDPOINT_URL="$2" ;;
     esac
     shift
 done
@@ -230,6 +231,7 @@ echo "export PCS_TSI_FQDN=\"${PCS_TSI_FQDN}\""                                  
 echo "export PCS_OFFICE365_CONNECTION_URL=\"${PCS_OFFICE365_CONNECTION_URL}\""                           >> ${ENVVARS}
 echo "export PCS_LOGICAPP_ENDPOINT_URL=\"${PCS_LOGICAPP_ENDPOINT_URL}\""                                 >> ${ENVVARS}
 echo "export PCS_ARM_ENDPOINT_URL=\"${PCS_ARM_ENDPOINT_URL}\""                                           >> ${ENVVARS}
+echo "export PCS_AAD_ENDPOINT_URL=\"${PCS_AAD_ENDPOINT_URL}\""                                           >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}
