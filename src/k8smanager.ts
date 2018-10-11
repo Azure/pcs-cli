@@ -43,14 +43,8 @@ export class K8sManager implements IK8sManager {
 
         const kc = new k8s.KubeConfig();
         kc.loadFromFile(kubeConfigFilePath);
-        const contexts = kc.getContexts();
-        contexts.forEach( (context: any) => {
-            if (context.name === contextName) {
-                kc.setContext(context);
-            }
-        });
 
-        this._betaApi = new k8s.Extensions_v1beta1Api(kc.getCurrentCluster().server);
+        this._betaApi = new k8s.Extensions_v1beta1Api(kc.getCluster(contextName).server);
         this._betaApi.authentications.default = kc;
 
         this._secret = new k8s.V1Secret();

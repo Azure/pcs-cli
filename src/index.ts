@@ -93,7 +93,6 @@ const program = new Command(packageJson.name)
     .option('-w, --websiteName <websiteName>', 'Name of the website, default is solution name')
     .option('-u, --username <username>', 'User name for the virtual machine that will be created as part of the solution')
     .option('-p, --password <password>', 'Password for the virtual machine that will be created as part of the solution')
-    .option('--sshFilePath <sshFilePath>', 'Path to the ssh file path that will be used by standard deployment')
     .option('--diagnosticUrl <diagnosticUrl>', 'Azure function app url for the diagnostics service')
     .on('--help', () => {
         console.log(
@@ -268,12 +267,6 @@ function main() {
                                 ans.pwdSecondAttempt = program.password;
                             } else {
                                 throw new Error('username and password are required for basic deployment');
-                            }
-                        } else if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-                            if (program.sshFilePath) {
-                                ans.sshFilePath = program.sshFilePath;
-                            } else {
-                                throw new Error('sshFilePath is required for standard deployment type');
                             }
                         }
                         return Promise.resolve<Answers>(ans);
@@ -743,7 +736,9 @@ function getDeploymentQuestions(locations: string[]) {
                 return checkUrlExists(value, answers.subscriptionId);
             }
         });
+    }
 
+    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
         questions.push({
             message: 'Enter a user name for the virtual machine:',
             name: 'adminUsername',
@@ -760,22 +755,7 @@ function getDeploymentQuestions(locations: string[]) {
                 return invalidUsernameMessage;
             },
         });
-    }
-
-        // Only add ssh key file option for standard deployment
-    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-        questions.push({
-            default: defaultSshPublicKeyPath,
-            message: 'Enter path to SSH key file path:',
-            name: 'sshFilePath',
-            type: 'input',
-            validate: (sshFilePath: string) => {
-                // TODO Add ssh key validation
-                // Issue: https://github.com/Azure/pcs-cli/issues/83
-                return fs.existsSync(sshFilePath);
-            },
-        });
-    } else if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+        
         questions.push(pwdQuestion('pwdFirstAttempt'));
         questions.push(pwdQuestion('pwdSecondAttempt', 'Confirm your password:'));
     }
