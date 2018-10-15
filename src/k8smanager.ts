@@ -214,6 +214,7 @@ export class K8sManager implements IK8sManager {
         configMap.data['telemetry.storage.type'] = this._config.TelemetryStorgeType;
         configMap.data['telemetry.tsi.fqdn'] = this._config.TSIDataAccessFQDN;
         configMap.data['logicapp.endpoint.url'] = this._config.LogicAppEndpointUrl;
+        configMap.data['solution.website.url'] = this._config.SolutionWebsiteUrl;
         configMap.data['azure.resourcemanager.endpoint.url'] = this._config.AzureResourceManagerEndpointUrl;
         configMap.data['config.office365.connection.url'] = this._config.Office365ConnectionUrl;
         let deploymentConfig = configMap.data['webui-config.js'];

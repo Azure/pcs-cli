@@ -109,6 +109,7 @@ services:
       - PCS_ACTION_EVENTHUB_CONNSTRING
       - PCS_ACTION_EVENTHUB_NAME
       - PCS_LOGICAPP_ENDPOINT_URL
+      - PCS_SOLUTION_WEBSITE_URL
 
   config:
     image: azureiotpcs/pcs-config-dotnet:${PCS_DOCKER_TAG}

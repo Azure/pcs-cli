@@ -44,4 +44,5 @@ export class Config {
     public TSIDataAccessFQDN: string;
     public Office365ConnectionUrl: string;
     public LogicAppEndpointUrl: string;
+    public SolutionWebsiteUrl: string;
 }

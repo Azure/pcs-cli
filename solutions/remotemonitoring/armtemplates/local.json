@@ -1170,6 +1170,10 @@
         "logicAppEndpointUrl": {
             "type": "string",
             "value": "[listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', variables('logicAppName'), 'manual'), variables('logicAppApiVersion')).value]"
+        },
+        "azureWebsite": {
+            "type": "string",
+            "value": "http://localhost:8080"
         }
     }
 }

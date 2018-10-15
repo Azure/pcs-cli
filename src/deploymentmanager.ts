@@ -207,6 +207,7 @@ export class DeploymentManager implements IDeploymentManager {
                     config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
                     config.Office365ConnectionUrl = outputs.office365ConnectionUrl.value;
                     config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
+                    config.SolutionWebsiteUrl = outputs.SolutionWebsiteUrl.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -539,6 +540,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_SUBSCRIPTION_ID=${this._subscriptionId}`);
         data.push(`PCS_SOLUTION_TYPE=${this._solutionType}`);
         data.push(`PCS_SOLUTION_NAME=${answers.solutionName}`);
+        data.push(`PCS_SOLUTION_WEBSITE_URL="${outputs.azureWebsite.value}"`);
         data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
         data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
         data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || ''}`);

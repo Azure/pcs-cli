@@ -58,6 +58,7 @@ data:
   action.eventhub.connstring: "{Action Event hub connection string}"
   action.eventhub.name: "{Action Event hub name}"
   logicapp.endpoint.url: "{LogicApp endpoint url}"
+  solution.website.url: "{Solution website url}"
 
   # PCS Config
   config.webservice.url: "http://config-svc:9005/v1"

@@ -451,6 +451,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: logicapp.endpoint.url
+        - name: PCS_SOLUTION_WEBSITE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: solution.website.url
 
 ---
 apiVersion: v1
