@@ -306,6 +306,21 @@
             "type": "securestring",
             "defaultValue": "n/a"
         },
+        "kubernetesVersion": {
+            "type": "string",
+            "defaultValue": "1.11.3",
+            "allowedValues": [
+                "1.7.7",
+                "1.8.1",
+                "1.9.2",
+                "1.9.6",
+                "1.11.2",
+                "1.11.3"
+            ],
+            "metadata": {
+                "description": "The version of the Kubernetes running in AKS."
+            }
+        },
         "azureWebsiteName": {
             "type": "string",
             "metadata": {
@@ -463,10 +478,10 @@
         "tsiContributorRole": "Contributor",
         "delimiters": [ ".", "//" ],
         "solutionType": "RemoteMonitoring",
-        "adminUsername": "[parameters('adminUsername')]",
         "publicIPName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-public-ip')]",
-        "clusterName": "[concat(resourceGroup().name, '-cluster')]",
+        "aksName": "[concat(resourceGroup().name, '-cluster')]",
         "domainNameLabel": "[concat('agent-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+        "aksDnsPrefix": "[concat('aks', uniqueString(resourceGroup().id))]",
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
@@ -1069,11 +1084,11 @@
         },
         "containerServiceName": {
             "type": "string",
-            "value": "[variables('clusterName')]"
+            "value": "[variables('aksName')]"
         },
         "masterFQDN": {
             "type": "string",
-            "value": "[reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn]"
+            "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', variables('aksName'))).fqdn]"
         },
         "loadBalancerIp": {
             "type": "string",

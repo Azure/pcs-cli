@@ -17,7 +17,7 @@ import { Config } from './config';
 import { genPassword } from './utils';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
 import { safeLoad, safeDump } from 'js-yaml';
-import { mergeWith } from 'lodash';
+import { mergeWith, isArray } from 'lodash';
 import { NetworkManagementClient, NetworkManagementModels } from 'azure-arm-network';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
@@ -183,7 +183,7 @@ export class DeploymentManager implements IDeploymentManager {
                     resourceGroupName: answers.solutionName,
                     totalResources: deployment.properties.template.resources.length as number
                 };
-                // deployUI.start('', options);
+                deployUI.start('', options);
                 return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
             })
             .then((res: DeploymentExtended) => {
@@ -213,7 +213,7 @@ export class DeploymentManager implements IDeploymentManager {
                     };
                     return this._client.resources.moveResources(outputs.resourceGroup.value, moveInfo)
                     .then( () => {
-                        deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
+                        deployUI.stop({ message: `Crede ntials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                         const config = new Config();
                         config.AADTenantId = answers.aadTenantId;
                         config.AADLoginURL = activeDirectoryEndpointUrl;
@@ -342,7 +342,11 @@ export class DeploymentManager implements IDeploymentManager {
                     if (!mergedConfig) {
                         mergedConfig = newConfig;
                     } else {
-                        mergedConfig = mergeWith(mergedConfig, newConfig);
+                        mergedConfig = mergeWith(mergedConfig, newConfig, (mergedObj, newObj) => {
+                            if (isArray(mergedObj)) {
+                                return mergedObj.concat(newObj);
+                            }
+                        });
                     }
                     const newKubeConfigStr = safeDump(mergedConfig, {
                         indent: 2
