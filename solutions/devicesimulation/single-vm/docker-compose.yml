@@ -87,7 +87,7 @@ services:
 #     - /app/custom-device-simulation-appsettings.ini:/app/webservice/appsettings.ini:ro
 
   storageadapter-svc:
-    image: azureiotpcsdev/pcs-storage-adapter-dotnet:DS-1.0.2
+    image: azureiotpcsdev/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}
     environment:
       - PCS_LOG_LEVEL
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
