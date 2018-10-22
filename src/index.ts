@@ -639,7 +639,7 @@ function createAppRoleAssignment(
     });
 }
 
-// After creating the new application the propogation takes sometime and hence we need to try
+// After creating the new application the propagation takes sometime and hence we need to try
 // multiple times until the role assignment is successful or it fails after max try.
 function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
                                        appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
