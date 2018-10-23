@@ -23,6 +23,8 @@ export class AzureHelper implements IAzureHelper {
     private _subscriptionId: string;
     private MAX_RETRYCOUNT = 36;
     private SLEEP_TIME = 5000;
+    private CONTRIBUTOR_ROLE_ID = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
+    private OWNER_ROLE_ID = '8e3af657-a8ff-443c-a75c-2fe8c4bcb635';
 
     constructor(environment: AzureEnvironment, subscriptionId: string, credentials: ServiceClientCredentials) {
         this._environment = environment;
@@ -31,27 +33,23 @@ export class AzureHelper implements IAzureHelper {
     }
 
     public assignContributorRoleOnSubscription(principalId: string): Promise<boolean> {
-        const roleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
         const scope = `/subscriptions/${this._subscriptionId}`;
-        return this.createRoleAssignmentWithRetry(principalId, scope, roleId);
+        return this.createRoleAssignmentWithRetry(principalId, scope, this.CONTRIBUTOR_ROLE_ID);
     }
 
     public assignContributorRoleOnResourceGroup(principalId: string, resourceGroupName: string): Promise<boolean> {
-        const roleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
         const scope = `/subscriptions/${this._subscriptionId}/resourceGroups/${resourceGroupName}`;
-        return this.createRoleAssignmentWithRetry(principalId, scope, roleId);
+        return this.createRoleAssignmentWithRetry(principalId, scope, this.CONTRIBUTOR_ROLE_ID);
     }
 
     public assignOwnerRoleOnSubscription(principalId: string): Promise<boolean> {
-        const roleId = '8e3af657-a8ff-443c-a75c-2fe8c4bcb635';
         const scope = `/subscriptions/${this._subscriptionId}`;
-        return this.createRoleAssignmentWithRetry(principalId, scope, roleId);
+        return this.createRoleAssignmentWithRetry(principalId, scope, this.OWNER_ROLE_ID);
     }
 
     public assignOwnerRoleOnResourceGroup(principalId: string, resourceGroupName: string): Promise<boolean> {
-        const roleId = '8e3af657-a8ff-443c-a75c-2fe8c4bcb635';
         const scope = `/subscriptions/${this._subscriptionId}/resourceGroups/${resourceGroupName}`;
-        return this.createRoleAssignmentWithRetry(principalId, scope, roleId);
+        return this.createRoleAssignmentWithRetry(principalId, scope, this.OWNER_ROLE_ID);
     }
 
     // After creating the new application the propogation takes sometime and hence we need to try
