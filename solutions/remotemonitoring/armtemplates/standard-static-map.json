@@ -321,6 +321,13 @@
                 "description": "The version of the Kubernetes running in AKS."
             }
         },
+        "pcsReleaseVersion": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
+            }
+        },
         "azureWebsiteName": {
             "type": "string",
             "metadata": {
@@ -485,7 +492,7 @@
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "branch": "master",
+        "branch": "[parameters('pcsReleaseVersion')]",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
         "storageApiVersion": "2017-06-01",

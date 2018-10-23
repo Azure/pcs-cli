@@ -213,7 +213,7 @@ export class DeploymentManager implements IDeploymentManager {
                     };
                     return this._client.resources.moveResources(outputs.resourceGroup.value, moveInfo)
                     .then( () => {
-                        deployUI.stop({ message: `Crede ntials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
+                        deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                         const config = new Config();
                         config.AADTenantId = answers.aadTenantId;
                         config.AADLoginURL = activeDirectoryEndpointUrl;
