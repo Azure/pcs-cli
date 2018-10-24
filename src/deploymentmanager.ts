@@ -205,12 +205,18 @@ export class DeploymentManager implements IDeploymentManager {
                     const outputs = deploymentProperties.outputs;
                     const aksClusterName: string = outputs.containerServiceName.value;
                     const client = new NetworkManagementClient(this._credentials, this._subscriptionId);
-                    const aksResourGroup: string = 
+                    // Format for the buddy resource group created by AKS is
+                    // MC_{Resource Group name}_{AKS cluster name}_{location}
+                    const aksResourceGroup: string = 
                     `MC_${outputs.resourceGroup.value}_${aksClusterName}_${resourceGroup.location}`;
                     const moveInfo: ResourceModels.ResourcesMoveInfo = {
                         resources: [ outputs.publicIPResourceId.value ],
-                        targetResourceGroup: `/subscriptions/${this._subscriptionId}/resourceGroups/${aksResourGroup}`
+                        targetResourceGroup: `/subscriptions/${this._subscriptionId}/resourceGroups/${aksResourceGroup}`
                     };
+                    // AKS creates a resource group as part of creating the resource. While creating
+                    // load balancer as the post deployment step it doesn't have the permissions to
+                    // access the Public IP resource created through ARM deployment so copying this 
+                    // resource to the buddy RG so that LB can have access to it
                     return this._client.resources.moveResources(outputs.resourceGroup.value, moveInfo)
                     .then( () => {
                         deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });

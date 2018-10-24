@@ -105,7 +105,6 @@
                 "--subscriptionId", "",
                 "--location", "",
                 "--username", "",
-                "--sshFilePath", "",
                 "--servicePrincipalId", "",
                 "--servicePrincipalSecret", "",
                 "--domainId", ""

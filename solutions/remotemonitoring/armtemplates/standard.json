@@ -1055,7 +1055,7 @@
             "name": "[variables('aksName')]",
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
-                "enableRBAC": false,
+                "enableRBAC": true,
                 "dnsPrefix": "[variables('aksDnsPrefix')]",
                 "addonProfiles": {
                     "httpApplicationRouting": {
@@ -1065,7 +1065,7 @@
                 "agentPoolProfiles": [
                 {
                     "name": "agentpool",
-                    "count": 2,
+                    "count": "[parameters('agentCount')]",
                     "vmSize": "[parameters('agentVMSize')]",
                     "osType": "Linux",
                     "storageProfile": "ManagedDisks"
