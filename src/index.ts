@@ -303,7 +303,7 @@ function main() {
                             const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
                             if (resourceType && resourceType.length) {
                                 if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.tsiLocation = ans.location.toLowerCase().replace(' ', '');
+                                    ans.tsiLocation = ans.location.split(' ').join('').toLowerCase();
                                 }
                             }
                         }
@@ -316,7 +316,7 @@ function main() {
                                 && x.resourceType.toLowerCase() === 'provisioningservices');
                             if (resourceType && resourceType.length) {
                                 if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.provisioningServiceLocation = ans.location.toLowerCase().replace(' ', '');
+                                    ans.provisioningServiceLocation = ans.location.split(' ').join('').toLowerCase();
                                 }
                             }
                         }
@@ -333,22 +333,16 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        // For local deployment we don't need to create Application in AAD hence skipping the creation by resolving empty promise
-                        return Promise.resolve({
-                            appId: '', 
-                            domainName: ans.domainName || '',
-                            objectId: '',
-                            servicePrincipalId: '',
-                            servicePrincipalSecret: '' });
+                        answers.azureWebsiteName = answers.solutionName;
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
-                        deployUI.start('Registering application in the Azure Active Directory');
-                        return createServicePrincipal(answers.azureWebsiteName,
-                                                      answers.subscriptionId,
-                                                      cachedAuthResponse.credentials,
-                                                      cachedAuthResponse.isServicePrincipal);
                     }
+                    deployUI.start('Registering application in the Azure Active Directory');
+                    return createServicePrincipal(answers.azureWebsiteName,
+                                                  answers.subscriptionId,
+                                                  cachedAuthResponse.credentials,
+                                                  cachedAuthResponse.isServicePrincipal);
                 })
                 .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
                     cachedAuthResponse.credentials.tokenAudience = null;
@@ -369,14 +363,12 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                        const version = (program.type === 'remotemonitoring') ? '1.0.0' : 'Device-Simulation-Staging';
+                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'DS-1.0.2';
                         answers.version = version;
                         answers.dockerTag = 'staging';
                     }
 
-                    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        return deploymentManager.submit(answers);
-                    } else if (appId && servicePrincipalSecret) {
+                    if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.credentials.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
                         deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
