@@ -2,6 +2,9 @@
     "solutionName": {
       "value": "{Added through command line interface}"
     },
+    "aadTenantId": {
+      "value": "{Added through command line interface}"
+    },
     "aadClientServicePrincipalId": {
       "value": "{Added through command line interface}"
     },
