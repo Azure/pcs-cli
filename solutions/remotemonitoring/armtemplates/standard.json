@@ -1055,7 +1055,7 @@
             "name": "[variables('aksName')]",
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
-                "enableRBAC": true,
+                "enableRBAC": false,
                 "dnsPrefix": "[variables('aksDnsPrefix')]",
                 "addonProfiles": {
                     "httpApplicationRouting": {
