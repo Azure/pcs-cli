@@ -74,6 +74,7 @@ services:
       - PCS_AZURE_STORAGE_ACCOUNT
       - PCS_RESOURCE_GROUP_LOCATION
       - PCS_VMSS_NAME
+      - PCS_SEED_TEMPLATE
     logging:
       driver: "json-file"
       options:
@@ -141,7 +142,6 @@ services:
       - PCS_DEVICESIMULATION_WEBSERVICE_URL
       - PCS_TELEMETRY_WEBSERVICE_URL
       - PCS_IOTHUBMANAGER_WEBSERVICE_URL
-      - PCS_SEED_TEMPLATE
       - PCS_AZUREMAPS_KEY
     logging:
       driver: "json-file"
