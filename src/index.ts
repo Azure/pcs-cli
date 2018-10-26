@@ -32,6 +32,7 @@ import { Questions, IQuestions } from './questions';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 import { genPassword } from './utils';
+import { IAzureHelper, AzureHelper } from './azurehelper';
 import {
     Application,
     ServicePrincipal,
@@ -89,7 +90,7 @@ const program = new Command(packageJson.name)
     .option('--domainId <domainId>', 'This can either be an .onmicrosoft.com domain or the Azure object ID for the tenant')
     .option('--solutionName <solutionName>', 'Solution name for your Remote monitoring accelerator')
     .option('--subscriptionId <subscriptionId>', 'SubscriptionId on which this solution should be created')
-    .option('-l, --location <location>', 'Locaion where the solution will be deployed')
+    .option('-l, --location <location>', 'Location where the solution will be deployed')
     .option('-w, --websiteName <websiteName>', 'Name of the website, default is solution name')
     .option('-u, --username <username>', 'User name for the virtual machine that will be created as part of the solution')
     .option('-p, --password <password>', 'Password for the virtual machine that will be created as part of the solution')
@@ -577,9 +578,15 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
+        options.tokenAudience = undefined;
+        const credentials = new DeviceTokenCredentials(options);
+        const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
         // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
         if (program.type !== 'remotemonitoring' || program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-            return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
+            return azureHelper.assignOwnerRoleOnSubscription(sp.objectId)
+                .then((assigned: boolean) => {
+                    return sp.appId;
+                });
         }
         return sp.appId;
     })
@@ -637,55 +644,6 @@ function createAppRoleAssignment(
             throw new Error('Could not assign app admin role to you');
         });
     });
-}
-
-// After creating the new application the propagation takes sometime and hence we need to try
-// multiple times until the role assignment is successful or it fails after max try.
-function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
-                                       appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
-    const roleId = '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'; // that of a owner
-    const scope = '/subscriptions/' + subscriptionId; // we shall be assigning the sp, a 'contributor' role at the subscription level
-    const roleDefinitionId = scope + '/providers/Microsoft.Authorization/roleDefinitions/' + roleId;
-    // clearing the token audience
-    options.tokenAudience = undefined;
-    const baseUri = options.environment ? options.environment.resourceManagerEndpointUrl : undefined;
-    const authzClient = new AuthorizationManagementClient(getPatchedDeviceTokenCredentials(options), subscriptionId, baseUri);
-    const assignmentGuid = uuid.v1();
-    const roleCreateParams = {
-      properties: {
-        principalId: objectId,
-        // have taken this from the comments made above
-        roleDefinitionId,
-        scope
-      }
-    };
-    let retryCount = 0;
-    const promise = new Promise<any>((resolve, reject) => {
-        const timer: NodeJS.Timer = setInterval(
-            () => {
-                retryCount++;
-                return authzClient.roleAssignments.create(scope, assignmentGuid, roleCreateParams)
-                .then((roleResult: any) => {
-                    // Sometimes after role assignment it takes some time before they get propagated
-                    // this failes the ACS deployment since it thinks that credentials are not valid
-                    setTimeout(
-                        () => {
-                            clearInterval(timer);
-                            resolve(appId);
-                        },
-                        5000);
-                })
-                .catch ((error: Error) => {
-                    if (retryCount >= MAX_RETRYCOUNT) {
-                        clearInterval(timer);
-                        console.log(error);
-                        reject(error);
-                    }
-                });
-            },
-            5000);
-    });
-    return promise;
 }
 
 function createCertificate(): any {
@@ -848,13 +806,4 @@ function getAzureEnvironment(environmentName: string): AzureEnvironment {
         azureusgovernment: AzureEnvironment.AzureUSGovernment,
     };
     return azureEnvironmentMaps[environmentName.toLowerCase()];
-}
-
-function getPatchedDeviceTokenCredentials(options: any) {
-    const credentials: any = new DeviceTokenCredentials(options);
-    // clean the default username of 'user@example.com' which always fail the token search in cache when using service principal login option.
-    if (credentials.hasOwnProperty('username') && credentials.username === 'user@example.com') {
-        delete credentials.username;
-    }
-    return credentials;
 }

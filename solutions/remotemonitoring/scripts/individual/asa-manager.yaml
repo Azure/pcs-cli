@@ -45,17 +45,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: asa.azureblob.account
+              key: azureblob.account
         - name: PCS_ASA_DATA_AZUREBLOB_KEY
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: asa.azureblob.key
+              key: azureblob.key
         - name: PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: asa.azureblob.endpointsuffix
+              key: azureblob.endpointsuffix
         - name: PCS_EVENTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:
