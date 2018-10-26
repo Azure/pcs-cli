@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fetch from 'node-fetch';
 import * as cp from 'child_process';
+import * as momemt from 'moment';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
@@ -218,16 +219,9 @@ export class DeploymentManager implements IDeploymentManager {
                 if (this._solutionType === 'remotemonitoring') {
                   // wait for streaming jobs to start if it is included in template and sku is not local
                   const outputJobName = deploymentProperties.outputs.streamingJobsName;
-                  if (outputJobName) {
-                    if (answers.deploymentSku === 'local') {
-                      const jobUrl =
-                        `${resourceGroupUrl}/providers/Microsoft.StreamAnalytics/streamingjobs/${outputJobName.value}`;
-                      console.log(chalk.yellow(
-                        `Please start streaming jobs mannually once local containers are running: ${jobUrl} `));
-                    } else {
+                  if (outputJobName && answers.deploymentSku !== 'local') {
                         deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
                         return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
-                    }
                   }
                 }
                 return Promise.resolve(true);
@@ -550,36 +544,31 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_ARM_ENDPOINT_URL="${this._environment.resourceManagerEndpointUrl}"`);
         data.push(`PCS_AAD_ENDPOINT_URL="${this._environment.activeDirectoryEndpointUrl}"`);
 
-        this.setEnvironmentVariables(data);
-
-        console.log('Please save the following environment variables to /scripts/local/.env file: \n\ %s', `${chalk.cyan(data.join('\n'))}`);
+        const cmd = this.generateEnviornmentCommand(data);
+        this.saveEnvironmentVariables(cmd, answers.solutionName);
+        cp.exec(cmd);
     }
 
-    private setEnvironmentVariables(data: string[]) {
-        data.forEach((envvar) => {
-            let cmd = '';
-            switch ( os.type() ) {
-                case 'Windows_NT': {
-                    envvar = envvar.replace('=', ' ');
-                    cmd = 'SETX ' + envvar;
-                    break;
-                }
-                case 'Darwin': {
-                    envvar = envvar.replace('=', ' ');
-                    cmd = 'launchctl setenv ' + envvar;
-                    break;
-                }
-                case 'Linux': {
-                    cmd = 'echo ' + envvar + ' >> /etc/environment';
-                    break;
-                }
-                default: { 
-                    console.log('The environment could not be set. unable to determine OS.');
-                    break; 
-                 }
-            }
-            cp.exec(cmd);
-        });
+    private generateEnviornmentCommand(data: string[]): string {
+        let cmd = '';
+        const osCmdMap = {
+            Darwin: 'launchctl setenv ',
+            Linux: 'export ',
+            Windows_NT: 'SETX ',
+        };
+
+        cmd = data.map((envvar) => osCmdMap[os.type()] + envvar.replace('=', ' ')).join('\n');
+        return cmd;
+    }
+
+    private saveEnvironmentVariables(cmd: string, solutionName: string) {
+        const pcsTmpDir: string = `${os.homedir()}${path.sep}.pcs${path.sep}`;
+        let envFilePath: string = `${pcsTmpDir}${solutionName}.env`;
+        if (fs.existsSync(envFilePath)) {
+            envFilePath = `${pcsTmpDir}${solutionName}-${Date.now()}.env`;
+        }
+        fs.writeFileSync(envFilePath, cmd);
+        console.log(`Environment variables are saved into file: '${envFilePath}'`);
     }
 }
 
