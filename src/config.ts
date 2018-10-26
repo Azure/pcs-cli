@@ -1,11 +1,15 @@
 export class Config {
     public AADTenantId: string;
     public AADLoginURL: string;
+    public AuthIssuerURL: string;
     public ApplicationId: string;
     public ServicePrincipalSecret: string;
     public AzureStorageAccountKey: string;
     public AzureStorageAccountName: string;
     public AzureStorageEndpointSuffix: string;
+    public AzureStorageConnectionString: string;
+    public AzureActiveDirectoryEndpointUrl: string;
+    public AzureResourceManagerEndpointUrl: string;
     public AzureMapsKey: string;
     public CloudType: string;
     public SubscriptionId: string;
@@ -34,6 +38,11 @@ export class Config {
     };
     public MessagesEventHubConnectionString: string;
     public MessagesEventHubName: string;
+    public ActionsEventHubConnectionString: string;
+    public ActionsEventHubName: string;
     public TelemetryStorgeType: string;
     public TSIDataAccessFQDN: string;
+    public Office365ConnectionUrl: string;
+    public LogicAppEndpointUrl: string;
+    public SolutionWebsiteUrl: string;
 }

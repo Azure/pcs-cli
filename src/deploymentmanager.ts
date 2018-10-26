@@ -13,7 +13,9 @@ import DeployUI from './deployui';
 import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
+import { genPassword } from './utils';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
+import { IAzureHelper, AzureHelper } from './azurehelper';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
 type Deployment = ResourceModels.Deployment;
@@ -41,6 +43,7 @@ export class DeploymentManager implements IDeploymentManager {
     private _subscriptionId: string;
     private _client: ResourceManagementClient;
     private _streamAnalyticsClient: StreamAnalyticsManagementClient;
+    private _azureHelper: IAzureHelper;
 
     constructor(credentials: ServiceClientCredentials,
                 environment: AzureEnvironment,
@@ -55,6 +58,7 @@ export class DeploymentManager implements IDeploymentManager {
         const baseUri = environment ? environment.resourceManagerEndpointUrl : undefined;
         this._client = new ResourceManagementClient(this._credentials, subscriptionId, baseUri);
         this._streamAnalyticsClient = new StreamAnalyticsManagementClient(this._credentials, subscriptionId, baseUri);
+        this._azureHelper = new AzureHelper(environment, subscriptionId, credentials);
     }
 
     public getLocations(): Promise<string[] | undefined> {
@@ -92,10 +96,6 @@ export class DeploymentManager implements IDeploymentManager {
         };
 
         const environment = this._environment;
-        let portalUrl = 'https://portal.azure.com';
-        let storageEndpointSuffix: string;
-        let azureVMFQDNSuffix: string;
-        let activeDirectoryEndpointUrl: string;
 
         if (this._solutionType === 'remotemonitoring') {
             const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
@@ -111,40 +111,6 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters = require(armTemplatePath + 'parameters.json');
         }
         try {
-            // Change the default suffix for basic sku based on current environment
-            if (environment) {
-                switch (environment.name) {
-                    case AzureEnvironment.AzureChina.name:
-                        azureVMFQDNSuffix = 'cloudapp.chinacloudapi.cn';
-                        break;
-                    case AzureEnvironment.AzureGermanCloud.name:
-                        azureVMFQDNSuffix = 'cloudapp.azure.de';
-                        break;
-                    case AzureEnvironment.AzureUSGovernment.name:
-                        azureVMFQDNSuffix = 'cloudapp.azure.us';
-                        break;
-                    default:
-                        // use default parameter values of global azure environment
-                        azureVMFQDNSuffix = 'cloudapp.azure.com';
-                }
-                storageEndpointSuffix = environment.storageEndpointSuffix;
-                activeDirectoryEndpointUrl = environment.activeDirectoryEndpointUrl;
-                if (storageEndpointSuffix.startsWith('.')) {
-                    storageEndpointSuffix = storageEndpointSuffix.substring(1);
-                }
-                if (answers.deploymentSku === 'basic') {
-                    this._parameters.storageEndpointSuffix = { value: storageEndpointSuffix };
-                    this._parameters.vmFQDNSuffix = { value: azureVMFQDNSuffix };
-                    this._parameters.aadInstance = { value: activeDirectoryEndpointUrl };
-                }
-                if (this._solutionType === 'remotemonitoring') {
-                  let serviceBusEndpointSuffix = 'servicebus.windows.net';
-                  if (environment.name === AzureEnvironment.AzureChina.name) {
-                    serviceBusEndpointSuffix = 'servicebus.chinacloudapi.cn';
-                  }
-                  this._parameters.serviceBusEndpointSuffix = { value: serviceBusEndpointSuffix };
-                }
-            }
             this.setupParameters(answers);
         } catch (ex) {
             throw new Error('Could not find template or parameters file, Exception:');
@@ -156,10 +122,13 @@ export class DeploymentManager implements IDeploymentManager {
         return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
-                if (environment && environment.portalUrl) {
-                    portalUrl = environment.portalUrl;
-                }
-                resourceGroupUrl = `${portalUrl}/${answers.domainName}#resource${resourceGroup.id}`;
+                return this._azureHelper.assignContributorRoleOnResourceGroup(answers.servicePrincipalId, answers.solutionName)
+                    .then((assigned: boolean) => {
+                        return assigned;
+                    });
+            })
+            .then((assigned) => {
+                resourceGroupUrl = `${this._azureHelper.getPortalUrl()}/${answers.domainName}#resource${resourceGroup.id}`;
                 deployUI.stop({ message: `Created resource group: ${chalk.cyan(resourceGroupUrl)}` });
                 deployUI.start('Running validation before deploying resources');
                 return this._client.deployments.validate(answers.solutionName, deploymentName, deployment);
@@ -191,7 +160,7 @@ export class DeploymentManager implements IDeploymentManager {
                 }
 
                 if (answers.deploymentSku === 'local') {
-                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, storageEndpointSuffix);
+                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, answers);
                 }
                 return Promise.resolve('');
             })
@@ -201,15 +170,19 @@ export class DeploymentManager implements IDeploymentManager {
                     const outputs = deploymentProperties.outputs;
                     const config = new Config();
                     config.AADTenantId = answers.aadTenantId;
-                    config.AADLoginURL = activeDirectoryEndpointUrl;
+                    config.AADLoginURL = this._environment.activeDirectoryEndpointUrl;
+                    config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
                     config.ApplicationId = answers.appId;
                     config.ServicePrincipalSecret = answers.servicePrincipalSecret;
                     config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                     config.AzureStorageAccountName = outputs.storageAccountName.value;
-                    config.AzureStorageEndpointSuffix = storageEndpointSuffix;
+                    config.AzureStorageEndpointSuffix = this._azureHelper.getStorageEndpointSuffix();
+                    config.AzureStorageConnectionString = outputs.storageConnectionString.value;
+                    config.AzureActiveDirectoryEndpointUrl = this._environment.activeDirectoryEndpointUrl;
+                    config.AzureResourceManagerEndpointUrl = this._environment.resourceManagerEndpointUrl;
                     // If we are under the plan limit then we should have received a query key
                     config.AzureMapsKey = outputs.azureMapsKey.value;
-                    config.CloudType = this.getCloudType(this._environment.name);
+                    config.CloudType = this._azureHelper.getCloudType();
                     config.SolutionName = answers.solutionName;
                     config.IotHubName = outputs.iotHubHostName.value;
                     config.SubscriptionId = outputs.subscriptionId.value;
@@ -228,8 +201,13 @@ export class DeploymentManager implements IDeploymentManager {
                     config.TLS = answers.certData;
                     config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
                     config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                    config.ActionsEventHubConnectionString = outputs.actionsEventHubConnectionString.value;
+                    config.ActionsEventHubName = outputs.actionsEventHubName.value;
                     config.TelemetryStorgeType = outputs.telemetryStorageType.value;
                     config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
+                    config.Office365ConnectionUrl = outputs.office365ConnectionUrl.value;
+                    config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
+                    config.SolutionWebsiteUrl = outputs.SolutionWebsiteUrl.value;
                     const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
                     deployUI.start('Setting up Kubernetes');
                     return k8sMananger.setupAll();
@@ -368,6 +346,24 @@ export class DeploymentManager implements IDeploymentManager {
 
     private setupParameters(answers: Answers) {
         this._parameters.solutionName.value = answers.solutionName;
+
+        // Change the default suffix based on current environment
+        if (this._template.parameters.storageEndpointSuffix) {
+            this._parameters.storageEndpointSuffix = { value: this._azureHelper.getStorageEndpointSuffix() };
+        }
+        if (this._template.parameters.vmFQDNSuffix) {
+            this._parameters.vmFQDNSuffix = { value: this._azureHelper.getVMFQDNSuffix() };
+        }
+        if (this._template.parameters.aadInstance) {
+            this._parameters.aadInstance = { value: this._environment.activeDirectoryEndpointUrl };
+        }
+        if (this._template.parameters.serviceBusEndpointSuffix) {
+            this._parameters.serviceBusEndpointSuffix = { value: this._azureHelper.getServiceBusEndpointSuffix() };
+        }
+        if (this._template.parameters.azurePortalUrl) {
+            this._parameters.azurePortalUrl = { value: this._azureHelper.getPortalUrl() };
+        }
+
         // Temporary check, in future both types of deployment will always have username and passord
         // If the parameters file has adminUsername section then add the value that was passed in by user
         if (this._parameters.adminUsername) {
@@ -442,7 +438,7 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.provisioningServiceLocation = { value: answers.provisioningServiceLocation };
         }
         if (this._template.parameters.cloudType) {
-            this._parameters.cloudType = { value: this.getCloudType(this._environment.name) };
+            this._parameters.cloudType = { value: this._azureHelper.getCloudType() };
         }
     }
 
@@ -515,28 +511,44 @@ export class DeploymentManager implements IDeploymentManager {
         });
     }
 
-    private setAndPrintEnvironmentVariables(outputs: any, storageEndpointSuffix: string) {
+    private setAndPrintEnvironmentVariables(outputs: any, answers: Answers) {
         const data = [] as string[];
-        data.push('PCS_IOTHUBREACT_ACCESS_CONNSTRING=' + outputs.iotHubConnectionString.value);
-        data.push('PCS_IOTHUB_CONNSTRING=' + outputs.iotHubConnectionString.value);
-        data.push('PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=' + outputs.documentDBConnectionString.value);
-        data.push('PCS_IOTHUBREACT_HUB_ENDPOINT=Endpoint=' + outputs.eventHubEndpoint.value);
-        data.push('PCS_IOTHUBREACT_HUB_PARTITIONS=' + outputs.eventHubPartitions.value);
-        data.push('PCS_IOTHUBREACT_HUB_NAME=' + outputs.eventHubName.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
-        data.push('PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
-        data.push('PCS_ASA_DATA_AZUREBLOB_ACCOUNT=' + outputs.storageAccountName.value);
-        data.push('PCS_ASA_DATA_AZUREBLOB_KEY=' + outputs.storageAccountKey.value);
-        data.push('PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=' + storageEndpointSuffix);
-        data.push('PCS_EVENTHUB_CONNSTRING=' + outputs.messagesEventHubConnectionString.value);
-        data.push('PCS_EVENTHUB_NAME=' + outputs.messagesEventHubName.value);
-        data.push('PCS_AUTH_REQUIRED=false');
-        data.push('PCS_AZUREMAPS_KEY=static');
-        data.push('PCS_TELEMETRY_STORAGE_TYPE=' + outputs.telemetryStorageType.value);
-        data.push('PCS_TSI_FQDN=' + outputs.tsiDataAccessFQDN.value);
+        data.push(`PCS_IOTHUBREACT_ACCESS_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
+        data.push(`PCS_IOTHUB_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
+        data.push(`PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
+        data.push(`PCS_TELEMETRY_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
+        data.push(`PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
+        data.push(`PCS_ASA_DATA_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
+        data.push(`PCS_ASA_DATA_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
+        data.push(`PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=${this._azureHelper.getStorageEndpointSuffix()}`);
+        data.push(`PCS_AZUREBLOB_CONNSTRING="${outputs.storageConnectionString.value}"`);
+        data.push(`PCS_EVENTHUB_CONNSTRING="${outputs.messagesEventHubConnectionString.value}"`);
+        data.push(`PCS_EVENTHUB_NAME="${outputs.messagesEventHubName.value}"`);
+        data.push(`PCS_ACTION_EVENTHUB_CONNSTRING="${outputs.actionsEventHubConnectionString.value}"`);
+        data.push(`PCS_ACTION_EVENTHUB_NAME="${outputs.actionsEventHubName.value}"`);
+        data.push(`PCS_AUTH_REQUIRED=false`);
+        data.push(`PCS_AUTH_ISSUER="${this._azureHelper.getAuthIssuserUrl(answers.aadTenantId)}"`);
+        data.push(`PCS_AUTH_AUDIENCE=${answers.appId}`);
+        data.push(`PCS_AZUREMAPS_KEY=static`);
+        data.push(`PCS_TELEMETRY_STORAGE_TYPE=${outputs.telemetryStorageType.value}`);
+        data.push(`PCS_TSI_FQDN="${outputs.tsiDataAccessFQDN.value}"`);
+        data.push(`PCS_AAD_TENANT=${answers.aadTenantId}`);
+        data.push(`PCS_AAD_APPID=${answers.appId}`);
+        data.push(`PCS_AAD_APPSECRET="${answers.servicePrincipalSecret}"`);
+        data.push(`PCS_SEED_TEMPLATE=default`);
+        data.push(`PCS_CLOUD_TYPE=${this._azureHelper.getCloudType()}`);
+        data.push(`PCS_SUBSCRIPTION_ID=${this._subscriptionId}`);
+        data.push(`PCS_SOLUTION_TYPE=${this._solutionType}`);
+        data.push(`PCS_SOLUTION_NAME=${answers.solutionName}`);
+        data.push(`PCS_SOLUTION_WEBSITE_URL="${outputs.azureWebsite.value}"`);
+        data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
+        data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
+        data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || ''}`);
+        data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
+        data.push(`PCS_OFFICE365_CONNECTION_URL="${outputs.office365ConnectionUrl.value}"`);
+        data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
+        data.push(`PCS_ARM_ENDPOINT_URL="${this._environment.resourceManagerEndpointUrl}"`);
+        data.push(`PCS_AAD_ENDPOINT_URL="${this._environment.activeDirectoryEndpointUrl}"`);
 
         this.setEnvironmentVariables(data);
 
@@ -548,16 +560,16 @@ export class DeploymentManager implements IDeploymentManager {
             let cmd = '';
             switch ( os.type() ) {
                 case 'Windows_NT': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'SETX ' + envvar;
                     break;
                 }
                 case 'Darwin': {
+                    envvar = envvar.replace('=', ' ');
                     cmd = 'launchctl setenv ' + envvar;
                     break;
                 }
                 case 'Linux': {
-                    const space = /\s/;
-                    envvar = envvar.replace(space, '=');
                     cmd = 'echo ' + envvar + ' >> /etc/environment';
                     break;
                 }
@@ -567,19 +579,7 @@ export class DeploymentManager implements IDeploymentManager {
                  }
             }
             cp.exec(cmd);
-
         });
-    }
-
-    // Internal cloud names for diagnostics
-    private getCloudType(environmentName: string): string {
-        const cloudTypeMaps = {
-            [AzureEnvironment.Azure.name]: 'Global',
-            [AzureEnvironment.AzureChina.name]: 'China',
-            [AzureEnvironment.AzureUSGovernment.name]: 'Fairfax',
-            [AzureEnvironment.AzureGermanCloud.name]: 'Germany',
-        };
-        return cloudTypeMaps[environmentName];
     }
 }
 

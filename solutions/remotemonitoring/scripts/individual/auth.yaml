@@ -36,6 +36,26 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.auth.required
+        - name: PCS_AAD_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.aad.endpoint.url
+        - name: PCS_AAD_TENANT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.tenant
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
+        - name: PCS_ARM_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azure.resourcemanager.endpoint.url
         - name: PCS_CORS_WHITELIST
           valueFrom:
             configMapKeyRef:

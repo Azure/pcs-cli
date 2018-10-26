@@ -32,6 +32,7 @@ import { Questions, IQuestions } from './questions';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 import { genPassword } from './utils';
+import { IAzureHelper, AzureHelper } from './azurehelper';
 import {
     Application,
     ServicePrincipal,
@@ -303,7 +304,7 @@ function main() {
                             const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
                             if (resourceType && resourceType.length) {
                                 if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.tsiLocation = ans.location.toLowerCase().replace(' ', '');
+                                    ans.tsiLocation = ans.location.split(' ').join('').toLowerCase();
                                 }
                             }
                         }
@@ -316,7 +317,7 @@ function main() {
                                 && x.resourceType.toLowerCase() === 'provisioningservices');
                             if (resourceType && resourceType.length) {
                                 if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.provisioningServiceLocation = ans.location.toLowerCase().replace(' ', '');
+                                    ans.provisioningServiceLocation = ans.location.split(' ').join('').toLowerCase();
                                 }
                             }
                         }
@@ -333,22 +334,16 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        // For local deployment we don't need to create Application in AAD hence skipping the creation by resolving empty promise
-                        return Promise.resolve({
-                            appId: '', 
-                            domainName: ans.domainName || '',
-                            objectId: '',
-                            servicePrincipalId: '',
-                            servicePrincipalSecret: '' });
+                        answers.azureWebsiteName = answers.solutionName;
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
-                        deployUI.start('Registering application in the Azure Active Directory');
-                        return createServicePrincipal(answers.azureWebsiteName,
-                                                      answers.subscriptionId,
-                                                      cachedAuthResponse.credentials,
-                                                      cachedAuthResponse.isServicePrincipal);
                     }
+                    deployUI.start('Registering application in the Azure Active Directory');
+                    return createServicePrincipal(answers.azureWebsiteName,
+                                                  answers.subscriptionId,
+                                                  cachedAuthResponse.credentials,
+                                                  cachedAuthResponse.isServicePrincipal);
                 })
                 .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
                     cachedAuthResponse.credentials.tokenAudience = null;
@@ -369,14 +364,12 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                        const version = (program.type === 'remotemonitoring') ? '1.0.0' : 'Device-Simulation-Staging';
+                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'DS-1.0.2';
                         answers.version = version;
                         answers.dockerTag = 'staging';
                     }
 
-                    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        return deploymentManager.submit(answers);
-                    } else if (appId && servicePrincipalSecret) {
+                    if (appId && servicePrincipalSecret) {
                         const env = cachedAuthResponse.credentials.environment;
                         const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
                         deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
@@ -592,9 +585,15 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
+        options.tokenAudience = undefined;
+        const credentials = new DeviceTokenCredentials(options);
+        const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
         // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
         if (program.type !== 'remotemonitoring' || program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-            return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
+            return azureHelper.assignOwnerRoleOnSubscription(sp.objectId)
+                .then((assigned: boolean) => {
+                    return sp.appId;
+                });
         }
         return sp.appId;
     })
@@ -652,55 +651,6 @@ function createAppRoleAssignment(
             throw new Error('Could not assign app admin role to you');
         });
     });
-}
-
-// After creating the new application the propogation takes sometime and hence we need to try
-// multiple times until the role assignment is successful or it fails after max try.
-function createRoleAssignmentWithRetry(subscriptionId: string, objectId: string,
-                                       appId: string, options: DeviceTokenCredentialsOptions): Promise<any> {
-    const roleId = '8e3af657-a8ff-443c-a75c-2fe8c4bcb635'; // that of a owner
-    const scope = '/subscriptions/' + subscriptionId; // we shall be assigning the sp, a 'contributor' role at the subscription level
-    const roleDefinitionId = scope + '/providers/Microsoft.Authorization/roleDefinitions/' + roleId;
-    // clearing the token audience
-    options.tokenAudience = undefined;
-    const baseUri = options.environment ? options.environment.resourceManagerEndpointUrl : undefined;
-    const authzClient = new AuthorizationManagementClient(getPatchedDeviceTokenCredentials(options), subscriptionId, baseUri);
-    const assignmentGuid = uuid.v1();
-    const roleCreateParams = {
-      properties: {
-        principalId: objectId,
-        // have taken this from the comments made above
-        roleDefinitionId,
-        scope
-      }
-    };
-    let retryCount = 0;
-    const promise = new Promise<any>((resolve, reject) => {
-        const timer: NodeJS.Timer = setInterval(
-            () => {
-                retryCount++;
-                return authzClient.roleAssignments.create(scope, assignmentGuid, roleCreateParams)
-                .then((roleResult: any) => {
-                    // Sometimes after role assignment it takes some time before they get propagated
-                    // this failes the ACS deployment since it thinks that credentials are not valid
-                    setTimeout(
-                        () => {
-                            clearInterval(timer);
-                            resolve(appId);
-                        },
-                        5000);
-                })
-                .catch ((error: Error) => {
-                    if (retryCount >= MAX_RETRYCOUNT) {
-                        clearInterval(timer);
-                        console.log(error);
-                        reject(error);
-                    }
-                });
-            },
-            5000);
-    });
-    return promise;
 }
 
 function createCertificate(): any {
@@ -876,13 +826,4 @@ function getAzureEnvironment(environmentName: string): AzureEnvironment {
         azureusgovernment: AzureEnvironment.AzureUSGovernment,
     };
     return azureEnvironmentMaps[environmentName.toLowerCase()];
-}
-
-function getPatchedDeviceTokenCredentials(options: any) {
-    const credentials: any = new DeviceTokenCredentials(options);
-    // clean the default username of 'user@example.com' which always fail the token search in cache when using service principal login option.
-    if (credentials.hasOwnProperty('username') && credentials.username === 'user@example.com') {
-        delete credentials.username;
-    }
-    return credentials;
 }
