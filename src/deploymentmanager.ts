@@ -7,6 +7,7 @@ import * as cp from 'child_process';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
+import { ContainerServiceClient, ContainerServiceModels} from 'azure-arm-containerservice';
 import StreamAnalyticsManagementClient = require('azure-arm-streamanalytics');
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
@@ -15,6 +16,9 @@ import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 import { genPassword } from './utils';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
+import { safeLoad, safeDump } from 'js-yaml';
+import { mergeWith, isArray } from 'lodash';
+import { NetworkManagementClient, NetworkManagementModels } from 'azure-arm-network';
 import { IAzureHelper, AzureHelper } from './azurehelper';
 
 type ResourceGroup = ResourceModels.ResourceGroup;
@@ -156,7 +160,7 @@ export class DeploymentManager implements IDeploymentManager {
 
                 if (answers.deploymentSku === 'standard') {
                     deployUI.start(`Downloading credentials to setup Kubernetes from: ${chalk.cyan(deploymentProperties.outputs.masterFQDN.value)}`);
-                    return this.downloadKubeConfig(deploymentProperties.outputs, answers.sshFilePath);
+                    return this.downloadKubeUserCredentials(deploymentProperties.outputs);
                 }
 
                 if (answers.deploymentSku === 'local') {
@@ -166,51 +170,59 @@ export class DeploymentManager implements IDeploymentManager {
             })
             .then((kubeConfigPath: string) => {
                 if (answers.deploymentSku === 'standard') {
-                    deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                     const outputs = deploymentProperties.outputs;
-                    const config = new Config();
-                    config.AADTenantId = answers.aadTenantId;
-                    config.AADLoginURL = this._environment.activeDirectoryEndpointUrl;
-                    config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
-                    config.ApplicationId = answers.appId;
-                    config.ServicePrincipalSecret = answers.servicePrincipalSecret;
-                    config.AzureStorageAccountKey = outputs.storageAccountKey.value;
-                    config.AzureStorageAccountName = outputs.storageAccountName.value;
-                    config.AzureStorageEndpointSuffix = this._azureHelper.getStorageEndpointSuffix();
-                    config.AzureStorageConnectionString = outputs.storageConnectionString.value;
-                    config.AzureActiveDirectoryEndpointUrl = this._environment.activeDirectoryEndpointUrl;
-                    config.AzureResourceManagerEndpointUrl = this._environment.resourceManagerEndpointUrl;
-                    // If we are under the plan limit then we should have received a query key
-                    config.AzureMapsKey = outputs.azureMapsKey.value;
-                    config.CloudType = this._azureHelper.getCloudType();
-                    config.SolutionName = answers.solutionName;
-                    config.IotHubName = outputs.iotHubHostName.value;
-                    config.SubscriptionId = outputs.subscriptionId.value;
-                    config.DeploymentId = answers.deploymentId;
-                    config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
-                    config.DockerTag = answers.dockerTag;
-                    config.DNS = outputs.agentFQDN.value;
-                    config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
-                    config.EventHubEndpoint = outputs.eventHubEndpoint.value;
-                    config.EventHubName = outputs.eventHubName.value;
-                    config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
-                    config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
-                    config.LoadBalancerIP = outputs.loadBalancerIp.value;
-                    config.Runtime = answers.runtime;
-                    config.SolutionType = this._solutionType;
-                    config.TLS = answers.certData;
-                    config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
-                    config.MessagesEventHubName = outputs.messagesEventHubName.value;
-                    config.ActionsEventHubConnectionString = outputs.actionsEventHubConnectionString.value;
-                    config.ActionsEventHubName = outputs.actionsEventHubName.value;
-                    config.TelemetryStorgeType = outputs.telemetryStorageType.value;
-                    config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
-                    config.Office365ConnectionUrl = outputs.office365ConnectionUrl.value;
-                    config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
-                    config.SolutionWebsiteUrl = outputs.SolutionWebsiteUrl.value;
-                    const k8sMananger: IK8sManager = new K8sManager('default', kubeConfigPath, config);
-                    deployUI.start('Setting up Kubernetes');
-                    return k8sMananger.setupAll();
+                    const aksClusterName: string = outputs.containerServiceName.value;
+                    const client = new NetworkManagementClient(this._credentials, this._subscriptionId);
+                    // Format for the buddy resource group created by AKS is
+                    // MC_{Resource Group name}_{AKS cluster name}_{location}
+                    const aksResourceGroup: string = 
+                    `MC_${outputs.resourceGroup.value}_${aksClusterName}_${resourceGroup.location}`;
+                    const moveInfo: ResourceModels.ResourcesMoveInfo = {
+                        resources: [ outputs.publicIPResourceId.value ],
+                        targetResourceGroup: `/subscriptions/${this._subscriptionId}/resourceGroups/${aksResourceGroup}`
+                    };
+                    // AKS creates a resource group as part of creating the resource. While creating
+                    // load balancer as the post deployment step it doesn't have the permissions to
+                    // access the Public IP resource created through ARM deployment so copying this 
+                    // resource to the buddy RG so that LB can have access to it
+                    return this._client.resources.moveResources(outputs.resourceGroup.value, moveInfo)
+                    .then( () => {
+                        deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
+                        const config = new Config();
+                        config.AADTenantId = answers.aadTenantId;
+                        config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
+                        config.ApplicationId = answers.appId;
+                        config.ServicePrincipalSecret = answers.servicePrincipalSecret;
+                        config.AzureStorageAccountKey = outputs.storageAccountKey.value;
+                        config.AzureStorageAccountName = outputs.storageAccountName.value;
+                        config.AzureStorageEndpointSuffix = this._azureHelper.getStorageEndpointSuffix();
+                        // If we are under the plan limit then we should have received a query key
+                        config.AzureMapsKey = outputs.azureMapsKey.value;
+                        config.CloudType = this._azureHelper.getCloudType();
+                        config.SolutionName = answers.solutionName;
+                        config.IotHubName = outputs.iotHubHostName.value;
+                        config.SubscriptionId = outputs.subscriptionId.value;
+                        config.DeploymentId = answers.deploymentId;
+                        config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
+                        config.DockerTag = answers.dockerTag;
+                        config.DNS = outputs.agentFQDN.value;
+                        config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
+                        config.EventHubEndpoint = outputs.eventHubEndpoint.value;
+                        config.EventHubName = outputs.eventHubName.value;
+                        config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
+                        config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
+                        config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                        config.Runtime = answers.runtime;
+                        config.SolutionType = this._solutionType;
+                        config.TLS = answers.certData;
+                        config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
+                        config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                        config.TelemetryStorgeType = outputs.telemetryStorageType.value;
+                        config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
+                        const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
+                        deployUI.start('Setting up Kubernetes');
+                        return k8sMananger.setupAll();
+                    });
                 }
                 return Promise.resolve();
             })
@@ -283,64 +295,40 @@ export class DeploymentManager implements IDeploymentManager {
             });
     }
 
-    private downloadKubeConfig(outputs: any, sshFilePath: string): Promise<string> {
+    private downloadKubeUserCredentials(outputs: any): Promise<any> {
+        const configPath = KUBEDIR +  path.sep + 'config';
+        let mergedConfig;
         if (!fs.existsSync(KUBEDIR)) {
             fs.mkdirSync(KUBEDIR);
         }
-        const localKubeConfigPath: string = KUBEDIR + path.sep + 'config' + '-' + outputs.containerServiceName.value;
-        const remoteKubeConfig: string = '.kube/config';
-        const sshDir = sshFilePath.substring(0, sshFilePath.lastIndexOf(path.sep));
-        const sshPrivateKeyPath: string = sshDir + path.sep + 'id_rsa';
-        const pk: string = fs.readFileSync(sshPrivateKeyPath, 'UTF-8');
-        const sshClient = new Client();
-        const config: ConnectConfig = {
-            host: outputs.masterFQDN.value,
-            port: 22,
-            privateKey: pk,
-            username: outputs.adminUsername.value
-        };
-        return new Promise<any>((resolve, reject) => {
-            let retryCount = 0;
-            const timer = setInterval(
-                () => {
-                    // First remove all listeteners so that we don't have duplicates
-                    sshClient.removeAllListeners();
-
-                    sshClient
-                        .on('ready', (message: any) => {
-                            sshClient.sftp((error: Error, sftp: SFTPWrapper) => {
-                                if (error) {
-                                    sshClient.end();
-                                    reject(error);
-                                    clearInterval(timer);
-                                    return;
-                                }
-                                sftp.fastGet(remoteKubeConfig, localKubeConfigPath, (err: Error) => {
-                                    sshClient.end();
-                                    clearInterval(timer);
-                                    if (err) {
-                                        reject(err);
-                                        return;
-                                    }
-                                    resolve(localKubeConfigPath);
-                                });
-                            });
-                        })
-                        .on('error', (err: Error) => {
-                            if (retryCount++ > MAX_RETRY) {
-                                clearInterval(timer);
-                                reject(err);
+        if (fs.existsSync(configPath)) {
+            mergedConfig = safeLoad(fs.readFileSync(configPath, 'UTF-8'));
+        }
+        const client = new ContainerServiceClient(this._credentials, this._subscriptionId);
+        return client.managedClusters.listClusterUserCredentials(outputs.resourceGroup.value, outputs.containerServiceName.value)
+        .then( (result: ContainerServiceModels.CredentialResults) => {
+            if (result.kubeconfigs) {
+                const buffer = result.kubeconfigs[0].value;
+                let newConfig;
+                if (buffer) {
+                    const strConfig = buffer.toString();
+                    newConfig = safeLoad(buffer.toString());
+                    if (!mergedConfig) {
+                        mergedConfig = newConfig;
+                    } else {
+                        mergedConfig = mergeWith(mergedConfig, newConfig, (mergedObj, newObj) => {
+                            if (isArray(mergedObj)) {
+                                return mergedObj.concat(newObj);
                             }
-                        })
-                        .on('timeout', () => {
-                            if (retryCount++ > MAX_RETRY) {
-                                clearInterval(timer);
-                                reject(new Error('Failed after maximum number of tries'));
-                            }
-                        })
-                        .connect(config);
-                },
-                5000);
+                        });
+                    }
+                    const newKubeConfigStr = safeDump(mergedConfig, {
+                        indent: 2
+                    });
+                    fs.writeFileSync(configPath, newKubeConfigStr, { encoding: 'UTF-8' });
+                }
+            }
+            return configPath;
         });
     }
 
