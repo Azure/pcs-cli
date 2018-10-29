@@ -80,7 +80,7 @@ services:
         max-size: "10240k"
         max-file: "10"
     volumes:
-      - /tmp/share:/tmp/share
+      - /tmp:/tmp:rw
 # To mount custom device models, upload the files to the VM, edit and uncomment the following line:
 #     - /absolute-path/my-device-models:/app/data:ro
 # To mount a custom service configuration, create a custom file, edit and uncomment the following line:
