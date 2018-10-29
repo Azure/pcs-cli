@@ -533,8 +533,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_AAD_ENDPOINT_URL="${this._environment.activeDirectoryEndpointUrl}"`);
 
         const cmd = this.generateEnviornmentCommand(data);
-        this.saveEnvironmentVariables(cmd, answers.solutionName);
-        cp.exec(cmd);
+        this.saveAndExecuteCommand(cmd, answers.solutionName);
     }
 
     private generateEnviornmentCommand(data: string[]): string {
@@ -549,14 +548,15 @@ export class DeploymentManager implements IDeploymentManager {
         return cmd;
     }
 
-    private saveEnvironmentVariables(cmd: string, solutionName: string) {
+    private saveAndExecuteCommand(cmd: string, solutionName: string) {
         const pcsTmpDir: string = `${os.homedir()}${path.sep}.pcs${path.sep}`;
         let envFilePath: string = `${pcsTmpDir}${solutionName}.env`;
         if (fs.existsSync(envFilePath)) {
             envFilePath = `${pcsTmpDir}${solutionName}-${Date.now()}.env`;
         }
         fs.writeFileSync(envFilePath, cmd);
-        console.log(`Environment variables are saved into file: '${envFilePath}'`);
+        cp.execSync(cmd);
+        console.log(`Environment variables are saved into file: '${envFilePath}' and sourced for local development.`);
     }
 }
 
