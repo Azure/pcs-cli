@@ -151,7 +151,7 @@ echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_SAFE}
 echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_SAFE}
 echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_SAFE}
 echo "  },"                                           >> ${WEBUICONFIG_SAFE}
-echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_SAFE}
+echo "  maxDevicesPerSimulation: 20000,"              >> ${WEBUICONFIG_SAFE}
 echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_SAFE}
 echo "}"                                              >> ${WEBUICONFIG_SAFE}
 
@@ -164,7 +164,7 @@ echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_UNSAFE}
 echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_UNSAFE}
 echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_UNSAFE}
 echo "  },"                                           >> ${WEBUICONFIG_UNSAFE}
-echo "  maxDevicesPerSimulation: 10000000,"           >> ${WEBUICONFIG_UNSAFE}
+echo "  maxDevicesPerSimulation: 20000,"              >> ${WEBUICONFIG_UNSAFE}
 echo "  minTelemetryInterval: 10000"                  >> ${WEBUICONFIG_UNSAFE}
 echo "}"                                              >> ${WEBUICONFIG_UNSAFE}
 
@@ -191,6 +191,7 @@ echo "export PCS_AAD_SECRET=\"${PCS_AAD_SECRET}\""                              
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
 echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                                                 >> ${ENVVARS}
+echo "export PCS_SEED_TEMPLATE=\"multiple-simulations-template\""                                        >> ${ENVVARS}
 echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
