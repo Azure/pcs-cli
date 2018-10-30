@@ -589,7 +589,7 @@ function createServicePrincipal(azureWebsiteName: string,
         const credentials = new DeviceTokenCredentials(options);
         const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
         // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
-        if (program.type !== 'remotemonitoring' || program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
+        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
             return azureHelper.assignOwnerRoleOnSubscription(sp.objectId)
                 .then((assigned: boolean) => {
                     return sp.appId;
