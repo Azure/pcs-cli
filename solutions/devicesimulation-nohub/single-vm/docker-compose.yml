@@ -73,6 +73,7 @@ services:
       - PCS_AZURE_STORAGE_ACCOUNT
       - PCS_RESOURCE_GROUP_LOCATION
       - PCS_VMSS_NAME
+      - PCS_SEED_TEMPLATE
     logging:
       driver: "json-file"
       options:

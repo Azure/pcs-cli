@@ -191,12 +191,16 @@ export class DeploymentManager implements IDeploymentManager {
                         deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                         const config = new Config();
                         config.AADTenantId = answers.aadTenantId;
+                        config.AADLoginURL = this._environment.activeDirectoryEndpointUrl;
                         config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
                         config.ApplicationId = answers.appId;
                         config.ServicePrincipalSecret = answers.servicePrincipalSecret;
                         config.AzureStorageAccountKey = outputs.storageAccountKey.value;
                         config.AzureStorageAccountName = outputs.storageAccountName.value;
                         config.AzureStorageEndpointSuffix = this._azureHelper.getStorageEndpointSuffix();
+                        config.AzureStorageConnectionString = outputs.storageConnectionString.value;
+                        config.AzureActiveDirectoryEndpointUrl = this._environment.activeDirectoryEndpointUrl;
+                        config.AzureResourceManagerEndpointUrl = this._environment.resourceManagerEndpointUrl;
                         // If we are under the plan limit then we should have received a query key
                         config.AzureMapsKey = outputs.azureMapsKey.value;
                         config.CloudType = this._azureHelper.getCloudType();
@@ -218,8 +222,13 @@ export class DeploymentManager implements IDeploymentManager {
                         config.TLS = answers.certData;
                         config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
                         config.MessagesEventHubName = outputs.messagesEventHubName.value;
+                        config.ActionsEventHubConnectionString = outputs.actionsEventHubConnectionString.value;
+                        config.ActionsEventHubName = outputs.actionsEventHubName.value;
                         config.TelemetryStorgeType = outputs.telemetryStorageType.value;
                         config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
+                        config.Office365ConnectionUrl = outputs.office365ConnectionUrl.value;
+                        config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
+                        config.SolutionWebsiteUrl = outputs.azureWebsite.value;
                         const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
                         deployUI.start('Setting up Kubernetes');
                         return k8sMananger.setupAll();
