@@ -581,7 +581,7 @@ function createServicePrincipal(azureWebsiteName: string,
         options.tokenAudience = undefined;
         const credentials = new DeviceTokenCredentials(options);
         const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
-        // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
+        // Create role assignment only for standard RM deployment since ACS requires it
         if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
             return azureHelper.assignOwnerRoleOnSubscription(sp.objectId)
                 .then((assigned: boolean) => {
