@@ -141,6 +141,8 @@ services:
       - PCS_SEED_TEMPLATE
       - PCS_ARM_ENDPOINT_URL
       - PCS_OFFICE365_CONNECTION_URL
+      - PCS_SOLUTION_NAME
+      - PCS_SUBSCRIPTION_ID
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}
