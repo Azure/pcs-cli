@@ -754,6 +754,16 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: config.office365.connection.url
+        - name: PCS_SUBSCRIPTION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.subscription.id
+        - name: PCS_SOLUTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
 ---
 apiVersion: v1
 kind: Service
