@@ -357,7 +357,7 @@ spec:
     spec:
       containers:
       - name: telemetry-pod
-        image: azureiotpcs/telemetry-{runtime}:{dockerTag}
+        image: zhanghua/telemetry-{runtime}:testing
         ports:
         - containerPort: 9004
         env:
@@ -567,7 +567,7 @@ spec:
     spec:
       containers:
       - name: asa-manager-pod
-        image: azureiotpcs/asa-manager-dotnet:{dockerTag}
+        image: moenm/asa-manager-dotnet:actions-bugbash
         ports:
         - containerPort: 9024
         env:
@@ -678,7 +678,7 @@ spec:
     spec:
       containers:
       - name: config-pod
-        image: azureiotpcs/pcs-config-{runtime}:{dockerTag}
+        image: jillcary/pcs-config-dotnet:actions
         ports:
         - containerPort: 9005
         env:
@@ -801,7 +801,7 @@ spec:
     spec:
       containers:
       - name: auth-pod
-        image: azureiotpcs/pcs-auth-dotnet:{dockerTag}
+        image: moenm/pcs-auth-dotnet:actions-bugbash
         ports:
         - containerPort: 9001
         env:
@@ -990,7 +990,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
+        image: jillcary/pcs-remote-monitoring-webui:actions-bugbash
         ports:
         - containerPort: 10080
         volumeMounts:

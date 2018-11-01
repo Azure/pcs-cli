@@ -21,7 +21,7 @@ services:
       - /app/certs:/app/certs:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:${PCS_DOCKER_TAG}
+    image: jillcary/pcs-remote-monitoring-webui:actions-bugbash
     networks:
       - default_net
     depends_on:
@@ -35,7 +35,7 @@ services:
       - /app/webui-config.js:/app/build/webui-config.js:ro
 
   auth:
-    image: azureiotpcs/pcs-auth-dotnet:${PCS_DOCKER_TAG}
+    image: moenm/pcs-auth-dotnet:actions-bugbash
     networks:
       - default_net
     environment:
@@ -88,7 +88,7 @@ services:
     #  - ./my-device-models:/app/data:ro
 
   telemetry:
-    image: azureiotpcs/telemetry-java:${PCS_DOCKER_TAG}
+    image: zhanghua/telemetry-java:testing
     networks:
       - default_net
     depends_on:
@@ -117,7 +117,7 @@ services:
       - PCS_SOLUTION_WEBSITE_URL
 
   config:
-    image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
+    image: jillcary/pcs-config-dotnet:actions
     networks:
       - default_net
     depends_on:
@@ -158,7 +158,7 @@ services:
       - APPLICATION_SECRET
 
   asamanager:
-    image: azureiotpcs/asa-manager-dotnet:${PCS_DOCKER_TAG}
+    image: moenm/asa-manager-dotnet:actions-bugbash
     networks:
       - default_net
     depends_on:
