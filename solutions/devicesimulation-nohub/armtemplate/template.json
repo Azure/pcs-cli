@@ -4,14 +4,14 @@
     "parameters": {
       "pcsDockerTag": {
         "type": "string",
-        "defaultValue": "DS-1.0.2",
+        "defaultValue": "DS-2.0.0",
         "metadata": {
           "description": "The docker tag can be same as release version and is the latest released docker image"
         }
       },
       "pcsReleaseVersion": {
         "type": "string",
-        "defaultValue": "DS-1.0.2",
+        "defaultValue": "DS-2.0.0",
         "metadata": {
           "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
         }
@@ -271,43 +271,43 @@
         }
       }
     },
-    "variables": {
-      "osType": {
-        "publisher": "Canonical",
-        "offer": "UbuntuServer",
-        "sku": "18.04-LTS",
-        "version": "latest"
-      },
-      "imageReference": "[variables('osType')]",
-      "appServiceSku": "S1",
-      "appServiceCapacity": "1",
-      "storageApiVersion": "2017-06-01",
-      "webAppRepoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-      "webAppRepoBranch": "master",
-      "webAppPlanName": "[concat(parameters('azureWebsiteName'), '-plan')]",
-      "cosmosDBApiVersion": "2016-03-19",
-      "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
-      "location": "[resourceGroup().location]",
-      "addressPrefix": "10.0.0.0/16",
-      "subnetPrefix": "10.0.0.0/24",
-      "virtualNetworkName": "[concat(parameters('vmssName'), '-vnet')]",
-      "subnetName": "[concat(parameters('vmssName'), '-subnet')]",
-      "publicIPAddressName": "[concat(parameters('vmssName'), '-publicIP')]",
-      "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
-      "natPoolName": "[concat(parameters('vmssName'), '-natpool')]",
-      "backendPoolName": "[concat(parameters('vmssName'), '-bepool')]",
-      "natStartPort": 443,
-      "natEndPort": 3443,
-      "natBackendPort": 443,
-      "nicName": "[concat(parameters('vmssName'), '-nic')]",
-      "ipConfigName": "[concat(parameters('vmssName'), '-ipconfig')]",
-      "loadBalancerName": "[concat(parameters('vmssName'), '-lb')]",
-      "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers',variables('loadBalancerName'))]",
-      "frontEndIPConfigID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/loadBalancerFrontEnd')]",
-      "networkSecurityGroupName": "[concat(parameters('vmssName'), '-nsg')]",
-      "networkApiVersion": "2017-04-01",
-      "vmFQDN": "[concat(parameters('vmssName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
+  "variables": {
+    "osType": {
+      "publisher": "Canonical",
+      "offer": "UbuntuServer",
+      "sku": "18.04-LTS",
+      "version": "latest"
     },
+    "imageReference": "[variables('osType')]",
+    "appServiceSku": "S1",
+    "appServiceCapacity": "1",
+    "storageApiVersion": "2017-06-01",
+    "webAppRepoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
+    "webAppRepoBranch": "[parameters('pcsReleaseVersion')]",
+    "webAppPlanName": "[concat(parameters('azureWebsiteName'), '-plan')]",
+    "cosmosDBApiVersion": "2016-03-19",
+    "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
+    "location": "[resourceGroup().location]",
+    "addressPrefix": "10.0.0.0/16",
+    "subnetPrefix": "10.0.0.0/24",
+    "virtualNetworkName": "[concat(parameters('vmssName'), '-vnet')]",
+    "subnetName": "[concat(parameters('vmssName'), '-subnet')]",
+    "publicIPAddressName": "[concat(parameters('vmssName'), '-publicIP')]",
+    "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
+    "natPoolName": "[concat(parameters('vmssName'), '-natpool')]",
+    "backendPoolName": "[concat(parameters('vmssName'), '-bepool')]",
+    "natStartPort": 443,
+    "natEndPort": 3443,
+    "natBackendPort": 443,
+    "nicName": "[concat(parameters('vmssName'), '-nic')]",
+    "ipConfigName": "[concat(parameters('vmssName'), '-ipconfig')]",
+    "loadBalancerName": "[concat(parameters('vmssName'), '-lb')]",
+    "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers',variables('loadBalancerName'))]",
+    "frontEndIPConfigID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/loadBalancerFrontEnd')]",
+    "networkSecurityGroupName": "[concat(parameters('vmssName'), '-nsg')]",
+    "networkApiVersion": "2017-04-01",
+    "vmFQDN": "[concat(parameters('vmssName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
+  },
     "resources": [
      {
         "comments": "Azure CosmosDB",
