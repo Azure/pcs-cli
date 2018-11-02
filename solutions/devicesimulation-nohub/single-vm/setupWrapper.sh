@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Copyright (c) Microsoft. All rights reserved.
 # Note: Windows Bash doesn't support shebang extra params
-set -ex
+set -e
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
