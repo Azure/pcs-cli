@@ -8,13 +8,7 @@
     "azureWebsiteName" : {
       "value": "{Added through command line interface}"
     },
-    "adminUsername": {
-      "value": "{Added through command line interface}"
-    },
     "servicePrincipalSecret": {
-      "value": "{Added through command line interface}"
-    },
-    "sshRSAPublicKey": {
       "value": "{Added through command line interface}"
     },
     "aadClientId": {
@@ -27,6 +21,9 @@
       "value": "{Added through command line interface}"
     },
     "remoteEndpointSSLThumbprint": {
+      "value": "{Added through command line interface}"
+    },
+    "pcsReleaseVersion": {
       "value": "{Added through command line interface}"
     }
 }

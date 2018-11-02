@@ -26,7 +26,7 @@ This CLI has the ability to deploy the following solution types:
 This CLI has the ability to deploy the following configurations of solutions:
 
 1. [basic](#basic) - deploys all resources to a single VM.
-1. [standard](#standard) - deploys resources using Azure Container Service and Kubernetes across multiple VMs.
+1. [standard](#standard) - deploys resources using Azure Kubernetes Service (AKS).
 1. [local](#local) - deploys resources to be used for running and debugging microservices locally.
 
 ### Documentation
@@ -182,22 +182,20 @@ provisioned into the subscription:
 The standard deployment is a production-ready deployment a developer can
 customize and extend to meet their needs. The standard deployment option should be used when
 ready to customize a production-ready architecture, built for scale and
-extensibility. Application microservices are built as Docker containers and deployed using an orchestrator
-([Kubernetes](https://kubernetes.io/) by default). The orchestrator is
+extensibility. Application microservices are built as Docker containers and deployed using AKS. The orchestrator is
 responsible for deployment, scaling, and management of the application.
 
 Creating a standard solution will result in the following Azure services being
 provisioned into the subscription:
 
-| Resource                                     | Used For |
-|----------------------------------------------|----------|
-| [Linux Virtual Machines][virtual-machines]   | 1 master and 3 agents for hosting microservices with redundancy |
-| [Azure IoT Hub][iot-hub]                     | Device management, command and control |
-| [Azure Container Service][container-service] | [Kubernetes](https://kubernetes.io) orchestrator |
-| [Azure Cosmos DB][cosmos-db]                 | Stores configuration data, and device telemetry like rules, alerts, and messages |
-| [Azure Storage Accounts][storage-account]    | 4 for VM storage, and 1 for the streaming checkpoints |
-| [Azure Stream Analytics][stream-analytics]   | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
-| [App Service][web-application]             | Application gateway with valid SSL certificate |
+| Resource                                      | Used For |
+|-----------------------------------------------|----------|
+| [Azure IoT Hub][iot-hub]                      | Device management, command and control |
+| [Azure Kubernetes Service][kubernetes-service]| Use a fully managed Kubernetes container orchestration service, defaults to 3 agents|
+| [Azure Cosmos DB][cosmos-db]                  | Stores configuration data, and device telemetry like rules, alerts, and messages |
+| [Azure Storage Accounts][storage-account]     | 4 for VM storage, and 1 for the streaming checkpoints |
+| [Azure Stream Analytics][stream-analytics]    | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
+| [App Service][web-application]                | Application gateway with valid SSL certificate |
 
 ## Local
 The purpose of the local deployment is to deploy the minimal set of services required to set up
@@ -217,17 +215,19 @@ provisioned into the subscription:
 for a subscription can be found in the
 [Azure Portal](https://portal.azure.com/).
 
-Configuration
+Kubernetes
 =============
 
-## Kubernetes Dashboard
+## Prerequisites
 
-1. Go to ~\{HOMEDIR}\.kube\config-{solutionname}-cluster and rename it to ~\{HOMEDIR}\.kube\config. Please take a backup of your ~\{HOMEDIR}\.kube\config file if it exists
-1. {HOMEDIR} for windows - C:\Users\xyz, for mac - /Users/xyz
-1. To view Kubernetes dashboard, run the following command, which will start a local
+Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-binary-using-curl)
+
+## Dashboard
+
+
+`kubectl proxy` to view Kubernetes dashboard that will start a local
 web proxy for your cluster (it will start a local server at http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/):
 
-`kubectl proxy`
 
 ## CLI Options
 
@@ -261,7 +261,7 @@ Licensed under the [MIT](LICENSE) License.
 [azure-active-directory]: https://azure.microsoft.com/services/active-directory
 [iot-hub]: https://azure.microsoft.com/services/iot-hub
 [cosmos-db]: https://azure.microsoft.com/services/cosmos-db
-[container-service]: https://azure.microsoft.com/services/container-service
+[kubernetes-service]: https://azure.microsoft.com/services/kubernetes-service
 [storage-account]: https://docs.microsoft.com/azure/storage/common/storage-introduction#types-of-storage-accounts
 [virtual-machines]: https://azure.microsoft.com/services/virtual-machines
 [web-application]: https://azure.microsoft.com/services/app-service/web
