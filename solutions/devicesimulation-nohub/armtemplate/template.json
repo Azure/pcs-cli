@@ -147,7 +147,7 @@
       },
       "vmSetupScriptUri": {
         "type": "string",
-        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-nohub/single-vm/setupWrapper.sh')]",
+        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-nohub/single-vm/setup.sh')]",
         "metadata": {
           "description": "The URL of the script used for VM setup"
         }
