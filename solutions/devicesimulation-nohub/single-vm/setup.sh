@@ -241,3 +241,5 @@ wget $SETUP_URL/init -O /etc/init.d/azure-iot-solution \
 # ========================================================================
 
 nohup /app/start.sh > /dev/null 2>&1&
+
+exit 0
