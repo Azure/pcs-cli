@@ -5,6 +5,20 @@
 # This script is used to invoke setupInternal.sh script and check errors returned by the script.
 # In case of failures, log them to a file and return custom error string.
 # This will prevent secrets from leaking out to logs on azureiotsolutions.com
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --release-version)         PCS_RELEASE_VERSION="$2" ;;
+    esac
+    shift
+done
+
+SETUP_SCRIPTS_URL="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation/single-vm/"
+
+# Download setup internal script
+wget $SETUP_SCRIPTS_URL/setupInternal.sh     -O /app/setupInternal.sh     && chmod 750 /app/setupInternal.sh
+
+# Invoke setupInternal script
 ./setupInternal.sh $@ > /dev/null 2>setup-errors.log
 
 if [ $? -eq 0 ]; then
