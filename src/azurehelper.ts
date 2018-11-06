@@ -88,8 +88,7 @@ export class AzureHelper implements IAzureHelper {
                                 clearInterval(timer);
                                 console.log(error);
                                 reject(error);
-                            } else if (error.statusCode && error.statusCode === 403
-                                && error.code && error.code === 'AuthorizationFailed') {
+                            } else if (error.statusCode && error.statusCode === 403) {
                                 // Current user do not have permission to assign the role
                                 clearInterval(timer);
                                 resolve(false);
