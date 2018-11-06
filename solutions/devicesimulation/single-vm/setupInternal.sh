@@ -111,11 +111,6 @@ config_for_azure_china $HOST_NAME $PCS_WEBUI_AUTH_AAD_TENANT
 
 # ========================================================================
 
-mkdir -p ${APP_PATH}
-cd ${APP_PATH}
-
-# ========================================================================
-
 # Docker compose file
 
 DOCKERCOMPOSE_SOURCE="${PCS_SOLUTION_SETUP_URL}/single-vm/docker-compose.yml"
