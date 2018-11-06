@@ -641,6 +641,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_TELEMETRY_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.storage.type
 ---
 apiVersion: v1
 kind: Service
