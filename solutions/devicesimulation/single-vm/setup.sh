@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Copyright (c) Microsoft. All rights reserved.
 # Note: Windows Bash doesn't support shebang extra params
 
