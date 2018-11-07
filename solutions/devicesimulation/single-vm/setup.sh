@@ -10,7 +10,7 @@ APP_PATH="/app"
 
 # Parse release version from input parameters
 for ((i=1; i<=$#; i++)); do
-   if [ ${!i} == "--release-version" ]; then
+    if [ ${!i} == "--release-version" ]; then
         next=$((i+1))
         PCS_RELEASE_VERSION=${!next}
     fi
