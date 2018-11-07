@@ -7,16 +7,15 @@
 # This will prevent secrets from leaking out to logs on azureiotsolutions.com
 
 APP_PATH="/app"
+INPUT_ARGS=$@
 
 # Parse release version from input parameters
-i=1
-while [ "$i" -le $# ]; do
-    if [ ${!i} == "--release-version" ]; then
-        next=$((i+1))
-        PCS_RELEASE_VERSION=${!next}
-    fi
-    i=$(( i + 1 ))
-done 
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --release-version)         PCS_RELEASE_VERSION="$2" ;;
+    esac
+    shift
+done
 
 SETUP_SCRIPTS_URL="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation/single-vm/"
 
@@ -27,7 +26,7 @@ cd ${APP_PATH}
 wget $SETUP_SCRIPTS_URL/setupInternal.sh     -O /app/setupInternal.sh     && chmod 750 /app/setupInternal.sh
 
 # Invoke setupInternal script
-/app/setupInternal.sh $@ > /dev/null 2>setup-errors.log
+/app/setupInternal.sh $INPUT_ARGS > /dev/null 2>setup-errors.log
 
 if [ $? -eq 0 ]; then
     exit 0
