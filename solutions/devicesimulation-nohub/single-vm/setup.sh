@@ -8,11 +8,12 @@
 
 APP_PATH="/app"
 
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-        --release-version)         PCS_RELEASE_VERSION="$2" ;;
-    esac
-    shift
+# Parse release version from input parameters
+for ((i=1; i<=$#; i++)); do
+   if [ ${!i} == "--release-version" ]; then
+        next=$((i+1))
+        PCS_RELEASE_VERSION=${!next}
+    fi
 done
 
 SETUP_SCRIPTS_URL="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation/single-vm/"
