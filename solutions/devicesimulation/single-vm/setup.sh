@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Copyright (c) Microsoft. All rights reserved.
 # Note: Windows Bash doesn't support shebang extra params
 
@@ -11,7 +11,7 @@ APP_PATH="/app"
 # Parse release version from input parameters
 i=1
 while [ "$i" -le $# ]; do
-    if [ ${!i} == "--release-version" ]; then
+    if [[ ${!i} == "--release-version" ]]; then
         next=$((i+1))
         PCS_RELEASE_VERSION=${!next}
     fi
