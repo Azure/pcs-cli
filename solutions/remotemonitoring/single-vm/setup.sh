@@ -85,14 +85,14 @@ install_docker_ce() {
     local host_name=$1
     if (echo $host_name | grep -c  "\.cn$") ; then
         # If the host name has .cn suffix, dockerhub in China will be used to avoid slow network traffic failure.
-        DOCKER_DOWNLOAD_URL="https://mirror.azure.cn/docker-ce"
+        DOCKER_DOWNLOAD_URL="https://mirror.azure.cn/docker-ce/"
     else
-        DOCKER_DOWNLOAD_URL="https://download.docker.com/linux"
+        DOCKER_DOWNLOAD_URL="https://download.docker.com/linux/"
     fi
 
     curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
     # Add Docker repository to get up to date packages
-    add-apt-repository "deb [arch=amd64] $DOCKER_DOWNLOAD_URL/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+    add-apt-repository "deb [arch=amd64] $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
     apt-get update
     # Install
     apt-get -y install docker-ce docker-compose
