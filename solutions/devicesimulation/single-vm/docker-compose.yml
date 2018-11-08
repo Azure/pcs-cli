@@ -73,6 +73,7 @@ services:
       - PCS_AZURE_STORAGE_ACCOUNT
       - PCS_RESOURCE_GROUP_LOCATION
       - PCS_VMSS_NAME
+      - PCS_SEED_TEMPLATE
     logging:
       driver: "json-file"
       options:
@@ -86,7 +87,7 @@ services:
 #     - /app/custom-device-simulation-appsettings.ini:/app/webservice/appsettings.ini:ro
 
   storageadapter-svc:
-    image: azureiotpcs/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/pcs-storage-adapter-dotnet:DS-1.0.2
     environment:
       - PCS_LOG_LEVEL
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
@@ -125,7 +126,7 @@ services:
         max-file: "10"
 
   config-svc:
-    image: azureiotpcs/pcs-config-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/pcs-config-dotnet:DS-1.0.2
     depends_on:
       - storageadapter-svc
     environment:
@@ -140,7 +141,6 @@ services:
       - PCS_DEVICESIMULATION_WEBSERVICE_URL
       - PCS_TELEMETRY_WEBSERVICE_URL
       - PCS_IOTHUBMANAGER_WEBSERVICE_URL
-      - PCS_SEED_TEMPLATE
     logging:
       driver: "json-file"
       options:

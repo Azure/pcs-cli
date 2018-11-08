@@ -26,7 +26,7 @@ This CLI has the ability to deploy the following solution types:
 This CLI has the ability to deploy the following configurations of solutions:
 
 1. [basic](#basic) - deploys all resources to a single VM.
-1. [standard](#standard) - deploys resources using Azure Kubernetes Service.
+1. [standard](#standard) - deploys resources using Azure Kubernetes Service (AKS).
 1. [local](#local) - deploys resources to be used for running and debugging microservices locally.
 
 ### Documentation
@@ -215,12 +215,17 @@ provisioned into the subscription:
 for a subscription can be found in the
 [Azure Portal](https://portal.azure.com/).
 
-Configuration
+Kubernetes
 =============
 
-## Kubernetes Dashboard
+## Prerequisites
 
-1. `kubectl proxy` to view Kubernetes dashboard that will start a local
+Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-binary-using-curl)
+
+## Dashboard
+
+
+`kubectl proxy` to view Kubernetes dashboard that will start a local
 web proxy for your cluster (it will start a local server at http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/):
 
 

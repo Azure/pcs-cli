@@ -26,12 +26,11 @@ while [ "$#" -gt 0 ]; do
         --solution-type)                PCS_SOLUTION_TYPE="$2" ;;
         --solution-name)                PCS_SOLUTION_NAME="$2" ;;
         --iothub-name)                  PCS_IOTHUB_NAME="$2" ;;
-        --iothub-endpoint)              PCS_IOTHUBREACT_HUB_ENDPOINT="$2" ;;
-        --iothub-partitions)            PCS_IOTHUBREACT_HUB_PARTITIONS="$2" ;;
         --iothub-connstring)            PCS_IOTHUB_CONNSTRING="$2" ;;
-        --azureblob-account)            PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT="$2" ;;
-        --azureblob-key)                PCS_IOTHUBREACT_AZUREBLOB_KEY="$2" ;;
-        --azureblob-endpoint-suffix)    PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX="$2" ;;
+        --azureblob-account)            PCS_ASA_DATA_AZUREBLOB_ACCOUNT="$2" ;;
+        --azureblob-key)                PCS_ASA_DATA_AZUREBLOB_KEY="$2" ;;
+        --azureblob-endpoint-suffix)    PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX="$2" ;;
+        --azureblob-connstring)         PCS_AZUREBLOB_CONNSTRING="$2" ;;
         --docdb-connstring)             PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --azuremaps-key)                PCS_AZUREMAPS_KEY="$2" ;;
         --ssl-certificate)              PCS_CERTIFICATE="$2" ;;
@@ -45,14 +44,21 @@ while [ "$#" -gt 0 ]; do
         --aad-instance)                 PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
         --release-version)              PCS_RELEASE_VERSION="$2" ;;
         --docker-tag)                   PCS_DOCKER_TAG="$2" ;;
-        --evenhub-connstring)           PCS_EVENTHUB_CONNSTRING="$2" ;;
+        --eventhub-connstring)          PCS_EVENTHUB_CONNSTRING="$2" ;;
         --eventhub-name)                PCS_EVENTHUB_NAME="$2" ;;
+        --action-eventhub-connstring)   PCS_ACTION_EVENTHUB_CONNSTRING="$2" ;;
+        --action-eventhub-name)         PCS_ACTION_EVENTHUB_NAME="$2" ;;
         --cloud-type)                   PCS_CLOUD_TYPE="$2" ;;
         --subscription-id)              PCS_SUBSCRIPTION_ID="$2" ;;
         --deployment-id)                PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)              PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
         --telemetry-storage-type)       PCS_TELEMETRY_STORAGE_TYPE="$2" ;;
         --tsi-fqdn)                     PCS_TSI_FQDN="$2" ;;
+        --office365-connection-url)     PCS_OFFICE365_CONNECTION_URL="$2" ;;
+        --logicapp-endpoint-url)        PCS_LOGICAPP_ENDPOINT_URL="$2" ;;
+        --arm-endpoint-url)             PCS_ARM_ENDPOINT_URL="$2" ;;
+        --aad-endpoint-url)             PCS_AAD_ENDPOINT_URL="$2" ;;
+        --solution-website-url)         PCS_SOLUTION_WEBSITE_URL="$2" ;;
     esac
     shift
 done
@@ -216,26 +222,19 @@ echo "export HOST_NAME=\"${HOST_NAME}\""                                        
 echo "export APP_RUNTIME=\"${APP_RUNTIME}\""                                                             >> ${ENVVARS}
 echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
 echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
-echo "export PCS_AUTH_AAD_GLOBAL_TENANTID=\"${PCS_AUTH_AAD_GLOBAL_TENANTID}\""                           >> ${ENVVARS}
-echo "export PCS_AUTH_AAD_GLOBAL_CLIENTID=\"${PCS_AUTH_AAD_GLOBAL_CLIENTID}\""                           >> ${ENVVARS}
-echo "export PCS_AUTH_AAD_GLOBAL_LOGINURI=\"${PCS_AUTH_AAD_GLOBAL_LOGINURI}\""                           >> ${ENVVARS}
 echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_TELEMETRY_STORAGE_TYPE=\"${PCS_TELEMETRY_STORAGE_TYPE}\""                               >> ${ENVVARS}
 echo "export PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""        >> ${ENVVARS}
 echo "export PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_ACCESS_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                             >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_HUB_NAME=\"${PCS_IOTHUB_NAME}\""                                            >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_HUB_ENDPOINT=\"${PCS_IOTHUBREACT_HUB_ENDPOINT}\""                           >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_HUB_PARTITIONS=\"${PCS_IOTHUBREACT_HUB_PARTITIONS}\""                       >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""                 >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""                         >> ${ENVVARS}
-echo "export PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX}\"" >> ${ENVVARS}
-echo "export PCS_ASA_DATA_AZUREBLOB_ACCOUNT=\"${PCS_IOTHUBREACT_AZUREBLOB_ACCOUNT}\""                    >> ${ENVVARS}
-echo "export PCS_ASA_DATA_AZUREBLOB_KEY=\"${PCS_IOTHUBREACT_AZUREBLOB_KEY}\""                            >> ${ENVVARS}
-echo "export PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_IOTHUBREACT_AZUREBLOB_ENDPOINT_SUFFIX}\""    >> ${ENVVARS}
+echo "export PCS_ASA_DATA_AZUREBLOB_ACCOUNT=\"${PCS_ASA_DATA_AZUREBLOB_ACCOUNT}\""                       >> ${ENVVARS}
+echo "export PCS_ASA_DATA_AZUREBLOB_KEY=\"${PCS_ASA_DATA_AZUREBLOB_KEY}\""                               >> ${ENVVARS}
+echo "export PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=\"${PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX}\""       >> ${ENVVARS}
+echo "export PCS_AZUREBLOB_CONNSTRING=\"${PCS_AZUREBLOB_CONNSTRING}\""                                   >> ${ENVVARS}
 echo "export PCS_EVENTHUB_CONNSTRING=\"${PCS_EVENTHUB_CONNSTRING}\""                                     >> ${ENVVARS}
 echo "export PCS_EVENTHUB_NAME=\"${PCS_EVENTHUB_NAME}\""                                                 >> ${ENVVARS}
+echo "export PCS_ACTION_EVENTHUB_CONNSTRING=\"${PCS_ACTION_EVENTHUB_CONNSTRING}\""                       >> ${ENVVARS}
+echo "export PCS_ACTION_EVENTHUB_NAME=\"${PCS_ACTION_EVENTHUB_NAME}\""                                   >> ${ENVVARS}
 echo "export PCS_AZUREMAPS_KEY=\"${PCS_AZUREMAPS_KEY}\""                                                 >> ${ENVVARS}
 echo "export PCS_APPLICATION_SECRET=\"${PCS_APPLICATION_SECRET}\""                                       >> ${ENVVARS}
 echo "export PCS_DOCKER_TAG=\"${PCS_DOCKER_TAG}\""                                                       >> ${ENVVARS}
@@ -252,6 +251,11 @@ echo "export PCS_AAD_TENANT=\"${PCS_WEBUI_AUTH_AAD_TENANT}\""                   
 echo "export PCS_AAD_APPID=\"${PCS_WEBUI_AUTH_AAD_APPID}\""                                              >> ${ENVVARS}
 echo "export PCS_AAD_APPSECRET=\"${PCS_AAD_APPSECRET}\""                                                 >> ${ENVVARS}
 echo "export PCS_TSI_FQDN=\"${PCS_TSI_FQDN}\""                                                           >> ${ENVVARS}
+echo "export PCS_OFFICE365_CONNECTION_URL=\"${PCS_OFFICE365_CONNECTION_URL}\""                           >> ${ENVVARS}
+echo "export PCS_LOGICAPP_ENDPOINT_URL=\"${PCS_LOGICAPP_ENDPOINT_URL}\""                                 >> ${ENVVARS}
+echo "export PCS_ARM_ENDPOINT_URL=\"${PCS_ARM_ENDPOINT_URL}\""                                           >> ${ENVVARS}
+echo "export PCS_AAD_ENDPOINT_URL=\"${PCS_AAD_ENDPOINT_URL}\""                                           >> ${ENVVARS}
+echo "export PCS_SOLUTION_WEBSITE_URL=\"${PCS_SOLUTION_WEBSITE_URL}\""                                   >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

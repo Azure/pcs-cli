@@ -2,6 +2,9 @@
     "solutionName": {
       "value": "{Added through command line interface}"
     },
+    "aadTenantId": {
+      "value": "{Added through command line interface}"
+    },
     "azureWebsiteName" : {
       "value": "{Added through command line interface}"
     },
@@ -18,6 +21,9 @@
       "value": "{Added through command line interface}"
     },
     "remoteEndpointSSLThumbprint": {
+      "value": "{Added through command line interface}"
+    },
+    "pcsReleaseVersion": {
       "value": "{Added through command line interface}"
     }
 }
