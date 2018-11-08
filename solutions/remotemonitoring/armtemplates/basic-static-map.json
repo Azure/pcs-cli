@@ -310,7 +310,7 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_D1_v2",
+            "defaultValue": "Standard_DS1_v2",
             "allowedValues": [
                     "Standard_A0", "Standard_A1", "Standard_A2", "Standard_A3", "Standard_A4", "Standard_A5",
                     "Standard_A6", "Standard_A7", "Standard_A8", "Standard_A9", "Standard_A10", "Standard_A11",
@@ -319,7 +319,7 @@
                     "Standard_D1_v2", "Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_D5_v2",
                     "Standard_D11_v2", "Standard_D12_v2", "Standard_D13_v2", "Standard_D14_v2",
                     "Standard_G1", "Standard_G2", "Standard_G3", "Standard_G4", "Standard_G5",
-                    "Standard_DS1", "Standard_DS2", "Standard_DS3", "Standard_DS4",
+                    "Standard_DS1", "Standard_DS1_v2", "Standard_DS2", "Standard_DS3", "Standard_DS4",
                     "Standard_DS11", "Standard_DS12", "Standard_DS13", "Standard_DS14",
                     "Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5"
             ],
@@ -329,12 +329,12 @@
         },
         "ubuntuOSVersion": {
             "type": "string",
-            "defaultValue": "16.04.0-LTS",
+            "defaultValue": "16.04-LTS",
             "allowedValues": [
                 "12.04.5-LTS",
                 "14.04.5-LTS",
                 "15.10",
-                "16.04.0-LTS"
+                "16.04-LTS"
             ],
             "metadata": {
                 "description": "The Ubuntu version for the Virtual Machine."
@@ -607,7 +607,8 @@
         "logicAppConnectionApiVersion": "2016-06-01",
         "office365ConnectionName": "office365-connector",
         "office365ConnectionDisplayName": "Office365 Connector",
-        "office365ConnectionUrl": "[concat(parameters('azurePortalUrl'), '/#@', parameters('aadTenantId'), '/resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/', variables('office365ConnectionName'), '/edit' )]"
+        "office365ConnectionUrl": "[concat(parameters('azurePortalUrl'), '/#@', parameters('aadTenantId'), '/resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/', variables('office365ConnectionName'), '/edit' )]",
+        "backupVMLocation": "chinanorth2"
     },
     "resources": [
         {
@@ -1167,7 +1168,7 @@
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('networkSecurityGroupName')]",
             "apiVersion": "[variables('networkApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[variables('backupVMLocation')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
             },
@@ -1206,7 +1207,7 @@
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vnetName')]",
             "apiVersion": "[variables('networkApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[variables('backupVMLocation')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
             },
@@ -1231,7 +1232,7 @@
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('publicIPName')]",
             "apiVersion": "2016-03-30",
-            "location": "[variables('location')]",
+            "location": "[variables('backupVMLocation')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
             },
@@ -1248,7 +1249,7 @@
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicName')]",
             "apiVersion": "[variables('networkApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[variables('backupVMLocation')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
             },
@@ -1283,7 +1284,7 @@
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('vmName')]",
             "apiVersion": "[variables('computeApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[variables('backupVMLocation')]",
             "tags": {
                 "IotSuiteType": "[parameters('solutionType')]"
             },
@@ -1328,32 +1329,12 @@
             }
         },
         {
-            "comments": "Docker extension used to run the microservices",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'), '/', 'DockerExtension')]",
-            "apiVersion": "[variables('computeApiVersion')]",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "DockerExtension",
-                "typeHandlerVersion": "1.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "azure-environment": "[if(endsWith(reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0], '.cn'), 'AzureChinaCloud', '')]"
-                }
-            }
-        },
-        {
             "comments": "One time script execution to prepare the VM environment",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('vmName'), '/', 'scriptextensions')]",
             "apiVersion": "[variables('computeApiVersion')]",
-            "location": "[variables('location')]",
+            "location": "[variables('backupVMLocation')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'DockerExtension')]",
                 "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
                 "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
                 "[variables('eventHubNamespaceResourceId')]"
