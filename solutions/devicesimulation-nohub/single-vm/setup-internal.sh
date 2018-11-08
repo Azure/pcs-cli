@@ -105,6 +105,7 @@ config_for_azure_china $HOST_NAME $PCS_WEBUI_AUTH_AAD_TENANT
 
 # ========================================================================
 
+# Note: the directory might already exists, with "-p" there is no error
 mkdir -p ${APP_PATH}
 cd ${APP_PATH}
 
