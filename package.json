@@ -1,6 +1,6 @@
 {
   "name": "iot-solutions",
-  "version": "1.0.8",
+  "version": "1.0.11",
   "description": "Azure IoT Solutions cross platform command line tool",
   "license": "MIT",
   "author": "Parvez Pathan",
