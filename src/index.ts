@@ -578,6 +578,14 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        // Create role assignment only for Device Simulation or standard RM deployment since ACS requires it
+        if (program.type !== 'remotemonitoring' || program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
+            return createRoleAssignmentWithRetry(subscriptionId, sp.objectId, sp.appId, options);
+=======
+>>>>>>> master
         options.tokenAudience = undefined;
         const credentials = new DeviceTokenCredentials(options);
         const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
@@ -587,6 +595,10 @@ function createServicePrincipal(azureWebsiteName: string,
                 .then((assigned: boolean) => {
                     return sp.appId;
                 });
+<<<<<<< HEAD
+=======
+>>>>>>> 68b88633fab9052a6011e155373eaffbbbd98de8
+>>>>>>> master
         }
         return sp.appId;
     })
