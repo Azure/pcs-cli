@@ -431,6 +431,32 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: telemetry.tsi.fqdn
+        - name: PCS_AZUREBLOB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azureblob.connstring
+        - name: PCS_ACTION_EVENTHUB_CONNSTRING
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: action.eventhub.connstring
+        - name: PCS_ACTION_EVENTHUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: action.eventhub.name
+        - name: PCS_LOGICAPP_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: logicapp.endpoint.url
+        - name: PCS_SOLUTION_WEBSITE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: solution.website.url
+
 ---
 apiVersion: v1
 kind: Service
@@ -569,17 +595,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: asa.azureblob.account
+              key: azureblob.account
         - name: PCS_ASA_DATA_AZUREBLOB_KEY
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: asa.azureblob.key
+              key: azureblob.key
         - name: PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: asa.azureblob.endpointsuffix
+              key: azureblob.endpointsuffix
         - name: PCS_EVENTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:
@@ -615,6 +641,11 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.application.secret
+        - name: PCS_TELEMETRY_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: telemetry.storage.type
 ---
 apiVersion: v1
 kind: Service
@@ -718,6 +749,26 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: config.seedtemplate
+        - name: PCS_ARM_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azure.resourcemanager.endpoint.url
+        - name: PCS_OFFICE365_CONNECTION_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.office365.connection.url
+        - name: PCS_SUBSCRIPTION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.subscription.id
+        - name: PCS_SOLUTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
 ---
 apiVersion: v1
 kind: Service
@@ -774,6 +825,26 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.auth.required
+        - name: PCS_AAD_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.aad.endpoint.url
+        - name: PCS_AAD_TENANT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.tenant
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
+        - name: PCS_ARM_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azure.resourcemanager.endpoint.url
         - name: PCS_CORS_WHITELIST
           valueFrom:
             configMapKeyRef:

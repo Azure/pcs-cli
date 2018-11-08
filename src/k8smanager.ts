@@ -1,4 +1,4 @@
-const k8s = require('@kubernetes/typescript-node');
+const k8s = require('@kubernetes/client-node');
 const btoa = require('btoa');
 
 import * as chalk from 'chalk';
@@ -35,7 +35,7 @@ export class K8sManager implements IK8sManager {
     private _secret: any;
     private _deployUI: DeployUI;
 
-    constructor(namespace: string, kubeConfigFilePath: string, config: Config) {
+    constructor(namespace: string, contextName: string, kubeConfigFilePath: string, config: Config) {
         this._namespace = namespace;
         this._configFilePath = kubeConfigFilePath;
         this._config = config;
@@ -43,7 +43,8 @@ export class K8sManager implements IK8sManager {
 
         const kc = new k8s.KubeConfig();
         kc.loadFromFile(kubeConfigFilePath);
-        this._betaApi = new k8s.Extensions_v1beta1Api(kc.getCurrentCluster().server);
+
+        this._betaApi = new k8s.Extensions_v1beta1Api(kc.getCluster(contextName).server);
         this._betaApi.authentications.default = kc;
 
         this._secret = new k8s.V1Secret();
@@ -187,9 +188,11 @@ export class K8sManager implements IK8sManager {
         const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
+        configMap.data['security.auth.aad.endpoint.url'] = this._config.AzureActiveDirectoryEndpointUrl;
         configMap.data['security.auth.tenant'] = this._config.AADTenantId;
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
-        configMap.data['security.auth.issuer'] = 'https://sts.windows.net/' + this._config.AADTenantId + '/';
+        configMap.data['security.auth.issuer'] = this._config.AuthIssuerURL;
+        configMap.data['security.auth.serviceprincipal.secret'] = this._config.ServicePrincipalSecret;
         configMap.data['security.application.secret'] = genPassword();
         configMap.data['azure.maps.key'] = this._config.AzureMapsKey ? this._config.AzureMapsKey : '';
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
@@ -198,23 +201,23 @@ export class K8sManager implements IK8sManager {
         configMap.data['diagnostics.solution.name'] = this._config.SolutionName;
         configMap.data['diagnostics.iothub.name'] = this._config.IotHubName;
         configMap.data['diagnostics.deployment.id'] = this._config.DeploymentId;
-        configMap.data['diagnostics.endpoint.url'] = this._config.DiagnosticsEndpointUrl;
+        configMap.data['diagnostics.endpoint.url'] = this._config.DiagnosticsEndpointUrl || '';
         configMap.data['diagnostics.solution.type'] = this._config.SolutionType;
         configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
-        configMap.data['iothubreact.hub.name'] = this._config.EventHubName;
-        configMap.data['iothubreact.hub.endpoint'] = this._config.EventHubEndpoint;
-        configMap.data['iothubreact.hub.partitions'] = this._config.EventHubPartitions;
-        configMap.data['iothubreact.access.connstring'] = this._config.IoTHubConnectionString;
-        configMap.data['iothubreact.azureblob.account'] = this._config.AzureStorageAccountName;
-        configMap.data['iothubreact.azureblob.key'] = this._config.AzureStorageAccountKey;
-        configMap.data['iothubreact.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
         configMap.data['asa.eventhub.connstring'] = this._config.MessagesEventHubConnectionString;
         configMap.data['asa.eventhub.name'] = this._config.MessagesEventHubName;
-        configMap.data['asa.azureblob.account'] = this._config.AzureStorageAccountName;
-        configMap.data['asa.azureblob.key'] = this._config.AzureStorageAccountKey;
-        configMap.data['asa.azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
+        configMap.data['action.eventhub.connstring'] = this._config.ActionsEventHubConnectionString;
+        configMap.data['action.eventhub.name'] = this._config.ActionsEventHubName;
+        configMap.data['azureblob.account'] = this._config.AzureStorageAccountName;
+        configMap.data['azureblob.key'] = this._config.AzureStorageAccountKey;
+        configMap.data['azureblob.endpointsuffix'] = this._config.AzureStorageEndpointSuffix;
+        configMap.data['azureblob.connstring'] = this._config.AzureStorageConnectionString;
         configMap.data['telemetry.storage.type'] = this._config.TelemetryStorgeType;
         configMap.data['telemetry.tsi.fqdn'] = this._config.TSIDataAccessFQDN;
+        configMap.data['logicapp.endpoint.url'] = this._config.LogicAppEndpointUrl;
+        configMap.data['solution.website.url'] = this._config.SolutionWebsiteUrl;
+        configMap.data['azure.resourcemanager.endpoint.url'] = this._config.AzureResourceManagerEndpointUrl;
+        configMap.data['config.office365.connection.url'] = this._config.Office365ConnectionUrl;
         let deploymentConfig = configMap.data['webui-config.js'];
         deploymentConfig = deploymentConfig.replace('{TenantId}', this._config.AADTenantId);
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);

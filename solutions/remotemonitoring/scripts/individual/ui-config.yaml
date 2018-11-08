@@ -83,7 +83,26 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: config.seedtemplate
-
+        - name: PCS_OFFICE365_CONNECTION_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: config.office365.connection.url
+        - name: PCS_ARM_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: azure.resourcemanager.endpoint.url
+        - name: PCS_SUBSCRIPTION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.subscription.id
+        - name: PCS_SOLUTION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
 ---
 apiVersion: v1
 kind: Service

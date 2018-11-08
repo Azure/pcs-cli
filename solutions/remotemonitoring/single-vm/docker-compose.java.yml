@@ -42,6 +42,10 @@ services:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
+      - PCS_AAD_ENDPOINT_URL
+      - PCS_AAD_TENANT
+      - PCS_AAD_APPSECRET
+      - PCS_ARM_ENDPOINT_URL
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
       - APPLICATION_SECRET
@@ -106,6 +110,11 @@ services:
       - PCS_AAD_APPSECRET
       - PCS_TELEMETRY_STORAGE_TYPE
       - PCS_TSI_FQDN
+      - PCS_AZUREBLOB_CONNSTRING
+      - PCS_ACTION_EVENTHUB_CONNSTRING
+      - PCS_ACTION_EVENTHUB_NAME
+      - PCS_LOGICAPP_ENDPOINT_URL
+      - PCS_SOLUTION_WEBSITE_URL
 
   config:
     image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
@@ -130,6 +139,10 @@ services:
       - PCS_APPLICATION_SECRET
       - APPLICATION_SECRET
       - PCS_SEED_TEMPLATE
+      - PCS_ARM_ENDPOINT_URL
+      - PCS_OFFICE365_CONNECTION_URL
+      - PCS_SOLUTION_NAME
+      - PCS_SUBSCRIPTION_ID
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}

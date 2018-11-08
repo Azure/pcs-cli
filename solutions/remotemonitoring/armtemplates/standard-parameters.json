@@ -2,25 +2,28 @@
     "solutionName": {
       "value": "{Added through command line interface}"
     },
-    "azureWebsiteName" : {
+    "aadTenantId": {
       "value": "{Added through command line interface}"
     },
-    "adminUsername": {
+    "azureWebsiteName" : {
       "value": "{Added through command line interface}"
     },
     "servicePrincipalSecret": {
       "value": "{Added through command line interface}"
     },
-    "sshRSAPublicKey": {
+    "aadClientId": {
       "value": "{Added through command line interface}"
     },
-    "servicePrincipalClientId": {
+    "aadClientServicePrincipalId": {
       "value": "{Added through command line interface}"
     },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
     },
     "remoteEndpointSSLThumbprint": {
+      "value": "{Added through command line interface}"
+    },
+    "pcsReleaseVersion": {
       "value": "{Added through command line interface}"
     }
 }
