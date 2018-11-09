@@ -1191,6 +1191,7 @@
                                     "inputs": {
                                         "body": {
                                             "Body": "@body('Parse_JSON')?['body']",
+                                            "IsHtml": true,
                                             "Subject": "@body('Parse_JSON')?['subject']",
                                             "To": "@items('For_each')"
                                         },
