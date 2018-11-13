@@ -50,6 +50,7 @@ const packageJson = require('../package.json');
 const solutionType: string = 'remotemonitoring';
 enum solutionSkus {
     basic,
+    basic_novm,
     standard,
     local
 }
@@ -78,7 +79,7 @@ const program = new Command(packageJson.name)
     .option('-t, --type <type>', 'Solution Type: remotemonitoring, devicesimulation, devicesimulation-nohub',
             /^(remotemonitoring|devicesimulation|devicesimulation-nohub|test)$/i,
             'remotemonitoring')
-    .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, standard, or local', /^(basic|standard|local)$/i, 'basic')
+    .option('-s, --sku <sku>', 'SKU Type (only for Remote Monitoring): basic, basic-novm, standard, or local', /^(basic|basic-novm|standard|local)$/i, 'basic')
     .option('-e, --environment <environment>',
             'Azure environments: AzureCloud or AzureChinaCloud',
             /^(AzureCloud|AzureChinaCloud)$/i, 'AzureCloud')

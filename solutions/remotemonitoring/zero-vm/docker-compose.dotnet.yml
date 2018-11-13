@@ -1,0 +1,84 @@
+version: "2"
+services:
+  reverseproxy:
+    image: nareshsirvi/remote-monitoring-nginx:1.0.0
+    ports:
+      - "8080:8080"
+
+  webui:
+    image: azureiotpcs/pcs-remote-monitoring-webui:testing
+
+  auth:
+    image: azureiotpcs/pcs-auth-dotnet:testing
+    environment:
+      - PCS_AUTH_REQUIRED=false
+      - PCS_CORS_WHITELIST=${APPSETTING_PCS_CORS_WHITELIST}
+      - PCS_AUTH_ISSUER=${APPSETTING_PCS_AUTH_ISSUER}
+      - PCS_AUTH_AUDIENCE=${APPSETTING_PCS_AUTH_AUDIENCE}
+
+  config:
+    image: azureiotpcs/pcs-config-dotnet:testing
+    environment:
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_DEVICESIMULATION_WEBSERVICE_URL=http://devicesimulation:9003/v1
+      - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1
+      - PCS_AUTH_WEBSERVICE_URL=http://auth:9001/v1
+      - PCS_AZUREMAPS_KEY=${APPSETTING_PCS_AZUREMAPS_KEY}
+      - PCS_AUTH_REQUIRED=false
+      - PCS_CORS_WHITELIST=${APPSETTING_PCS_CORS_WHITELIST}
+
+  storageadapter:
+    image: azureiotpcs/pcs-storage-adapter-dotnet:testing
+    environment:
+      - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=${APPSETTING_PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}
+      - PCS_AUTH_REQUIRED=false
+      - PCS_CORS_WHITELIST=${APPSETTING_PCS_CORS_WHITELIST}
+
+  iothubmanager:
+    image: azureiotpcs/iothub-manager-dotnet:testing
+    environment:
+      - PCS_AUTH_WEBSERVICE_URL=http://auth:9001/v1
+      - PCS_IOTHUB_CONNSTRING=${APPSETTING_PCS_IOTHUB_CONNSTRING}
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_AUTH_REQUIRED=false
+
+  telemetry:
+    image: zhanghua/telemetry-dotnet:testing
+    environment:
+      - PCS_AUTH_WEBSERVICE_URL=http://auth:9001/v1
+      - PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=${APPSETTING_PCS_TELEMETRY_DOCUMENTDB_CONNSTRING}
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics:9006/v1
+      - PCS_AUTH_REQUIRED=false
+      - PCS_AAD_TENANT=${APPSETTING_PCS_AAD_TENANT}
+      - PCS_AAD_APPID=${APPSETTING_PCS_AAD_APPID}
+      - PCS_AAD_APPSECRET=${APPSETTING_PCS_AAD_APPSECRET}
+      - PCS_TELEMETRY_STORAGE_TYPE=tsi
+      - PCS_TSI_FQDN=${APPSETTING_PCS_TSI_FQDN}
+      - PCS_AZUREBLOB_CONNSTRING=${APPSETTING_PCS_AZUREBLOB_CONNSTRING}
+      - PCS_ACTION_EVENTHUB_CONNSTRING=${APPSETTING_PCS_ACTION_EVENTHUB_CONNSTRING}
+      - PCS_ACTION_EVENTHUB_NAME=${APPSETTING_PCS_ACTION_EVENTHUB_NAME}
+      - PCS_LOGICAPP_ENDPOINT_URL=${APPSETTING_PCS_LOGICAPP_ENDPOINT_URL}
+      - PCS_SOLUTION_WEBSITE_URL=${APPSETTING_PCS_SOLUTION_WEBSITE_URL}
+
+  devicesimulation:
+    image: azureiotpcs/device-simulation-dotnet:DS-1.0.2
+    environment:
+      - PCS_IOTHUB_CONNSTRING=${APPSETTING_PCS_IOTHUB_CONNSTRING}
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_AUTH_REQUIRED=false
+
+  asamanager:
+    image: moenm/asa-manager-dotnet:actions-bugbash
+    environment:
+      - PCS_TELEMETRY_DOCUMENTDB_CONNSTRING=${APPSETTING_PCS_TELEMETRY_DOCUMENTDB_CONNSTRING}
+      - PCS_TELEMETRY_WEBSERVICE_URL=http://telemetry:9004/v1
+      - PCS_CONFIG_WEBSERVICE_URL=http://config:9005/v1
+      - PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://iothubmanager:9002/v1
+      - PCS_ASA_DATA_AZUREBLOB_ACCOUNT=${APPSETTING_PCS_ASA_DATA_AZUREBLOB_ACCOUNT}
+      - PCS_ASA_DATA_AZUREBLOB_KEY=${APPSETTING_PCS_ASA_DATA_AZUREBLOB_KEY}
+      - PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=${APPSETTING_PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX}
+      - PCS_EVENTHUB_CONNSTRING=${APPSETTING_PCS_EVENTHUB_CONNSTRING}
+      - PCS_EVENTHUB_NAME=${APPSETTING_PCS_EVENTHUB_NAME}
+      - PCS_AUTH_REQUIRED=false
+      - PCS_TELEMETRY_STORAGE_TYPE=${APPSETTING_PCS_TELEMETRY_STORAGE_TYPE}
