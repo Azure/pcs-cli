@@ -62,6 +62,7 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
+# Note: Solution = devicesimulation
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
 SETUP_URL="${REPOSITORY}/setup/"
@@ -72,33 +73,32 @@ SETUP_URL="${REPOSITORY}/setup/"
 
 install_docker_ce() {
     apt-get update \
-        # Remove old packages if installed
         && apt-get remove docker docker-engine docker.io \
-        # Install Docker's GPG key
         && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
         && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
-        # Add Docker repository to get up to date packages
         && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" \
         && apt-get update \
-        # Install Docker
         && apt-get -y --allow-downgrades install docker-ce docker-compose \
-        # Test Docker
         && docker run --rm hello-world && docker rmi hello-world
 
-    if [ $? -ne 0 ]; then
-        return 1
+    local RESULT=$?
+    if [ $RESULT -ne 0 ]; then
+        INSTALL_DOCKER_RESULT="FAIL"
     else
-        return 0
+        INSTALL_DOCKER_RESULT="OK"
     fi
 }
 
 set +e
-RESULT=$(install_docker_ce)
-if [ $RESULT -ne 0 ]; then
+INSTALL_DOCKER_RESULT="OK"
+install_docker_ce
+if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
+    set -e
+    echo "First attempt to install Docker failed, retrying..."
     # Retry once, in case apt wasn't ready
     sleep 30
-    RESULT=$(install_docker_ce)
-    if [ $RESULT -ne 0 ]; then
+    install_docker_ce
+    if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
         exit 1
     fi
 fi

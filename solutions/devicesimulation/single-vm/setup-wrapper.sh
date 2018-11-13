@@ -49,7 +49,9 @@ fi
 
 # Invoke setup script
 ./setup.sh "${PARAMS_COPY}" >> ${SETUP_LOG} 2>&1
-if [ $? -ne 0 ]; then
+RESULT=$?
+echo "Exit code: $RESULT"
+if [[ $RESULT -ne 0 ]]; then
     echo "Setup failed, please see log file '${SETUP_LOG}' for more information"
     cat ${SETUP_LOG}
     exit 1
