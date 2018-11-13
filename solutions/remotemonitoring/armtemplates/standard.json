@@ -827,7 +827,9 @@
                 "name": "[parameters('provisioningServiceSku')]",
                 "capacity": 1
             },
-            "dependsOn": ["[parameters('iotHubName')]"]
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
         },
         {
             "comments": "Consumer Group of IoT Hub",
