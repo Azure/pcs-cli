@@ -26,14 +26,15 @@ export PCS_IOTHUB_CONNSTRING=""
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --solution-setup-url)      PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/DS-1.0.0/solutions/devicesimulation-nohub
+        --release-version)         PCS_RELEASE_VERSION="$2" ;;
+        --docker-tag)              PCS_DOCKER_TAG="$2" ;;
+        --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
+        --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
         --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
         --hostname)                HOST_NAME="$2" ;;
         --log-level)               PCS_LOG_LEVEL="$2" ;;
-        --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
-        --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
-        --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
@@ -49,13 +50,22 @@ while [ "$#" -gt 0 ]; do
         --cloud-type)              PCS_CLOUD_TYPE="$2" ;;
         --deployment-id)           PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
-        --docker-tag)              PCS_DOCKER_TAG="$2" ;;
-        --release-version)         PCS_RELEASE_VERSION="$2" ;;
         --resource-group-location) PCS_RESOURCE_GROUP_LOCATION="$2" ;;
         --vmss-name)               PCS_VMSS_NAME="$2" ;;
+        --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
     esac
     shift
 done
+
+if [ -z "$PCS_SOLUTION_SETUP_URL" ]; then
+    echo "Setup URL not specified (see --solution-setup-url)"
+    exit 1
+fi
+
+if [ -z "$PCS_RELEASE_VERSION" ]; then
+    echo "Release version not specified (see --release-version)"
+    exit 1
+fi
 
 # Note: Solution = devicesimulation-nohub
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub/single-vm"
@@ -89,11 +99,12 @@ INSTALL_DOCKER_RESULT="OK"
 install_docker_ce
 if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
     set -e
-    echo "First attempt to install Docker failed, retrying..."
+    echo "Error: first attempt to install Docker failed, retrying..."
     # Retry once, in case apt wasn't ready
     sleep 30
     install_docker_ce
     if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
+        echo "Error: Docker installation failed"
         exit 1
     fi
 fi
@@ -216,11 +227,13 @@ echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""  
 echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP_LOCATION=\"${PCS_RESOURCE_GROUP_LOCATION}\""                             >> ${ENVVARS}
 echo "export PCS_VMSS_NAME=\"${PCS_VMSS_NAME}\""                                                         >> ${ENVVARS}
+
 # Setting some empty vars as these are required vars by Config service
 echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                                                   >> ${ENVVARS}
 echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                                          >> ${ENVVARS}
 echo "export PCS_IOTHUBMANAGER_WEBSERVICE_URL=\"\""                                                      >> ${ENVVARS}
 echo "export PCS_BINGMAP_KEY=\"\""                                                                       >> ${ENVVARS}
+
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

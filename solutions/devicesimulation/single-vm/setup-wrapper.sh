@@ -20,7 +20,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$PCS_RELEASE_VERSION" ]; then
-    echo "No release version specified"
+    echo "Release version not specified (see --release-version)"
     exit 1
 fi
 
@@ -51,7 +51,7 @@ fi
 ./setup.sh "${PARAMS_COPY}" >> ${SETUP_LOG} 2>&1
 RESULT=$?
 echo "Exit code: $RESULT"
-if [[ $RESULT -ne 0 ]]; then
+if [ $RESULT -ne 0 ]; then
     echo "Setup failed, please see log file '${SETUP_LOG}' for more information"
     cat ${SETUP_LOG}
     exit 1
