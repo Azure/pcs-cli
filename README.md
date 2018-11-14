@@ -176,6 +176,10 @@ provisioned into the subscription:
 | [Azure Stream Analytics][stream-analytics] | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
 | [Azure Event Hub][event-hub]               | Used for device notifications |
 | [App Service][web-application]             | Application gateway with valid SSL certificate |
+| [Azure Maps][azure-maps]                | Used to provide geospatial context to the solution |
+| [Azure Time Series Insights][azure-tsi]                | Used to analyze time-series data from IoT devices |
+| [Azure Logic Apps][logic-app]                | Used to integrate with other services to automate workflows |
+| [Device Provisioning Service][dps]                | Used to provision devices with the IoT Hub|
 
 ## Standard
 
@@ -197,6 +201,10 @@ provisioned into the subscription:
 | [Azure Stream Analytics][stream-analytics]    | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
 | [Azure Event Hub][event-hub]               | Used for device notifications |
 | [App Service][web-application]                | Application gateway with valid SSL certificate |
+| [Azure Maps][azure-maps]                | Used to provide geospatial context to the solution |
+| [Azure Time Series Insights][azure-tsi]                | Used to analyze time-series data from IoT devices |
+| [Azure Logic Apps][logic-app]                | Used to integrate with other services to automate workflows |
+| [Device Provisioning Service][dps]                | Used to provision devices with the IoT Hub|
 
 ## Local
 The purpose of the local deployment is to deploy the minimal set of services required to set up
@@ -266,3 +274,7 @@ Licensed under the [MIT](LICENSE) License.
 [storage-account]: https://docs.microsoft.com/azure/storage/common/storage-introduction#types-of-storage-accounts
 [virtual-machines]: https://azure.microsoft.com/services/virtual-machines
 [web-application]: https://azure.microsoft.com/services/app-service/web
+[azure-maps]: https://azure.microsoft.com/en-us/services/azure-maps/
+[azure-tsi]: https://azure.microsoft.com/en-us/services/time-series-insights/
+[dps]: https://docs.microsoft.com/en-us/azure/iot-dps/
+[logic-app]: https://azure.microsoft.com/en-us/services/logic-apps/
