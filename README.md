@@ -195,6 +195,7 @@ provisioned into the subscription:
 | [Azure Cosmos DB][cosmos-db]                  | Stores configuration data, and device telemetry like rules, alerts, and messages |
 | [Azure Storage Accounts][storage-account]     | 4 for VM storage, and 1 for the streaming checkpoints |
 | [Azure Stream Analytics][stream-analytics]    | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
+| [Azure Event Hub][event-hub]               | Used for device notifications |
 | [App Service][web-application]                | Application gateway with valid SSL certificate |
 
 ## Local
