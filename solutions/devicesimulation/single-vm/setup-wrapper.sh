@@ -10,7 +10,7 @@
 # 4. The script invokes setup.sh script and checks for errors returned by the script, logging to a file in the VM.
 
 # Enable this for debugging only
-set -ex
+##set -ex
 
 APP_PATH="/app"
 SETUP_LOG="${APP_PATH}/setup.log"
