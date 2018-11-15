@@ -9,6 +9,9 @@
 # 3. In case of errors, the script terminates with exit code "1" which must be caught by the deployment service to inform the user.
 # 4. The script invokes setup.sh script and checks for errors returned by the script, logging to a file in the VM.
 
+# Enable this for debugging only
+set -ex
+
 APP_PATH="/app"
 SETUP_LOG="${APP_PATH}/setup.log"
 
