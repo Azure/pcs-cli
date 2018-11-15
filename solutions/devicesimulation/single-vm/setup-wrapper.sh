@@ -14,10 +14,16 @@ PARAMS_COPY="$@"
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        --release-version) PCS_RELEASE_VERSION="$2" ;;
+        --solution-setup-url)  PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/DS-1.0.0/solutions/devicesimulation
+        --release-version)     PCS_RELEASE_VERSION="$2" ;;
     esac
     shift
 done
+
+if [ -z "$PCS_SOLUTION_SETUP_URL" ]; then
+    echo "Setup URL not specified (see --solution-setup-url)"
+    exit 1
+fi
 
 if [ -z "$PCS_RELEASE_VERSION" ]; then
     echo "Release version not specified (see --release-version)"
