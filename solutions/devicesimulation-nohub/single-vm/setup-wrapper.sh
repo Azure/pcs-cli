@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Copyright (c) Microsoft. All rights reserved.
 
+# Solution: devicesimulation-nohub
+
 # Important:
 # 1. The script is designed NOT to throw errors, to avoid secrets ending in azureiotsolutions.com logs
 # 2. In case of errors, the script terminates with exit code "1" which must be caught by the deployment service to inform the user.
@@ -10,7 +12,7 @@ APP_PATH="/app"
 SETUP_LOG="${APP_PATH}/setup.log"
 
 # Copy all params before shifting the original ones
-PARAMS_COPY="$@"
+PARAMS_COPY=("${@}")
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -48,7 +50,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Invoke setup script
-./setup.sh "${PARAMS_COPY}" >> ${SETUP_LOG} 2>&1
+./setup.sh "${PARAMS_COPY[@]}" >> ${SETUP_LOG} 2>&1
 RESULT=$?
 echo "Exit code: $RESULT"
 if [ $RESULT -ne 0 ]; then

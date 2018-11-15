@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Copyright (c) Microsoft. All rights reserved.
 
+# Solution: devicesimulation
+
 # Important:
 # 1. The script is designed NOT to throw errors, to avoid secrets ending in azureiotsolutions.com logs
 # 2. In case of errors, the script terminates with exit code "1" which must be caught by the deployment service to inform the user.
@@ -10,20 +12,14 @@ APP_PATH="/app"
 SETUP_LOG="${APP_PATH}/setup.log"
 
 # Copy all params before shifting the original ones
-PARAMS_COPY="$@"
+PARAMS_COPY=("${@}")
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        --solution-setup-url)  PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/DS-1.0.0/solutions/devicesimulation
         --release-version)     PCS_RELEASE_VERSION="$2" ;;
     esac
     shift
 done
-
-if [ -z "$PCS_SOLUTION_SETUP_URL" ]; then
-    echo "Setup URL not specified (see --solution-setup-url)"
-    exit 1
-fi
 
 if [ -z "$PCS_RELEASE_VERSION" ]; then
     echo "Release version not specified (see --release-version)"
@@ -54,7 +50,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Invoke setup script
-./setup.sh "${PARAMS_COPY}" >> ${SETUP_LOG} 2>&1
+./setup.sh "${PARAMS_COPY[@]}" >> ${SETUP_LOG} 2>&1
 RESULT=$?
 echo "Exit code: $RESULT"
 if [ $RESULT -ne 0 ]; then

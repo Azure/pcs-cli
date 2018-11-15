@@ -2,12 +2,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Note: Windows Bash doesn't support shebang extra params
 
+# Solution: devicesimulation
+
 # Note: this script is invoked by setup-wrapper.sh and errors are stored in /app/setup.log
 set -ex
-
-echo "-----------------------------"
-echo "$@"
-echo "-----------------------------"
 
 APP_PATH="/app"
 WEBUICONFIG="${APP_PATH}/webui-config.js"

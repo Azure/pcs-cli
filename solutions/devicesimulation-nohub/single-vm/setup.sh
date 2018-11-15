@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Note: Windows Bash doesn't support shebang extra params
 
+# Solution: devicesimulation-nohub
+
 # Note: this script is invoked by setup-wrapper.sh and errors are stored in /app/setup.log
 set -ex
 
