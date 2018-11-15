@@ -16,7 +16,7 @@ PARAMS_COPY=("${@}")
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        --release-version)     PCS_RELEASE_VERSION="$2" ;;
+        --release-version) PCS_RELEASE_VERSION="$2" ;;
     esac
     shift
 done
