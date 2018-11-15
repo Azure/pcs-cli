@@ -401,7 +401,7 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', 'saki-fix-rm-setup-script', '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
             "metadata": {
                 "description": "The URL of the script to setup a single VM deployment"
             }
