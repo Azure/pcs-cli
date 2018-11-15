@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Note: Windows Bash doesn't support shebang extra params
 
+# Solution: devicesimulation
+
 # Note: this script is invoked by setup-wrapper.sh and errors are stored in /app/setup.log
 set -ex
 
@@ -26,21 +28,17 @@ export PCS_IOTHUB_CONNSTRING=""
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --solution-setup-url)      PCS_SOLUTION_SETUP_URL="$2" ;; # e.g. https://raw.githubusercontent.com/Azure/pcs-cli/DS-1.0.0/solutions/devicesimulation
+        --release-version)         PCS_RELEASE_VERSION="$2" ;;
+        --docker-tag)              PCS_DOCKER_TAG="$2" ;;
+        --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
+        --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --subscription-domain)     PCS_SUBSCRIPTION_DOMAIN="$2" ;;
         --subscription-id)         PCS_SUBSCRIPTION_ID="$2" ;;
         --hostname)                HOST_NAME="$2" ;;
         --log-level)               PCS_LOG_LEVEL="$2" ;;
-        --solution-type)           PCS_SOLUTION_TYPE="$2" ;;
-        --solution-name)           PCS_SOLUTION_NAME="$2" ;;
         --resource-group)          PCS_RESOURCE_GROUP="$2" ;;
-        --iothub-name)             PCS_IOHUB_NAME="$2" ;;
-        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
-        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
-        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
-        --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
         --docdb-name)              PCS_DOCDB_NAME="$2" ;;
         --docdb-connstring)        PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
-        --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
         --ssl-certificate)         PCS_CERTIFICATE="$2" ;;
         --ssl-certificate-key)     PCS_CERTIFICATE_KEY="$2" ;;
         --auth-audience)           PCS_AUTH_AUDIENCE="$2" ;;
@@ -54,13 +52,27 @@ while [ "$#" -gt 0 ]; do
         --cloud-type)              PCS_CLOUD_TYPE="$2" ;;
         --deployment-id)           PCS_DEPLOYMENT_ID="$2" ;;
         --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
-        --docker-tag)              PCS_DOCKER_TAG="$2" ;;
-        --release-version)         PCS_RELEASE_VERSION="$2" ;;
         --resource-group-location) PCS_RESOURCE_GROUP_LOCATION="$2" ;;
         --vmss-name)               PCS_VMSS_NAME="$2" ;;
+        --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
+        --iothub-name)             PCS_IOHUB_NAME="$2" ;;
+        --iothub-sku)              PCS_IOTHUB_SKU="$2" ;;
+        --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
+        --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
+        --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
     esac
     shift
 done
+
+if [ -z "$PCS_SOLUTION_SETUP_URL" ]; then
+    echo "Setup URL not specified (see --solution-setup-url)"
+    exit 1
+fi
+
+if [ -z "$PCS_RELEASE_VERSION" ]; then
+    echo "Release version not specified (see --release-version)"
+    exit 1
+fi
 
 # Note: Solution = devicesimulation
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation/single-vm"
@@ -94,11 +106,12 @@ INSTALL_DOCKER_RESULT="OK"
 install_docker_ce
 if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
     set -e
-    echo "First attempt to install Docker failed, retrying..."
+    echo "Error: first attempt to install Docker failed, retrying..."
     # Retry once, in case apt wasn't ready
     sleep 30
     install_docker_ce
     if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
+        echo "Error: Docker installation failed"
         exit 1
     fi
 fi
@@ -205,6 +218,7 @@ echo "export HOST_NAME=\"${HOST_NAME}\""                                        
 echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
 echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
 echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
+echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_DOMAIN=\"${PCS_SUBSCRIPTION_DOMAIN}\""                                     >> ${ENVVARS}
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
@@ -213,20 +227,22 @@ echo "export PCS_WEBUI_AUTH_AAD_TENANT=\"${PCS_WEBUI_AUTH_AAD_TENANT}\""        
 echo "export PCS_AAD_CLIENT_SP_ID=\"${PCS_AAD_CLIENT_SP_ID}\""                                           >> ${ENVVARS}
 echo "export PCS_AAD_SECRET=\"${PCS_AAD_SECRET}\""                                                       >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP=\"${PCS_RESOURCE_GROUP}\""                                               >> ${ENVVARS}
-echo "export PCS_IOHUB_NAME=\"${PCS_IOHUB_NAME}\""                                                       >> ${ENVVARS}
 echo "export PCS_SOLUTION_TYPE=\"${PCS_SOLUTION_TYPE}\""                                                 >> ${ENVVARS}
 echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                                                 >> ${ENVVARS}
 echo "export PCS_SEED_TEMPLATE=\"multiple-simulations-template\""                                        >> ${ENVVARS}
 echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
+echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
+echo "export PCS_RESOURCE_GROUP_LOCATION=\"${PCS_RESOURCE_GROUP_LOCATION}\""                             >> ${ENVVARS}
+echo "export PCS_VMSS_NAME=\"${PCS_VMSS_NAME}\""                                                         >> ${ENVVARS}
+
+# Setting some empty vars as these are required vars by Config service
 echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                                                   >> ${ENVVARS}
 echo "export PCS_TELEMETRY_WEBSERVICE_URL=\"\""                                                          >> ${ENVVARS}
 echo "export PCS_IOTHUBMANAGER_WEBSERVICE_URL=\"\""                                                      >> ${ENVVARS}
 echo "export PCS_BINGMAP_KEY=\"\""                                                                       >> ${ENVVARS}
-echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
-echo "export PCS_RESOURCE_GROUP_LOCATION=\"${PCS_RESOURCE_GROUP_LOCATION}\""                             >> ${ENVVARS}
-echo "export PCS_VMSS_NAME=\"${PCS_VMSS_NAME}\""                                                         >> ${ENVVARS}
+
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

@@ -1,26 +1,30 @@
 #!/usr/bin/env bash
 # Copyright (c) Microsoft. All rights reserved.
 
+# Solution: devicesimulation-nohub
+
 # Important:
-# 1. The script is designed NOT to throw errors, to avoid secrets ending in azureiotsolutions.com logs
-# 2. In case of errors, the script terminates with exit code "1" which must be caught by the deployment service to inform the user.
-# 3. The script invokes setup.sh script and checks for errors returned by the script, logging to a file in the VM.
+# 1. The script runs in an environment with old/strict shell support, so don't rely on Bash niceties
+# 2. The script is designed NOT to throw errors, to avoid secrets ending in azureiotsolutions.com logs
+# 3. In case of errors, the script terminates with exit code "1" which must be caught by the deployment service to inform the user.
+# 4. The script invokes setup.sh script and checks for errors returned by the script, logging to a file in the VM.
+
+# Enable this for debugging only
+##set -ex
 
 APP_PATH="/app"
 SETUP_LOG="${APP_PATH}/setup.log"
 
-# Copy all params before shifting the original ones
-PARAMS_COPY="$@"
-
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-        --release-version) PCS_RELEASE_VERSION="$2" ;;
+# Loop through arguments and extract some parameters, without modifying $@ needed later
+for X in "$@"; do
+    case "$PREVIOUS" in
+        --release-version) PCS_RELEASE_VERSION="$X" ;;
     esac
-    shift
+    PREVIOUS="$X"
 done
 
 if [ -z "$PCS_RELEASE_VERSION" ]; then
-    echo "No release version specified"
+    echo "Release version not specified (see --release-version)"
     exit 1
 fi
 
@@ -48,10 +52,10 @@ if [ $? -ne 0 ]; then
 fi
 
 # Invoke setup script
-./setup.sh "${PARAMS_COPY}" >> ${SETUP_LOG} 2>&1
+./setup.sh "${@}" >> ${SETUP_LOG} 2>&1
 RESULT=$?
 echo "Exit code: $RESULT"
-if [[ $RESULT -ne 0 ]]; then
+if [ $RESULT -ne 0 ]; then
     echo "Setup failed, please see log file '${SETUP_LOG}' for more information"
     cat ${SETUP_LOG}
     exit 1
