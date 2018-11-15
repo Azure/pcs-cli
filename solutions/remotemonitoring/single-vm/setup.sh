@@ -63,6 +63,19 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
+# ========================================================================
+# Validate parameters and exit if validation failed.
+
+validate_parameters() {
+    if [ -z "$PCS_RELEASE_VERSION" ]; then 
+    echo "Release version not specified (see --release-version)" 
+    exit 1 
+fi
+}
+
+validate_parameters
+# ========================================================================
+
 # TODO: move files to Remote Monitoring repositories
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
