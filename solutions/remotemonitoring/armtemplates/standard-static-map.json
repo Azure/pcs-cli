@@ -801,7 +801,9 @@
                 "name": "[parameters('provisioningServiceSku')]",
                 "capacity": 1
             },
-            "dependsOn": ["[parameters('iotHubName')]"]
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
         },
         {
             "comments": "Consumer Group of IoT Hub",
@@ -846,11 +848,10 @@
                     "name": "[variables('tsiEventSourceName')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
                     "location": "[parameters('tsiLocation')]",
-                    "kind": "Microsoft.EventHub",
+                    "kind": "Microsoft.IoTHub",
                     "properties": {
                         "eventSourceResourceId": "[variables('iotHubResourceId')]",
-                        "eventHubName": "[parameters('iotHubName')]",
-                        "serviceBusNamespace": "[split(reference(variables('iotHubResourceId'), variables('iotHubApiVersion')).eventHubEndpoints.events.endpoint, variables('delimiters'))[1]]",
+                        "iotHubName": "[parameters('iotHubName')]",
                         "consumerGroupName": "[variables('tsiConsumerGroupName')]",
                         "keyName": "[variables('iotHubServiceKeyName')]",
                         "sharedAccessKey": "[concat(listkeys(variables('iotHubServiceKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
