@@ -401,9 +401,16 @@
         },
         "vmSetupScriptUri": {
             "type": "string",
-            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup.sh')]",
             "metadata": {
                 "description": "The URL of the script to setup a single VM deployment"
+            }
+        },
+        "vmSetupWrapperScriptUri": {
+            "type": "string",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
+            "metadata": {
+                "description": "The URL of the script to setup wrapper a single VM deployment"
             }
         },
         "vmFQDNSuffix": {
@@ -1415,7 +1422,8 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[parameters('vmSetupScriptUri')]"
+                        "[parameters('vmSetupScriptUri')]",
+                        "[parameters('vmSetupWrapperScriptUri')]"
                     ]
                 },
                 "protectedSettings": {
