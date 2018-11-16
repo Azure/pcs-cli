@@ -283,7 +283,7 @@
       "appServiceCapacity": "1",
       "storageApiVersion": "2017-06-01",
       "webAppRepoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-      "webAppRepoBranch": "master",
+      "webAppRepoBranch": "2.0.0",
       "webAppPlanName": "[concat(parameters('azureWebsiteName'), '-plan')]",
       "cosmosDBApiVersion": "2016-03-19",
       "cosmosDBResourceId": "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('documentDBName'))]",
