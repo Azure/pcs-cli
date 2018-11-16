@@ -86,7 +86,6 @@ export APPLICATION_SECRET=$PCS_APPLICATION_SECRET
 # ========================================================================
 
 ### Install Docker
-
 install_docker_ce() {
     apt-get update
     # Remove old packages if installed
@@ -111,9 +110,34 @@ install_docker_ce() {
     apt-get -y install docker-ce docker-compose
     # Test
     docker run --rm hello-world && docker rmi hello-world
+
+    local RESULT=$?
+    if [ $RESULT -ne 0 ]; then
+        INSTALL_DOCKER_RESULT="FAIL"
+    else
+        INSTALL_DOCKER_RESULT="OK"
+    fi
 }
 
-install_docker_ce $HOST_NAME $5
+### Install docker and retry one more time if first try failed
+install_docker_ce_retry() {
+    INSTALL_DOCKER_RESULT="OK"
+    install_docker_ce $HOST_NAME $1
+    if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
+        set -e
+        echo "Error: first attempt to install Docker failed, retrying..."
+        # Retry once, in case apt wasn't ready
+        sleep 30
+        install_docker_ce $HOST_NAME $1
+        if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
+            echo "Error: Docker installation failed"
+            exit 1
+        fi
+    fi
+}
+
+install_docker_ce_retry $5
+# ========================================================================
 
 # Configure Docker registry based on host name
 # ToDo: we may need to add similar parameter to AzureGermanCloud and AzureUSGovernment
