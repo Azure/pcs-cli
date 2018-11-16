@@ -29,7 +29,7 @@ if [ -z "$PCS_RELEASE_VERSION" ]; then
 fi
 
 # Note: this points to the solution WITHOUT an IoT Hub service
-SETUP_SCRIPTS_URL="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/devicesimulation-nohub/single-vm/"
+SETUP_SCRIPTS_URL="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm/"
 
 mkdir -p ${APP_PATH}
 cd ${APP_PATH}
