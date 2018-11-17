@@ -29,6 +29,7 @@ if [ -z "$PCS_RELEASE_VERSION" ]; then
 fi
 
 mkdir -p ${APP_PATH}
+pushd $PWD > /dev/null
 cd ${APP_PATH}
 
 # Create log file, make it writable and empty (for local tests)
@@ -39,6 +40,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Invoke setup script
+popd > /dev/null
 ./setup.sh "${@}" >> ${SETUP_LOG} 2>&1
 RESULT=$?
 echo "Exit code: $RESULT"
