@@ -18,6 +18,7 @@ version: '2'
 services:
   apigateway-svc:
     image: azureiotpcs/simulation-api-gateway:${PCS_DOCKER_TAG}
+    restart: always
     ports:
       - "443:443"
     depends_on:
@@ -35,6 +36,7 @@ services:
 
   webui-svc:
     image: azureiotpcs/device-simulation-webui:${PCS_DOCKER_TAG}
+    restart: always
     depends_on:
       - devicesimulation-svc
       - diagnostics-svc
@@ -49,6 +51,7 @@ services:
 
   devicesimulation-svc:
     image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    restart: always
     depends_on:
       - storageadapter-svc
       - diagnostics-svc
@@ -88,6 +91,7 @@ services:
 
   storageadapter-svc:
     image: azureiotpcs/pcs-storage-adapter-dotnet:DS-1.0.2
+    restart: always
     environment:
       - PCS_LOG_LEVEL
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
@@ -103,6 +107,7 @@ services:
 
   diagnostics-svc:
     image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
+    restart: always
     depends_on:
       - config-svc
     environment:
@@ -127,6 +132,7 @@ services:
 
   config-svc:
     image: azureiotpcs/pcs-config-dotnet:DS-1.0.2
+    restart: always
     depends_on:
       - storageadapter-svc
     environment:

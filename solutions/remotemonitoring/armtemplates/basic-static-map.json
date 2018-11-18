@@ -1373,6 +1373,7 @@
                                     "inputs": {
                                         "body": {
                                             "Body": "@body('Parse_JSON')?['body']",
+                                            "Importance": "Normal",
                                             "IsHtml": true,
                                             "Subject": "Rule Notification ",
                                             "To": "@items('For_each')"
