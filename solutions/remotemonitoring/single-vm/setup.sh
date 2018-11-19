@@ -94,8 +94,7 @@ install_docker_ce() {
     set -e
     # Install Docker's GPG key
     apt-get -y --force-yes --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common
-    local host_name=$1
-    if (echo $host_name | grep -c  "\.cn$") ; then
+    if (echo $HOST_NAME | grep -c  "\.cn$") ; then
         # If the host name has .cn suffix, dockerhub in China will be used to avoid slow network traffic failure.
         DOCKER_DOWNLOAD_URL="https://mirror.azure.cn/docker-ce/linux/"
     else
@@ -122,13 +121,13 @@ install_docker_ce() {
 ### Install docker and retry one more time if first try failed
 install_docker_ce_retry() {
     INSTALL_DOCKER_RESULT="OK"
-    install_docker_ce $HOST_NAME $1
+    install_docker_ce
     if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
         set -e
         echo "Error: first attempt to install Docker failed, retrying..."
         # Retry once, in case apt wasn't ready
         sleep 30
-        install_docker_ce $HOST_NAME $1
+        install_docker_ce
         if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
             echo "Error: Docker installation failed"
             exit 1
@@ -136,7 +135,7 @@ install_docker_ce_retry() {
     fi
 }
 
-install_docker_ce_retry $5
+install_docker_ce_retry
 # ========================================================================
 
 # Configure Docker registry based on host name
