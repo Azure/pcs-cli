@@ -371,14 +371,14 @@
             "type": "string",
             "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup.sh')]",
             "metadata": {
-                "description": "The URL of the script to setup a single VM deployment"
+                "description": "The URL of the script to setup a single VM deployment. setup.sh creates resources and set environment in a single VM"
             }
         },
         "vmSetupWrapperScriptUri": {
             "type": "string",
             "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
             "metadata": {
-                "description": "The URL of the script to setup wrapper a single VM deployment"
+                "description": "The URL of the script to setup a single VM deployment. setup-wrapper.sh manages log file and invokes setup.sh"
             }
         },
         "vmFQDNSuffix": {
