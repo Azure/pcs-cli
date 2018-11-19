@@ -589,7 +589,7 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
-        // Create role assignment only for standard RM deployment since ACS requires it
+        // Create role assignment only for standard RM deployment since AKS requires it
         if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
             options.tokenAudience = undefined;
             const credentials = new DeviceTokenCredentials(options);
