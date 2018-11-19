@@ -83,11 +83,15 @@ export class AzureHelper implements IAzureHelper {
                                 },
                                 this.SLEEP_TIME);
                         })
-                        .catch((error: Error) => {
+                        .catch((error: Error | any) => {
                             if (retryCount >= this.MAX_RETRYCOUNT) {
                                 clearInterval(timer);
                                 console.log(error);
                                 reject(error);
+                            } else if (error.statusCode && error.statusCode === 403) {
+                                // Current user do not have permission to assign the role
+                                clearInterval(timer);
+                                resolve(false);
                             }
                         });
                 },
@@ -99,10 +103,10 @@ export class AzureHelper implements IAzureHelper {
     public getAuthIssuserUrl(tenantId: string): string {
         switch (this._environment.name) {
             case AzureEnvironment.AzureChina.name:
-                return `https://sts.chinacloudapi.cn/${tenantId}`;
+                return `https://sts.chinacloudapi.cn/${tenantId}/`;
             default:
                 // use default parameter values of global azure environment
-                return `https://sts.windows.net/${tenantId}`;
+                return `https://sts.windows.net/${tenantId}/`;
         }
     }
 

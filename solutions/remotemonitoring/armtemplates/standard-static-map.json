@@ -310,7 +310,8 @@
             "type": "string",
             "metadata": {
                 "description": "Configure all linux machines with the SSH RSA public key string.  Your key should include three parts, for example 'ssh-rsa AAAAB...snip...UcyupgH azureuser@linuxvm'"
-            }
+            },
+            "defaultValue": "none"
         },
         "aadClientId": {
             "metadata": {
@@ -325,6 +326,28 @@
             },
             "type": "securestring",
             "defaultValue": "n/a"
+        },
+        "kubernetesVersion": {
+            "type": "string",
+            "defaultValue": "1.11.3",
+            "allowedValues": [
+                "1.7.7",
+                "1.8.1",
+                "1.9.2",
+                "1.9.6",
+                "1.11.2",
+                "1.11.3"
+            ],
+            "metadata": {
+                "description": "The version of the Kubernetes running in AKS."
+            }
+        },
+        "pcsReleaseVersion": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
+            }
         },
         "azureWebsiteName": {
             "type": "string",
@@ -506,24 +529,18 @@
         "tsiContributorRole": "Contributor",
         "delimiters": [ ".", "//" ],
         "solutionType": "RemoteMonitoring",
-        "adminUsername": "[parameters('adminUsername')]",
-        "agentCount": "[parameters('agentCount')]",
         "publicIPName": "[concat(take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5), '-public-ip')]",
-        "clusterName": "[concat(resourceGroup().name, '-cluster')]",
-        "agentsEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-agents')]",
+        "aksName": "[concat(resourceGroup().name, '-cluster')]",
         "domainNameLabel": "[concat('agent-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
-        "agentVMSize": "[parameters('agentVMSize')]",
-        "masterCount": "[parameters('masterCount')]",
-        "mastersEndpointDNSNamePrefix": "[concat(parameters('solutionName'),'-mgmt')]",
-        "orchestratorType": "Kubernetes",
-        "sshRSAPublicKey": "[parameters('sshRSAPublicKey')]",
+        "aksDnsPrefix": "[concat('aks', uniqueString(resourceGroup().id))]",
         "sku": "S1",
         "workerSize": "0",
         "repoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
-        "branch": "master",
+        "branch": "[parameters('pcsReleaseVersion')]",
         "hostingPlanName": "[parameters('azureWebsiteName')]",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
         "storageApiVersion": "2017-06-01",
+        "networkPlugin": "kubenet",
         "logicAppName": "[concat('logicapp-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
         "logicAppApiVersion": "2016-06-01",
         "logicAppConnectionApiVersion": "2016-06-01",
@@ -784,7 +801,9 @@
                 "name": "[parameters('provisioningServiceSku')]",
                 "capacity": 1
             },
-            "dependsOn": ["[parameters('iotHubName')]"]
+            "dependsOn": [
+                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
+            ]
         },
         {
             "comments": "Consumer Group of IoT Hub",
@@ -829,11 +848,10 @@
                     "name": "[variables('tsiEventSourceName')]",
                     "apiVersion": "[variables('tsiApiVersion')]",
                     "location": "[parameters('tsiLocation')]",
-                    "kind": "Microsoft.EventHub",
+                    "kind": "Microsoft.IoTHub",
                     "properties": {
                         "eventSourceResourceId": "[variables('iotHubResourceId')]",
-                        "eventHubName": "[parameters('iotHubName')]",
-                        "serviceBusNamespace": "[split(reference(variables('iotHubResourceId'), variables('iotHubApiVersion')).eventHubEndpoints.events.endpoint, variables('delimiters'))[1]]",
+                        "iotHubName": "[parameters('iotHubName')]",
                         "consumerGroupName": "[variables('tsiConsumerGroupName')]",
                         "keyName": "[variables('iotHubServiceKeyName')]",
                         "sharedAccessKey": "[concat(listkeys(variables('iotHubServiceKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
@@ -1107,39 +1125,37 @@
             }
         },
         {
-            "apiVersion": "2016-09-30",
-            "type": "Microsoft.ContainerService/containerServices",
+            "apiVersion": "2018-03-31",
+            "type": "Microsoft.ContainerService/managedClusters",
             "location": "[resourceGroup().location]",
-            "name": "[variables('clusterName')]",
+            "tags": {
+                "IotSuiteType": "[variables('solutionType')]"
+            },
+            "name": "[variables('aksName')]",
             "properties": {
-                "orchestratorProfile": {
-                    "orchestratorType": "[variables('orchestratorType')]"
-                },
-                "masterProfile": {
-                    "count": "[variables('masterCount')]",
-                    "dnsPrefix": "[variables('mastersEndpointDNSNamePrefix')]"
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                "enableRBAC": false,
+                "dnsPrefix": "[variables('aksDnsPrefix')]",
+                "addonProfiles": {
+                    "httpApplicationRouting": {
+                        "enabled": false
+                    }
                 },
                 "agentPoolProfiles": [
-                    {
-                        "name": "agentpools",
-                        "count": "[variables('agentCount')]",
-                        "vmSize": "[variables('agentVMSize')]",
-                        "dnsPrefix": "[variables('agentsEndpointDNSNamePrefix')]"
-                    }
+                {
+                    "name": "agentpool",
+                    "count": "[parameters('agentCount')]",
+                    "vmSize": "[parameters('agentVMSize')]",
+                    "osType": "Linux",
+                    "storageProfile": "ManagedDisks"
+                }
                 ],
-                "linuxProfile": {
-                    "adminUsername": "[variables('adminUsername')]",
-                    "ssh": {
-                        "publicKeys": [
-                            {
-                                "keyData": "[variables('sshRSAPublicKey')]"
-                            }
-                        ]
-                    }
-                },
                 "servicePrincipalProfile": {
                     "ClientId": "[parameters('aadClientId')]",
                     "Secret": "[parameters('servicePrincipalSecret')]"
+                },
+                "networkProfile": {
+                    "networkPlugin": "[variables('networkPlugin')]"
                 }
             }
         },
@@ -1176,6 +1192,8 @@
                                     "inputs": {
                                         "body": {
                                             "Body": "@body('Parse_JSON')?['body']",
+                                            "Importance": "Normal",
+                                            "IsHtml": true,
                                             "Subject": "@body('Parse_JSON')?['subject']",
                                             "To": "@items('For_each')"
                                         },
@@ -1314,19 +1332,11 @@
         },
         "containerServiceName": {
             "type": "string",
-            "value": "[variables('clusterName')]"
+            "value": "[variables('aksName')]"
         },
         "masterFQDN": {
             "type": "string",
-            "value": "[reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn]"
-        },
-        "adminUsername": {
-            "type": "string",
-            "value": "[variables('adminUsername')]"
-        },
-        "sshMaster0": {
-            "type": "string",
-            "value": "[concat('ssh ', variables('adminUsername'), '@', reference(concat('Microsoft.ContainerService/containerServices/', variables('clusterName'))).masterProfile.fqdn, ' -A -p 22')]"
+            "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', variables('aksName'))).fqdn]"
         },
         "loadBalancerIp": {
             "type": "string",

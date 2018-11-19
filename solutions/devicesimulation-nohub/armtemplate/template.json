@@ -4,14 +4,14 @@
     "parameters": {
       "pcsDockerTag": {
         "type": "string",
-        "defaultValue": "staging",
+        "defaultValue": "DS-2.0.0",
         "metadata": {
           "description": "The docker tag can be same as release version and is the latest released docker image"
         }
       },
       "pcsReleaseVersion": {
         "type": "string",
-        "defaultValue": "Device-Simulation-Staging",
+        "defaultValue": "master",
         "metadata": {
           "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
         }
@@ -147,7 +147,7 @@
       },
       "vmSetupScriptUri": {
         "type": "string",
-        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-nohub/single-vm/setup.sh')]",
+        "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation-nohub/single-vm/setup-wrapper.sh')]",
         "metadata": {
           "description": "The URL of the script used for VM setup"
         }
@@ -611,7 +611,7 @@
                       "fileUris": [
                         "[parameters('vmSetupScriptUri')]"
                       ],
-                      "commandToExecute": "[concat('sh setup.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --resource-group-location ', '\"', variables('location'), '\"',  ' --vmss-name ', '\"', parameters('vmssName'), '\"', ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'),  ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-connstring ', concat('\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --docdb-name ', concat('\"', parameters('documentDBName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --solution-setup-url ', concat('\"', parameters('solutionTemplateRepository'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --aad-sp-client-id ', concat('\"', parameters('aadClientServicePrincipalId'), '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'), ' --aad-app-secret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --subscription-id ', concat('\"', subscription().subscriptionId, '\"' ))]"
+                      "commandToExecute": "[concat('bash setup-wrapper.sh --log-level Info ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --resource-group-location ', '\"', variables('location'), '\"',  ' --vmss-name ', '\"', parameters('vmssName'), '\"', ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';', '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"https://sts.windows.net/', parameters('aadTenantId'), '/\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --resource-group ', concat('\"', parameters('solutionName'), '\"'), ' --solution-type ', concat('\"', parameters('solutionType'), '\"'),  ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --deployment-id ', concat('\"', parameters('deploymentId'), '\"'),  ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --storage-connstring ', concat('\"', 'DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --docdb-name ', concat('\"', parameters('documentDBName'), '\"'), ' --solution-name ', concat('\"', parameters('solutionName'), '\"'), ' --solution-setup-url ', concat('\"', parameters('solutionTemplateRepository'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'),' --subscription-domain ', concat('\"', parameters('domain'), '\"'), ' --aad-sp-client-id ', concat('\"', parameters('aadClientServicePrincipalId'), '\"'), ' --cloud-type ', concat('\"', parameters('cloudType'), '\"'), ' --aad-app-secret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --subscription-id ', concat('\"', subscription().subscriptionId, '\"' ))]"
                     }
                   }
                 }
@@ -624,26 +624,26 @@
         }
       }
     ],
-  "outputs": {
-    "resourceGroup": {
-      "type": "string",
-      "value": "[resourceGroup().name]"
-    },
-    "documentDBConnectionString": {
-      "type": "string",
-      "value": "[concat('AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';')]"
-    },
-    "azureWebsite": {
-      "type": "string",
-      "value": "[concat('https://', reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0])]"
-    },
-    "vmFQDN": {
-      "type": "string",
-      "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
-    },
-    "adminUsername": {
-      "type": "string",
-      "value": "[parameters('adminUsername')]"
+    "outputs": {
+      "resourceGroup" : {
+        "type": "string",
+        "value": "[resourceGroup().name]"
+      },
+      "documentDBConnectionString" : {
+        "type": "string",
+        "value": "[concat('AccountEndpoint=', reference(variables('cosmosDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('cosmosDBResourceId'), variables('cosmosDBApiVersion')).primaryMasterKey, ';')]"
+      },
+      "azureWebsite": {
+        "type": "string",
+        "value": "[concat('https://', reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0])]"
+      },
+      "vmFQDN": {
+        "type": "string",
+        "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
+      },
+      "adminUsername": {
+        "type": "string",
+        "value": "[parameters('adminUsername')]"
+      }
     }
-  }
   }

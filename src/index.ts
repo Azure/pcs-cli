@@ -90,11 +90,10 @@ const program = new Command(packageJson.name)
     .option('--domainId <domainId>', 'This can either be an .onmicrosoft.com domain or the Azure object ID for the tenant')
     .option('--solutionName <solutionName>', 'Solution name for your Remote monitoring accelerator')
     .option('--subscriptionId <subscriptionId>', 'SubscriptionId on which this solution should be created')
-    .option('-l, --location <location>', 'Locaion where the solution will be deployed')
+    .option('-l, --location <location>', 'Location where the solution will be deployed')
     .option('-w, --websiteName <websiteName>', 'Name of the website, default is solution name')
     .option('-u, --username <username>', 'User name for the virtual machine that will be created as part of the solution')
     .option('-p, --password <password>', 'Password for the virtual machine that will be created as part of the solution')
-    .option('--sshFilePath <sshFilePath>', 'Path to the ssh file path that will be used by standard deployment')
     .option('--diagnosticUrl <diagnosticUrl>', 'Azure function app url for the diagnostics service')
     .on('--help', () => {
         console.log(
@@ -270,12 +269,6 @@ function main() {
                             } else {
                                 throw new Error('username and password are required for basic deployment');
                             }
-                        } else if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-                            if (program.sshFilePath) {
-                                ans.sshFilePath = program.sshFilePath;
-                            } else {
-                                throw new Error('sshFilePath is required for standard deployment type');
-                            }
                         }
                         return Promise.resolve<Answers>(ans);
                     } else if (locations && locations.length > 0) {
@@ -364,9 +357,9 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'Device-Simulation-Staging';
+                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'master';
                         answers.version = version;
-                        answers.dockerTag = 'staging';
+                        answers.dockerTag = 'DS-2.0.0';
                     }
 
                     if (appId && servicePrincipalSecret) {
@@ -701,7 +694,9 @@ function getDeploymentQuestions(locations: string[]) {
                 return checkUrlExists(value, answers.subscriptionId);
             }
         });
+    }
 
+    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
         questions.push({
             message: 'Enter a user name for the virtual machine:',
             name: 'adminUsername',
@@ -718,22 +713,7 @@ function getDeploymentQuestions(locations: string[]) {
                 return invalidUsernameMessage;
             },
         });
-    }
-
-        // Only add ssh key file option for standard deployment
-    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-        questions.push({
-            default: defaultSshPublicKeyPath,
-            message: 'Enter path to SSH key file path:',
-            name: 'sshFilePath',
-            type: 'input',
-            validate: (sshFilePath: string) => {
-                // TODO Add ssh key validation
-                // Issue: https://github.com/Azure/pcs-cli/issues/83
-                return fs.existsSync(sshFilePath);
-            },
-        });
-    } else if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+        
         questions.push(pwdQuestion('pwdFirstAttempt'));
         questions.push(pwdQuestion('pwdSecondAttempt', 'Confirm your password:'));
     }

@@ -17,7 +17,8 @@ version: '2'
 
 services:
   apigateway-svc:
-    image: azureiotpcsdev/simulation-api-gateway:${PCS_DOCKER_TAG}
+    image: azureiotpcs/simulation-api-gateway:${PCS_DOCKER_TAG}
+    restart: always
     ports:
       - "443:443"
     depends_on:
@@ -34,7 +35,8 @@ services:
         max-file: "10"
 
   webui-svc:
-    image: azureiotpcsdev/device-simulation-webui:${PCS_DOCKER_TAG}
+    image: azureiotpcsdev/device-simulation-webui:staging
+    restart: always
     depends_on:
       - devicesimulation-svc
       - diagnostics-svc
@@ -48,13 +50,13 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
-    image: azureiotpcsdev/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcsdev/device-simulation-dotnet:staging
+    restart: always
     depends_on:
       - storageadapter-svc
       - diagnostics-svc
     environment:
       - PCS_LOG_LEVEL
-      - PCS_SOLUTION_TYPE
       - PCS_IOTHUB_CONNSTRING=none
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_AUTH_ISSUER
@@ -81,14 +83,15 @@ services:
         max-size: "10240k"
         max-file: "10"
     volumes:
-      - /tmp:/tmp:rw
+      - /tmp/share:/tmp/share
 # To mount custom device models, upload the files to the VM, edit and uncomment the following line:
 #     - /absolute-path/my-device-models:/app/data:ro
 # To mount a custom service configuration, create a custom file, edit and uncomment the following line:
 #     - /app/custom-device-simulation-appsettings.ini:/app/webservice/appsettings.ini:ro
 
   storageadapter-svc:
-    image: azureiotpcsdev/pcs-storage-adapter-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/pcs-storage-adapter-dotnet:DS-1.0.2
+    restart: always
     environment:
       - PCS_LOG_LEVEL
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
@@ -103,7 +106,8 @@ services:
         max-file: "10"
 
   diagnostics-svc:
-    image: azureiotpcsdev/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
+    restart: always
     depends_on:
       - config-svc
     environment:
@@ -128,6 +132,7 @@ services:
 
   config-svc:
     image: azureiotpcs/pcs-config-dotnet:DS-1.0.2
+    restart: always
     depends_on:
       - storageadapter-svc
     environment:
@@ -142,7 +147,6 @@ services:
       - PCS_TELEMETRY_WEBSERVICE_URL
       - PCS_IOTHUBMANAGER_WEBSERVICE_URL
       - PCS_BINGMAP_KEY
-      - PCS_AZUREMAPS_KEY
     logging:
       driver: "json-file"
       options:
