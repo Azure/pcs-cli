@@ -15,22 +15,7 @@
 APP_PATH="/app"
 SETUP_LOG="${APP_PATH}/setup.log"
 
-# Loop through arguments and extract some parameters, without modifying $@ needed later
-for X in "$@"; do
-    case "$PREVIOUS" in
-        --release-version) PCS_RELEASE_VERSION="$X" ;;
-    esac
-    PREVIOUS="$X"
-done
-
-if [ -z "$PCS_RELEASE_VERSION" ]; then
-    echo "Release version not specified (see --release-version)"
-    exit 1
-fi
-
 mkdir -p ${APP_PATH}
-pushd $PWD > /dev/null
-cd ${APP_PATH}
 
 # Create log file, make it writable and empty (for local tests)
 touch ${SETUP_LOG} && chmod 660 ${SETUP_LOG} && echo > ${SETUP_LOG}
@@ -40,7 +25,6 @@ if [ $? -ne 0 ]; then
 fi
 
 # Invoke setup script
-popd > /dev/null
 ./setup.sh "${@}" >> ${SETUP_LOG} 2>&1
 RESULT=$?
 echo "Exit code: $RESULT"
