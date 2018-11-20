@@ -19,7 +19,7 @@
     "pcsReleaseVersion":
     {
       "type": "string",
-      "defaultValue": "master",
+      "defaultValue": "Device-Simulation-Staging",
       "metadata": {
         "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
       }
