@@ -24,7 +24,9 @@ separate branches, in order to ensure that a pull request only
 includes the changes related to one issue.
 
 Any significant change should almost always be accompanied by tests. Look at
-the existing tests to see the testing approach and style used.
+the existing tests to see the testing approach and style used. Please be sure
+to test deployments on local, basic, and standard, as applicable, for all new
+features.
 
 Follow the project coding style, to ensure consistency and quick code reviews.
 
