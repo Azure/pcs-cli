@@ -228,8 +228,13 @@ function main() {
                 const deployUI = DeployUI.instance;
                 let deploymentManager: IDeploymentManager;
                 let subPrompt: Promise<Answers>;
-                if (program.subscriptionId) {
-                    subPrompt = Promise.resolve<Answers>({ subscriptionId: program.subscriptionId});
+                if (program.servicePrincipalId) {
+                    subPrompt = Promise.resolve<Answers>({
+                        azureWebsiteName: program.websiteName || program.solutionName,
+                        location: program.location,
+                        solutionName: program.solutionName,
+                        subscriptionId: program.subscriptionId,
+                    });
                 } else {
                     subPrompt = prompt(questions.value);
                 }
@@ -284,7 +289,8 @@ function main() {
                     // Check if the selected location support Time Series Insights resource type for Global environment
                     // Use the default value of template when the location does not support it
                     const resourceManagementClient = new ResourceManagementClient(
-                        new DeviceTokenCredentials(cachedAuthResponse.credentials),
+                        cachedAuthResponse.isServicePrincipal ?
+                        cachedAuthResponse.credentials : new DeviceTokenCredentials(cachedAuthResponse.credentials),
                         answers.subscriptionId,
                         baseUri);
 
@@ -327,7 +333,7 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        answers.azureWebsiteName = answers.solutionName;
+                        answers.azureWebsiteName = answers.solutionName || program.solutionName;
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
@@ -575,14 +581,19 @@ function createServicePrincipal(azureWebsiteName: string,
     })
     .then((sp: any) => {
         newServicePrincipal = sp;
+        if (usingServicePrincipal) {
+            // use login service principal id
+            userPrincipalObjectId = program.servicePrincipalId;
+            return Promise.resolve(newServicePrincipal);
+        }
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
-        options.tokenAudience = undefined;
-        const credentials = new DeviceTokenCredentials(options);
-        const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
-        // Create role assignment only for standard RM deployment since ACS requires it
+        // Create role assignment only for standard RM deployment since AKS requires it
         if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
+            options.tokenAudience = undefined;
+            const credentials = new DeviceTokenCredentials(options);
+            const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
             return azureHelper.assignOwnerRoleOnSubscription(sp.objectId)
                 .then((assigned: boolean) => {
                     return sp.appId;
