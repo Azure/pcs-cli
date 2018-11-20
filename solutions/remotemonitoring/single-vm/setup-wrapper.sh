@@ -30,6 +30,5 @@ RESULT=$?
 echo "Exit code: $RESULT"
 if [ $RESULT -ne 0 ]; then
     echo "Setup failed, please see log file '${SETUP_LOG}' for more information"
-    cat ${SETUP_LOG}
     exit 1
 fi
