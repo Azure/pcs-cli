@@ -47,7 +47,6 @@ rm -f setup.sh                          >> ${SETUP_LOG} 2>&1 \
     && chmod 750 setup.sh               >> ${SETUP_LOG} 2>&1
 if [ $? -ne 0 ]; then
     echo "Unable to download '${SETUP_SCRIPTS_URL}/setup.sh'"
-    cat ${SETUP_LOG}
     exit 1
 fi
 
