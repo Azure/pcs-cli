@@ -127,6 +127,14 @@ export class DeploymentManager implements IDeploymentManager {
         return this._client.resourceGroups.createOrUpdate(answers.solutionName, resourceGroup)
             .then((result: ResourceGroup) => {
                 resourceGroup = result;
+                // Assign owner role on subscription for standard deployment since AKS requires it
+                if (answers.deploymentSku === 'standard') {
+                    return this._azureHelper.assignOwnerRoleOnSubscription(answers.servicePrincipalId)
+                    .then((assigned: boolean) => {
+                        return assigned;
+                    });
+                }
+
                 return this._azureHelper.assignContributorRoleOnResourceGroup(answers.servicePrincipalId, answers.solutionName)
                     .then((assigned: boolean) => {
                         return assigned;
