@@ -228,8 +228,13 @@ function main() {
                 const deployUI = DeployUI.instance;
                 let deploymentManager: IDeploymentManager;
                 let subPrompt: Promise<Answers>;
-                if (program.subscriptionId) {
-                    subPrompt = Promise.resolve<Answers>({ subscriptionId: program.subscriptionId});
+                if (program.servicePrincipalId) {
+                    subPrompt = Promise.resolve<Answers>({
+                        azureWebsiteName: program.websiteName || program.solutionName,
+                        location: program.location,
+                        solutionName: program.solutionName,
+                        subscriptionId: program.subscriptionId,
+                    });
                 } else {
                     subPrompt = prompt(questions.value);
                 }
@@ -255,7 +260,7 @@ function main() {
                     return deploymentManager.getLocations();
                 })
                 .then((locations: string[] | undefined) => {
-                    if (program.location && (program.websiteName || program.solutionName) && program.username) {
+                    if (program.location && (program.websiteName || program.solutionName)) {
                         const ans: Answers = {
                             adminUsername: program.username,
                             azureWebsiteName: program.websiteName || program.solutionName,
@@ -263,7 +268,7 @@ function main() {
                             solutionName: program.solutionName
                         };
                         if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-                            if ( program.password ) {
+                            if (program.password) {
                                 ans.pwdFirstAttempt = program.password;
                                 ans.pwdSecondAttempt = program.password;
                             } else {
@@ -284,7 +289,8 @@ function main() {
                     // Check if the selected location support Time Series Insights resource type for Global environment
                     // Use the default value of template when the location does not support it
                     const resourceManagementClient = new ResourceManagementClient(
-                        new DeviceTokenCredentials(cachedAuthResponse.credentials),
+                        cachedAuthResponse.isServicePrincipal ?
+                        cachedAuthResponse.credentials : new DeviceTokenCredentials(cachedAuthResponse.credentials),
                         answers.subscriptionId,
                         baseUri);
 
@@ -327,7 +333,7 @@ function main() {
                 })
                 .then((ans: Answers) => {
                     if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        answers.azureWebsiteName = answers.solutionName;
+                        answers.azureWebsiteName = answers.solutionName || program.solutionName;
                     } else {
                         answers.adminPassword = ans.pwdFirstAttempt;
                         answers.sshFilePath = ans.sshFilePath;
@@ -357,7 +363,7 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'DS-2.0.0';
+                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'DS-2.0.1';
                         answers.version = version;
                         answers.dockerTag = version;
                     }
@@ -575,22 +581,15 @@ function createServicePrincipal(azureWebsiteName: string,
     })
     .then((sp: any) => {
         newServicePrincipal = sp;
+        if (usingServicePrincipal) {
+            // use login service principal id
+            userPrincipalObjectId = program.servicePrincipalId;
+            return Promise.resolve(newServicePrincipal);
+        }
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
-        options.tokenAudience = undefined;
-        const credentials = new DeviceTokenCredentials(options);
-        const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
-        // Create role assignment only for standard RM deployment since ACS requires it
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-            return azureHelper.assignOwnerRoleOnSubscription(sp.objectId)
-                .then((assigned: boolean) => {
-                    return sp.appId;
-                });
-        }
-        return sp.appId;
-    })
-    .then((appId: string) => {
+        const appId = sp.appId;
         return graphClient.domains.list()
         .then((domains: any[]) => {
             let domainName: string = '';

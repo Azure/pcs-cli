@@ -63,6 +63,19 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
+# ========================================================================
+# Validate parameters and exit if validation failed.
+
+validate_parameters() {
+    if [ -z "$PCS_RELEASE_VERSION" ]; then 
+        echo "Release version not specified (see --release-version)" 
+        exit 1 
+    fi
+}
+
+validate_parameters
+# ========================================================================
+
 # TODO: move files to Remote Monitoring repositories
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
@@ -73,7 +86,6 @@ export APPLICATION_SECRET=$PCS_APPLICATION_SECRET
 # ========================================================================
 
 ### Install Docker
-
 install_docker_ce() {
     apt-get update
     # Remove old packages if installed
@@ -82,8 +94,7 @@ install_docker_ce() {
     set -e
     # Install Docker's GPG key
     apt-get -y --force-yes --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common
-    local host_name=$1
-    if (echo $host_name | grep -c  "\.cn$") ; then
+    if (echo $HOST_NAME | grep -c  "\.cn$") ; then
         # If the host name has .cn suffix, dockerhub in China will be used to avoid slow network traffic failure.
         DOCKER_DOWNLOAD_URL="https://mirror.azure.cn/docker-ce/linux/"
     else
@@ -98,9 +109,34 @@ install_docker_ce() {
     apt-get -y install docker-ce docker-compose
     # Test
     docker run --rm hello-world && docker rmi hello-world
+
+    local RESULT=$?
+    if [ $RESULT -ne 0 ]; then
+        INSTALL_DOCKER_RESULT="FAIL"
+    else
+        INSTALL_DOCKER_RESULT="OK"
+    fi
 }
 
-install_docker_ce $HOST_NAME $5
+### Install docker and retry one more time if first try failed
+install_docker_ce_retry() {
+    INSTALL_DOCKER_RESULT="OK"
+    install_docker_ce
+    if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
+        set -e
+        echo "Error: first attempt to install Docker failed, retrying..."
+        # Retry once, in case apt wasn't ready
+        sleep 30
+        install_docker_ce
+        if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
+            echo "Error: Docker installation failed"
+            exit 1
+        fi
+    fi
+}
+
+install_docker_ce_retry
+# ========================================================================
 
 # Configure Docker registry based on host name
 # ToDo: we may need to add similar parameter to AzureGermanCloud and AzureUSGovernment
