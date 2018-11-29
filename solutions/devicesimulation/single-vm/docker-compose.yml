@@ -50,7 +50,7 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
-    image: azureiotpcsdev/device-simulation-dotnet:staging
+    image: dluc/device-simulation-dotnet:testing4
     restart: always
     depends_on:
       - storageadapter-svc
