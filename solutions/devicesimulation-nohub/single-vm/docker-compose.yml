@@ -50,7 +50,7 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
-    image: dluc/device-simulation-dotnet:testing4
+    image: dluc/device-simulation-dotnet:testing5
     restart: always
     depends_on:
       - storageadapter-svc
