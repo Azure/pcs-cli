@@ -28,8 +28,26 @@ fi
 
 list=$(docker ps -aq)
 if [ -n "$list" ]; then
-    docker rm -f $list
+  docker rm -f $list
 fi
+
+# Retry multiple times to pull all docker images before running all containers
+# in case docker hub has transient problem of image availability.
+retry_docker_compose_pull() {
+  set +e
+  max_retries=${1:-100}
+  n=0
+  docker-compose pull
+  while [[ $? -ne 0 && $n -lt $max_retries ]]; do
+    n=$(($n+1))
+    echo "Retrying($n) to pull all images..."
+    sleep 3
+    docker-compose pull
+  done
+  set -e
+}
+
+retry_docker_compose_pull
 
 nohup docker-compose up > /dev/null 2>&1&
 

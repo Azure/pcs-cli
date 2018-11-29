@@ -260,7 +260,7 @@ function main() {
                     return deploymentManager.getLocations();
                 })
                 .then((locations: string[] | undefined) => {
-                    if (program.location && (program.websiteName || program.solutionName) && program.username) {
+                    if (program.location && (program.websiteName || program.solutionName)) {
                         const ans: Answers = {
                             adminUsername: program.username,
                             azureWebsiteName: program.websiteName || program.solutionName,
@@ -268,7 +268,7 @@ function main() {
                             solutionName: program.solutionName
                         };
                         if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-                            if ( program.password ) {
+                            if (program.password) {
                                 ans.pwdFirstAttempt = program.password;
                                 ans.pwdSecondAttempt = program.password;
                             } else {
@@ -365,7 +365,7 @@ function main() {
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
                         const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'Device-Simulation-Staging';
                         answers.version = version;
-                        answers.dockerTag = 'DS-2.0.0';
+                        answers.dockerTag = 'DS-2.0.1';
                     }
 
                     if (appId && servicePrincipalSecret) {
@@ -589,19 +589,7 @@ function createServicePrincipal(azureWebsiteName: string,
         return createAppRoleAssignment(adminAppRoleId, sp, graphClient, baseUri);
     })
     .then((sp: any) => {
-        // Create role assignment only for standard RM deployment since AKS requires it
-        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.standard]) {
-            options.tokenAudience = undefined;
-            const credentials = new DeviceTokenCredentials(options);
-            const azureHelper: IAzureHelper = new AzureHelper((options.environment || AzureEnvironment.Azure), subscriptionId, credentials);
-            return azureHelper.assignOwnerRoleOnSubscription(sp.objectId)
-                .then((assigned: boolean) => {
-                    return sp.appId;
-                });
-        }
-        return sp.appId;
-    })
-    .then((appId: string) => {
+        const appId = sp.appId;
         return graphClient.domains.list()
         .then((domains: any[]) => {
             let domainName: string = '';

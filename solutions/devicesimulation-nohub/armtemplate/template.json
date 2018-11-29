@@ -4,7 +4,7 @@
     "parameters": {
       "pcsDockerTag": {
         "type": "string",
-        "defaultValue": "DS-2.0.0",
+        "defaultValue": "DS-2.0.1",
         "metadata": {
           "description": "The docker tag can be same as release version and is the latest released docker image"
         }
