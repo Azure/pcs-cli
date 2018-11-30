@@ -35,7 +35,7 @@ services:
         max-file: "10"
 
   webui-svc:
-    image: azureiotpcsdev/device-simulation-webui:staging
+    image: azureiotpcsdev/device-simulation-webui:${PCS_DOCKER_TAG}
     restart: always
     depends_on:
       - devicesimulation-svc
@@ -50,7 +50,7 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
-    image: dluc/device-simulation-dotnet:testing5
+    image: azureiotpcsdev/device-simulation-webui:${PCS_DOCKER_TAG}
     restart: always
     depends_on:
       - storageadapter-svc
