@@ -626,7 +626,7 @@
                         },
                         {
                             "name": "PCS_AUTH_ISSUER",
-                            "value": "[concat('\"', parameters('aadTenantId'), '\"')]"
+                            "value": "[parameters('aadTenantId')]"
                         },
                         {
                             "name": "PCS_AUTH_AUDIENCE",
@@ -634,11 +634,11 @@
                         },
                         {
                             "name": "PCS_IOTHUB_CONNSTRING",
-                            "value": "[concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"')]"
+                            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
                         },
                         {
                             "name": "PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING",
-                            "value": "[concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"')]"
+                            "value": "[concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';')]"
                         },
                         {
                             "name": "PCS_TELEMETRY_STORAGE_TYPE",
@@ -646,27 +646,27 @@
                         },
                         {
                             "name": "PCS_TELEMETRY_DOCUMENTDB_CONNSTRING",
-                            "value": "[concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"')]"
+                            "value": "[concat('AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';')]"
                         },
                         {
                             "name": "PCS_ASA_DATA_AZUREBLOB_ACCOUNT",
-                            "value": "[concat('\"', parameters('storageName'), '\"')]"
+                            "value": "[parameters('storageName')]"
                         },
                         {
                             "name": "PCS_ASA_DATA_AZUREBLOB_KEY",
-                            "value": "[concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"')]"
+                            "value": "[concat(listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
                         },
                         {
                             "name": "PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX",
-                            "value": "[concat('\"', parameters('storageEndpointSuffix'), '\"')]"
+                            "value": "[parameters('storageEndpointSuffix')]"
                         },
                         {
                             "name": "PCS_AZUREBLOB_CONNSTRING",
-                            "value": "[concat('\"','DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value, ';EndpointSuffix=', parameters('storageEndpointSuffix'), '\"')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value, ';EndpointSuffix=', parameters('storageEndpointSuffix'))]"
                         },
                         {
                             "name": "PCS_EVENTHUB_CONNSTRING",
-                            "value": "[concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"')]"
+                            "value": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey)]"
                         },
                         {
                             "name": "PCS_EVENTHUB_NAME",
@@ -674,7 +674,7 @@
                         },
                         {
                             "name": "PCS_ACTION_EVENTHUB_CONNSTRING",
-                            "value": "[concat('\"', 'Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"')]"
+                            "value": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey)]"
                         },
                         {
                             "name": "PCS_ACTION_EVENTHUB_NAME",
@@ -682,7 +682,7 @@
                         },
                         {
                             "name": "PCS_AZUREMAPS_KEY",
-                            "value": "[concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"')]"
+                            "value": "[concat(listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey)]"
                         },
                         {
                             "name": "PCS_APPLICATION_SECRET",
@@ -690,7 +690,7 @@
                         },
                         {
                             "name": "PCS_DOCKER_TAG",
-                            "value": "[concat('\"', parameters('pcsDockerTag'), '\"')]"
+                            "value": "[parameters('pcsDockerTag')]"
                         },
                         {
                             "name": "PCS_LOG_LEVEL",
@@ -726,19 +726,19 @@
                         },
                         {
                             "name": "PCS_DIAGNOSTICS_ENDPOINT_URL",
-                            "value": "[concat('\"', parameters('diagnosticsEndpointUrl'), '\"')]"
+                            "value": "[parameters('diagnosticsEndpointUrl')]"
                         },
                         {
                             "name": "PCS_AAD_TENANT",
-                            "value": "[concat('\"', parameters('aadTenantId'), '\"')]"
+                            "value": "[parameters('aadTenantId')]"
                         },
                         {
                             "name": "PCS_AAD_APPID",
-                            "value": "[concat('\"', parameters('aadClientId'), '\"')]"
+                            "value": "[parameters('aadClientId')]"
                         },
                         {
                             "name": "PCS_AAD_APPSECRET",
-                            "value": "[concat('\"', parameters('aadClientSecret'), '\"')]"
+                            "value": "[parameters('aadClientSecret')]"
                         },
                         {
                             "name": "PCS_TSI_FQDN",
@@ -750,11 +750,11 @@
                         },
                         {
                             "name": "PCS_LOGICAPP_ENDPOINT_URL",
-                            "value": "[concat('\"', listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', variables('logicAppName'), 'manual'), variables('logicAppApiVersion')).value, '\"')]"
+                            "value": "[concat(listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', variables('logicAppName'), 'manual'), variables('logicAppApiVersion')).value)]"
                         },
                         {
                             "name": "PCS_ARM_ENDPOINT_URL",
-                            "value": "[concat('\"', parameters('azureResourceManagerEndpointUrl'), '\"')]"
+                            "value": "[parameters('azureResourceManagerEndpointUrl')]"
                         },
                         {
                             "name": "PCS_AAD_ENDPOINT_URL",

@@ -415,6 +415,9 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.pcsDockerTag) {
             this._parameters.pcsDockerTag.value = answers.dockerTag;
         }
+        if (this._parameters.dockerComposeYaml) {
+            this._parameters.dockerComposeYaml.value = this.loadDockerComposeYaml(answers.runtime, answers.dockerTag);
+        }
         if (this._parameters.deploymentId) {
             this._parameters.deploymentId.value = answers.deploymentId;
         } else if (this._template.parameters.deploymentId) {
@@ -574,6 +577,14 @@ export class DeploymentManager implements IDeploymentManager {
         fs.writeFileSync(envFilePath, cmd);
         cp.execSync(cmd);
         console.log(`Environment variables are saved into file: '${envFilePath}' and sourced for local development.`);
+    }
+
+    private loadDockerComposeYaml(runtime: string, tag: string): string {
+        const solutionPath = `${__dirname}${path.sep}solutions${path.sep}${this._solutionType}${path.sep}`;
+        const yamlPath = `${solutionPath}no-vm${path.sep}docker-compose.${runtime}.yml`;
+        const yamlContent = fs.readFileSync(yamlPath, 'UTF-8');
+        const yamlBuffer = Buffer.from(yamlContent.replace(/\$\{PCS_DOCKER_TAG\}/g, tag));
+        return yamlBuffer.toString('base64');
     }
 }
 
