@@ -617,6 +617,10 @@
                             "value": 7
                         },
                         {
+                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                            "value": true
+                        },
+                        {
                             "name": "APP_RUNTIME",
                             "value": "[parameters('microServiceRuntime')]"
                         },
