@@ -352,14 +352,15 @@
         },
         "kubernetesVersion": {
             "type": "string",
-            "defaultValue": "1.11.3",
+            "defaultValue": "1.11.5",
             "allowedValues": [
                 "1.7.7",
                 "1.8.1",
                 "1.9.2",
                 "1.9.6",
                 "1.11.2",
-                "1.11.3"
+                "1.11.4",
+                "1.11.5"
             ],
             "metadata": {
                 "description": "The version of the Kubernetes running in AKS."
