@@ -66,22 +66,40 @@ services:
       - PCS_APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:DS-1.0.2
-    networks:
-      - default_net
+    image: azureiotpcs/device-simulation-dotnet:DS-2.0.1
+    restart: always
     depends_on:
       - storageadapter
+      - diagnostics
     environment:
+      - PCS_LOG_LEVEL
       - PCS_IOTHUB_CONNSTRING
-      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
       - PCS_CORS_WHITELIST
-      - PCS_APPLICATION_SECRET
-    # How one could mount custom device models
-    #volumes:
-    #  - ./my-device-models:/app/data:ro
+      - PCS_SUBSCRIPTION_DOMAIN
+      - PCS_SUBSCRIPTION_ID
+      - PCS_WEBUI_AUTH_AAD_APPID
+      - PCS_WEBUI_AUTH_AAD_TENANT
+      - PCS_AAD_CLIENT_SP_ID
+      - PCS_AAD_SECRET
+      - PCS_RESOURCE_GROUP
+      - PCS_IOHUB_NAME
+      - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
+      - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+      - PCS_AZURE_STORAGE_ACCOUNT
+      - PCS_RESOURCE_GROUP_LOCATION
+      - PCS_SEED_TEMPLATE
+      - PCS_SOLUTION_TYPE
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10240k"
+        max-file: "10"
+    volumes:
+      - /tmp/share:/tmp/share
 
   telemetry:
     image: azureiotpcs/telemetry-dotnet:${PCS_DOCKER_TAG}
