@@ -55,13 +55,16 @@
     "@types/azure": "0.9.19",
     "@types/chalk": "0.4.31",
     "@types/commander": "2.9.1",
+    "@types/ftp": "0.3.29",
     "@types/inquirer": "0.0.35",
     "@types/jest": "19.2.4",
     "@types/js-yaml": "^3.9.1",
     "@types/lodash": "^4.14.116",
     "@types/node": "7.0.29",
+    "@types/node-fetch": "2.1.4",
     "@types/node-forge": "0.6.10",
     "@types/ssh2": "0.5.35",
+    "@types/xml2js": "0.4.3",
     "copyfiles": "1.2.0",
     "import-sort": "2.4.0",
     "jest": "20.0.4",
@@ -83,6 +86,7 @@
     "azure-graph": "3.0.0",
     "btoa": "1.1.2",
     "commander": "2.9.0",
+    "ftp": "^0.3.10",
     "inquirer": "6.2.0",
     "js-yaml": "3.10.0",
     "json-loader": "0.5.4",
@@ -94,6 +98,7 @@
     "ms-rest-azure": "2.5.7",
     "node-fetch": "1.7.3",
     "node-forge": "0.7.1",
-    "ssh2": "0.5.5"
+    "ssh2": "0.5.5",
+    "xml2js": "0.4.19"
   }
 }

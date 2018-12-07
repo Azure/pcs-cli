@@ -5,6 +5,8 @@ import * as path from 'path';
 import * as fetch from 'node-fetch';
 import * as cp from 'child_process';
 import * as momemt from 'moment';
+import * as Client from 'ftp';
+import * as xml2js from 'xml2js';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
@@ -12,7 +14,6 @@ import { ContainerServiceClient, ContainerServiceModels} from 'azure-arm-contain
 import StreamAnalyticsManagementClient = require('azure-arm-streamanalytics');
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
-import { Client, ConnectConfig, SFTPWrapper } from 'ssh2';
 import { IK8sManager, K8sManager } from './k8smanager';
 import { Config } from './config';
 import { genPassword } from './utils';
@@ -175,6 +176,32 @@ export class DeploymentManager implements IDeploymentManager {
                 if (answers.deploymentSku === 'local') {
                     this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, answers);
                 }
+
+                if (answers.deploymentSku === 'basic-novm') {
+                    // Retrieve publishing profile from Web Site and use FTP credentials to upload 'webui-config' file.
+                    let url = `${this._environment.resourceManagerEndpointUrl}subscriptions/${this._subscriptionId}/resourcegroups/${answers.solutionName}/providers/Microsoft.Web/sites/${answers.azureWebsiteName}/publishxml?api-version=2016-08-01`;
+                    const tokenEntry = this._azureHelper.getTokenEntryByAuthority(answers.aadTenantId);
+                    let options: any = {
+                        method: 'POST',
+                        url: url,
+                        body: `{format: 'Ftp'}`,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `${tokenEntry['tokenType']} ${tokenEntry['accessToken']}`
+                        },
+                    };
+                    return fetch.default(url, options)
+                        .then(resp => {
+                            return resp.text();
+                        })
+                        .then(profile => {
+                            this.uploadWebUIConfigFile(profile, answers);
+                        })
+                        .catch((error) => {
+                            console.debug(`Fail to get publishing profile of web site, ${error}`);
+                        });
+                }
+
                 return Promise.resolve('');
             })
             .then((kubeConfigPath: string) => {
@@ -453,10 +480,10 @@ export class DeploymentManager implements IDeploymentManager {
                 () => {
                     fetch.default(req)
                         .then((value: fetch.Response) => {
-                            return value.json();
+                            return value.text();
                         })
                         .then((body: any) => {
-                            if (body.Status.includes('Alive') || retryCount > MAX_RETRY) {
+                            if (body.indexOf('html') > -1 || body.indexOf('Alive') > -1 || retryCount > MAX_RETRY) {
                                 clearInterval(timer);
                                 if (retryCount > MAX_RETRY) {
                                     resolve(false);
@@ -585,6 +612,40 @@ export class DeploymentManager implements IDeploymentManager {
         const yamlContent = fs.readFileSync(yamlPath, 'UTF-8');
         const yamlBuffer = Buffer.from(yamlContent.replace(/\$\{PCS_DOCKER_TAG\}/g, tag));
         return yamlBuffer.toString('base64');
+    }
+
+    private uploadWebUIConfigFile(websiteProfile: any, answers: Answers) {
+        const deploymentConfig = {
+            authEnabled: true,
+            authType: 'aad',
+            aad : {
+              tenant: answers.aadTenantId,
+              appId: answers.appId,
+              instance: this._environment.activeDirectoryEndpointUrl
+            }
+        };
+        const configString = `var DeploymentConfig = ${JSON.stringify(deploymentConfig, null, 2)}`;
+        xml2js.parseString(websiteProfile, (err, result) => {
+            const ftpProfile = result.publishData.publishProfile[1]['$'];
+            const ftpUrl = new URL(ftpProfile.publishUrl);
+            const options = {
+                host: `${ftpUrl.host}`,
+                user: `${ftpProfile.userName}`,
+                password: `${ftpProfile.userPWD}`
+            };
+            const client = new Client();
+            client.on('ready', () => {
+                client.put(Buffer.from(configString), `${ftpUrl.pathname}${path.sep}webui-config.js`, false, (err) => {
+                    if (err) {
+                        console.debug(`Fail to upload 'webui-config.js' file, reason: ${err}`);
+                        return;
+                    }
+                    client.end();
+                    return;
+                });
+            })
+            client.connect(options);
+        });
     }
 }
 

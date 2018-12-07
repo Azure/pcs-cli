@@ -188,6 +188,20 @@
             "outFiles": [
                 "${workspaceRoot}/publish/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pcs basic-novm",
+            "sourceMaps": true,
+            "program": "${workspaceRoot}/src/index.ts",
+            "args": [
+                "-s", "basic-novm",
+            ],
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceRoot}/publish/**/*.js"
+            ]
         }
     ]
 }

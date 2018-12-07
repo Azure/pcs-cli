@@ -1,7 +1,9 @@
 import * as uuid from 'uuid';
-import { AzureEnvironment, DeviceTokenCredentials } from 'ms-rest-azure';
-import { ServiceClientCredentials } from 'ms-rest';
+import { MapperType, ServiceClientCredentials } from 'ms-rest';
+import { AzureEnvironment, DeviceTokenCredentials, AzureServiceClient } from 'ms-rest-azure';
+import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import AuthorizationManagementClient = require('azure-arm-authorization');
+const WebSiteManagementClient = require("azure-arm-website");
 
 export interface IAzureHelper {
     assignContributorRoleOnSubscription(principalId: string): Promise<boolean>;
@@ -9,7 +11,9 @@ export interface IAzureHelper {
     assignOwnerRoleOnSubscription(principalId: string): Promise<boolean>;
     assignOwnerRoleOnResourceGroup(principalId: string, resourceGroupName: string): Promise<boolean>;
     createRoleAssignmentWithRetry(principalId: string, roleId: string, scope: string): Promise<boolean>;
+    getWebsitePublishingUser(resourceGroupName: string, websiteName: string): Promise<any>;
     getAuthIssuserUrl(tenantId: string): string;
+    getTokenEntryByAuthority(tenantId: string): any;
     getStorageEndpointSuffix(): string;
     getVMFQDNSuffix(): string;
     getServiceBusEndpointSuffix(): string;
@@ -100,6 +104,24 @@ export class AzureHelper implements IAzureHelper {
         return promise;
     }
 
+    public getWebsitePublishingUser(resourceGroupName: string, websiteName: string): Promise<any> {
+        // Use Web Site API to retrieve publishing profile which contains FTP credentials
+        // see details: https://docs.microsoft.com/en-us/rest/api/appservice/webapps/listpublishingprofilexmlwithsecrets
+        let url = `${this._environment.resourceManagerEndpointUrl}subscriptions/${this._subscriptionId}/resourcegroups/${resourceGroupName}/providers/Microsoft.Web/sites/${websiteName}/publishxml?api-version=2016-08-01`;
+        const tokenOptions: any = new DeviceTokenCredentials(this._credentials as any);
+        let options: any = {
+            method: 'POST',
+            url: url,
+            body: {
+                format: 'Ftp'
+            },
+            headers: {
+                Authorization: 'Bearer ' + tokenOptions.tokenCache._entries[0].accessToken
+            },
+        };
+        return fetch(url, options);
+    }
+
     public getAuthIssuserUrl(tenantId: string): string {
         switch (this._environment.name) {
             case AzureEnvironment.AzureChina.name:
@@ -155,6 +177,18 @@ export class AzureHelper implements IAzureHelper {
             [AzureEnvironment.AzureGermanCloud.name]: 'Germany',
         };
         return cloudTypeMaps[this._environment.name];
+    }
+
+    public getTokenEntryByAuthority(tenantId: string): any {
+        if (this._credentials && this._credentials['tokenCache'] && this._credentials['tokenCache']._entries) {
+            const entry = this._credentials['tokenCache']._entries.find(e => e.tenantId === tenantId);
+            if (!entry) {
+                throw Error(`Can not find access token of AAD tenant: ${tenantId}`);
+            }
+            return entry;
+        } else {
+            throw Error(`Empty token is provided`);
+        }
     }
 
     private getPatchedDeviceTokenCredentials(options: any) {

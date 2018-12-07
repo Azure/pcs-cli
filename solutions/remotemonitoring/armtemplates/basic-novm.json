@@ -630,7 +630,7 @@
                         },
                         {
                             "name": "PCS_AUTH_ISSUER",
-                            "value": "[parameters('aadTenantId')]"
+                            "value": "[concat('https://sts.windows.net/', parameters('aadTenantId'), '/')]"
                         },
                         {
                             "name": "PCS_AUTH_AUDIENCE",
