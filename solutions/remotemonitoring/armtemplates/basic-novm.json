@@ -626,7 +626,7 @@
                         },
                         {
                             "name": "PCS_AUTH_REQUIRED",
-                            "value": "false"
+                            "value": "true"
                         },
                         {
                             "name": "PCS_AUTH_ISSUER",
