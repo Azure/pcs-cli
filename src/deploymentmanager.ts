@@ -290,6 +290,18 @@ export class DeploymentManager implements IDeploymentManager {
                 }
                 return Promise.resolve(true);
             })
+            .then(() => {
+                // Retry for the second time to start ASA job
+                if (this._solutionType === 'remotemonitoring') {
+                  // wait for streaming jobs to start if it is included in template and sku is not local
+                  const outputJobName = deploymentProperties.outputs.streamingJobsName;
+                  if (outputJobName && answers.deploymentSku !== 'local') {
+                        deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
+                        return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
+                  }
+                }
+                return Promise.resolve(true);
+            })
             .then((done: boolean) => {
                 const directoryPath = process.cwd() + path.sep + 'deployments';
                 if (!fs.existsSync(directoryPath)) {
@@ -316,7 +328,7 @@ export class DeploymentManager implements IDeploymentManager {
                         troubleshootingGuide,
                         website: deploymentProperties.outputs.azureWebsite.value,
                     };
-                    fs.writeFileSync(fileName, JSON.stringify(output, null, 2));
+                    fs.writeFileSync(fileName, JSON.stringify(output, null, 2), { encoding: 'UTF-8' });
                     console.log('Output saved to file: %s', `${chalk.cyan(fileName)}`);
                     return Promise.resolve();
                 } else {
