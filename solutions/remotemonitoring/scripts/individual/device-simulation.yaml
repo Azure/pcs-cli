@@ -21,36 +21,6 @@ spec:
         ports:
         - containerPort: 9003
         env:
-        - name: PCS_WEBUI_AUTH_AAD_APPID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_WEBUI_AUTH_AAD_TENANT
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.tenant
-        - name: PCS_SEED_TEMPLATE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: config.seedtemplate
-        - name: PCS_IOHUB_NAME
-            valueFrom:
-              configMapKeyRef:
-                name: deployment-configmap
-                key: diagnostics.iothub.name    
-        - name: PCS_RESOURCE_GROUP
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.name
-        - name: PCS_AAD_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
         - name: PCS_IOTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:
@@ -81,16 +51,41 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
         - name: PCS_SUBSCRIPTION_ID
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.subscription.id
+        - name: PCS_WEBUI_AUTH_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_WEBUI_AUTH_AAD_TENANT
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.tenant
+        - name: PCS_AAD_CLIENT_SP_ID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.application.secret
+        - name: PCS_RESOURCE_GROUP
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: diagnostics.solution.name
+        - name: PCS_IOHUB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: deployment-configmap
+                key: diagnostics.iothub.name 
         - name: PCS_DIAGNOSTICS_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -105,12 +100,12 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: azureblob.account
-        - name: PCS_AZURE_STORAGE_ACCOUNT
+              key: azureblob.connstring
+        - name: PCS_SEED_TEMPLATE
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: azureblob.connstring
+              key: devicesimulation.template
         - name: PCS_SOLUTION_TYPE
           valueFrom:
             configMapKeyRef:

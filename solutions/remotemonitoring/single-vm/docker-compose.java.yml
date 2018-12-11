@@ -70,13 +70,15 @@ services:
 
   devicesimulation:
     image: azureiotpcs/device-simulation-dotnet:DS-2.0.1
+    networks:
+      - default_net
     restart: always
     depends_on:
       - storageadapter
     environment:
       - PCS_LOG_LEVEL
       - PCS_IOTHUB_CONNSTRING
-      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
+      - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter:9022/v1
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
@@ -88,10 +90,10 @@ services:
       - PCS_AAD_SECRET=${PCS_AAD_APPSECRET}
       - PCS_RESOURCE_GROUP=${PCS_SOLUTION_NAME}
       - PCS_IOHUB_NAME=${PCS_IOTHUB_NAME}
-      - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics-svc:9006/v1
+      - PCS_DIAGNOSTICS_WEBSERVICE_URL=http://diagnostics:9006/v1
       - PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
       - PCS_AZURE_STORAGE_ACCOUNT=${PCS_AZUREBLOB_CONNSTRING}
-      - PCS_SEED_TEMPLATE
+      - PCS_SEED_TEMPLATE=remote-monitoring-simulations-template
       - PCS_SOLUTION_TYPE
     logging:
       driver: "json-file"
