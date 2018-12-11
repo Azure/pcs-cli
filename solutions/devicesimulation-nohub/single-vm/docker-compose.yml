@@ -152,17 +152,19 @@ services:
       options:
         max-size: "10240k"
         max-file: "10"
-        
+
   iothubmanager-svc:
     image: azureiotpcs/iothub-manager-dotnet:testing
     depends_on:
       - storageadapter-svc
     environment:
-      - PCS_AUTH_WEBSERVICE_URL=http://auth:9001/v1
+      - PCS_AUTH_WEBSERVICE_URL
       - PCS_IOTHUB_CONNSTRING
       - PCS_STORAGEADAPTER_WEBSERVICE_URL=http://storageadapter-svc:9022/v1
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
-      - PCS_AUTH_REQUIRED=false
+      - PCS_AUTH_REQUIRED
+      - PCS_RBAC_REQUIRED=false
       - PCS_CORS_WHITELIST
       - PCS_APPLICATION_SECRET
+      - PCS_DISABLE_IOTHUB_MANAGER_CACHE=true
