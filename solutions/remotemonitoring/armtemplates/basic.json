@@ -214,7 +214,7 @@
         },
         "iotHubName": {
             "type": "string",
-            "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "defaultValue": "oldIoTHubName",
             "metadata": {
                 "description": "The name of Azure IoT Hub"
             }
@@ -602,18 +602,19 @@
         "actionsEventHubResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('actionsEventHubName'))]",
         "actionsEventHubAuthorizationResourceId": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('actionsEventHubName'), parameters('actionsEventHubAuthorizationName'))]",
         "iotHubApiVersion": "2017-01-19",
-        "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
+        "iotHubResourceGroup": "oldHubResourceGroup",
+        "iotHubResourceId": "[resourceId(variables('iotHubResourceGroup'), 'Microsoft.Devices/IotHubs', parameters('iotHubName'))]",
         "iotHubKeyName": "iothubowner",
-        "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
+        "iotHubKeyResource": "[resourceId(variables('iotHubResourceGroup'), 'Microsoft.Devices/IotHubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
         "iotHubServiceKeyName": "service",
-        "iotHubServiceKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubServiceKeyName'))]",
+        "iotHubServiceKeyResource": "[resourceId(variables('iotHubResourceGroup'), 'Microsoft.Devices/IotHubs/Iothubkeys', parameters('iotHubName'), variables('iotHubServiceKeyName'))]",
         "iotHubDefaultEndpoint": "events",
         "provisioningServiceApiVersion": "2017-11-15",
         "deviceNotificationRouteName": "DeviceNotifications",
         "streamAnalyticsApiVersion": "2016-03-01",
-        "consumerGroupName": "streamingJobsConsumerGroup",
+        "consumerGroupName": "streamingJobsConsumerGroup3",
         "streamingJobsOutputDBName": "pcs-iothub-stream",
-        "tsiConsumerGroupName": "timeSeriesInsightsConsumerGroup",
+        "tsiConsumerGroupName": "timeSeriesInsightsConsumerGroup3",
         "tsiEventSourceName": "[parameters('iotHubName')]",
         "tsiApiVersion": "2017-11-15",
         "tsiApplicationAccessPolicy": "[concat(parameters('tsiEnvironmentName'), '-application-policy')]",
@@ -824,68 +825,6 @@
             ]
         },
         {
-            "comments": "Azure IoT Hub",
-            "apiVersion": "[variables('iotHubApiVersion')]",
-            "type": "Microsoft.Devices/Iothubs",
-            "name": "[parameters('iotHubName')]",
-            "location": "[variables('location')]",
-            "tags": {
-                "IotSuiteType": "[parameters('solutionType')]"
-            },
-            "sku": {
-                "name": "[parameters('iotHubSku')]",
-                "tier": "[parameters('iotHubTier')]",
-                "capacity": 1
-            },
-            "properties": {
-                "location": "[variables('location')]",
-                "routing": {
-                    "endpoints": {
-                        "eventHubs": [
-                            {
-                                "connectionString": "[concat('Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', parameters('eventHubAuthorizationName'), ';SharedAccessKey=', listkeys(variables('eventHubRouteKeyResourceId'), variables('eventHubApiVersion')).primaryKey, ';EntityPath=',  parameters('eventHubName'))]",
-                                "name": "[variables('deviceNotificationRouteName')]",
-                                "subscriptionId": "[subscription().subscriptionId]",
-                                "resourceGroup": "[resourceGroup().name]"
-                            }
-                        ]
-                    },
-                    "routes": [
-                        {
-                            "name": "TwinRoute",
-                            "source": "TwinChangeEvents",
-                            "condition": "true",
-                            "endpointNames": [
-                                "[variables('deviceNotificationRouteName')]"
-                            ],
-                            "isEnabled": true
-                        },
-                        {
-                            "name": "LifecycleRoute",
-                            "source": "DeviceLifecycleEvents",
-                            "condition": "true",
-                            "endpointNames": [
-                                "[variables('deviceNotificationRouteName')]"
-                            ],
-                            "isEnabled": true
-                        }
-                    ],
-                    "fallbackRoute": {
-                        "name": "$fallback",
-                        "source": "DeviceMessages",
-                        "condition": "true",
-                        "endpointNames": [
-                            "[variables('iotHubDefaultEndpoint')]"
-                        ],
-                        "isEnabled": true
-                    }
-                }
-            },
-            "dependsOn": [
-                "[variables('eventHubResourceId')]"
-            ]
-        },
-        {
             "name": "[parameters('provisioningServiceName')]",
             "type": "Microsoft.Devices/provisioningServices",
             "apiVersion": "[variables('provisioningServiceApiVersion')]",
@@ -896,7 +835,7 @@
             "properties": {
                 "iotHubs": [
                     {
-                        "connectionString": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
+                        "connectionString": "[concat('HostName=', reference(variables('iotHubResourceId'), variables('iotHubApiVersion')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]",
                         "location": "[variables('location')]"
                     }
                 ]
@@ -905,9 +844,7 @@
                 "name": "[parameters('provisioningServiceSku')]",
                 "capacity": 1
             },
-            "dependsOn": [
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
-            ]
+            "dependsOn": []
         },
         {
             "comments": "Azure Maps service",
@@ -919,25 +856,6 @@
             "apiVersion": "[variables('azureMapsVersion')]",
             "location": "global",
             "properties": {}
-        },
-        {
-            "comments": "Consumer Group of IoT Hub",
-            "apiVersion": "[variables('iotHubApiVersion')]",
-            "name": "[concat(parameters('iotHubName'), '/events/', variables('consumerGroupName'))]",
-            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
-            "dependsOn": [
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
-            ]
-        },
-        {
-            "comments": "Consumer Group of IoT Hub",
-            "condition": "[equals(parameters('telemetryStorageType'), 'tsi')]",
-            "apiVersion": "[variables('iotHubApiVersion')]",
-            "name": "[concat(parameters('iotHubName'), '/events/', variables('tsiConsumerGroupName'))]",
-            "type": "Microsoft.Devices/Iothubs/eventhubEndpoints/ConsumerGroups",
-            "dependsOn": [
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
-            ]
         },
         {
             "comments": "Azure Time Series Insights",
@@ -1007,9 +925,7 @@
                     ]
                 }
             ],
-            "dependsOn": [
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]"
-            ]
+            "dependsOn": []
         },
         {
             "comments": "Azure Stream Analytics streamingjobs",
@@ -1022,7 +938,6 @@
             },
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
-                "[concat('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
                 "[variables('actionsEventHubAuthorizationResourceId')]",
                 "[variables('documentDBResourceId')]"
             ],
@@ -1410,7 +1325,6 @@
             "apiVersion": "[variables('computeApiVersion')]",
             "location": "[variables('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
                 "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
                 "[resourceId('Microsoft.Maps/accounts', variables('azureMapsName'))]",
                 "[variables('eventHubNamespaceResourceId')]"
@@ -1427,7 +1341,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('bash setup-wrapper.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"', parameters('aadTenantId'), '\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --iothub-name ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, '\"'), ' --azureblob-account ', concat('\"', parameters('storageName'), '\"'), ' --azureblob-key ', concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --azureblob-endpoint-suffix ',  concat('\"', parameters('storageEndpointSuffix'), '\"'), ' --azureblob-connstring ', concat('\"','DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value, ';EndpointSuffix=', parameters('storageEndpointSuffix'), '\"'), '  --azuremaps-key ', concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --eventhub-connstring ', concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --eventhub-name ', parameters('eventHubName'), ' --solution-type ', parameters('solutionType'), ' --solution-name ', parameters('solutionName'), ' --cloud-type ', parameters('cloudType'), ' --subscription-id ', subscription().subscriptionId, ' --iothub-name ', parameters('iotHubName'), ' --deployment-id ', parameters('deploymentId'), ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --aad-appsecret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --telemetry-storage-type ', parameters('telemetryStorageType'), ' --tsi-fqdn ', if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined'), ' --office365-connection-url ', variables('office365ConnectionUrl'), ' --logicapp-endpoint-url ', concat('\"', listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', variables('logicAppName'), 'manual'), variables('logicAppApiVersion')).value, '\"'), ' --arm-endpoint-url ', concat('\"', parameters('azureResourceManagerEndpointUrl'), '\"'),' --aad-endpoint-url ', parameters('azureActiveDirectoryEndpointUrl'), ' --solution-website-url ', concat('https://', reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0]), ' --action-eventhub-connstring ', concat('\"', 'Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --action-eventhub-name ', parameters('actionsEventHubName'))]"
+                    "commandToExecute": "[concat('bash setup-wrapper.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"', parameters('aadTenantId'), '\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId'), variables('iotHubApiVersion')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --iothub-name ', concat('\"', reference(variables('iotHubResourceId'), variables('iotHubApiVersion')).eventHubEndpoints.events.path, '\"'), ' --azureblob-account ', concat('\"', parameters('storageName'), '\"'), ' --azureblob-key ', concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --azureblob-endpoint-suffix ',  concat('\"', parameters('storageEndpointSuffix'), '\"'), ' --azureblob-connstring ', concat('\"','DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value, ';EndpointSuffix=', parameters('storageEndpointSuffix'), '\"'), '  --azuremaps-key ', concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --eventhub-connstring ', concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --eventhub-name ', parameters('eventHubName'), ' --solution-type ', parameters('solutionType'), ' --solution-name ', parameters('solutionName'), ' --cloud-type ', parameters('cloudType'), ' --subscription-id ', subscription().subscriptionId, ' --iothub-name ', parameters('iotHubName'), ' --deployment-id ', parameters('deploymentId'), ' --diagnostics-url ', concat('\"', parameters('diagnosticsEndpointUrl'), '\"'), ' --aad-appsecret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --telemetry-storage-type ', parameters('telemetryStorageType'), ' --tsi-fqdn ', if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined'), ' --office365-connection-url ', variables('office365ConnectionUrl'), ' --logicapp-endpoint-url ', concat('\"', listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', variables('logicAppName'), 'manual'), variables('logicAppApiVersion')).value, '\"'), ' --arm-endpoint-url ', concat('\"', parameters('azureResourceManagerEndpointUrl'), '\"'),' --aad-endpoint-url ', parameters('azureActiveDirectoryEndpointUrl'), ' --solution-website-url ', concat('https://', reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0]), ' --action-eventhub-connstring ', concat('\"', 'Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --action-eventhub-name ', parameters('actionsEventHubName'))]"
                 }
             }
         },
@@ -1591,7 +1505,7 @@
         },
         "iotHubConnectionString": {
             "type": "string",
-            "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
+            "value": "[concat('HostName=', reference(variables('iotHubResourceId'), variables('iotHubApiVersion')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
         },
         "documentDBConnectionString" : {
             "type": "string",

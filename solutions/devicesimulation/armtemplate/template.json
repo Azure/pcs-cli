@@ -141,7 +141,7 @@
     },
     "iotHubName": {
       "type": "string",
-      "defaultValue": "[concat('iothub-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+      "defaultValue": "oldIoTHubName",
       "metadata": {
         "description": "The name of Azure IoT Hub"
       }
@@ -313,9 +313,10 @@
     },
     "imageReference": "[variables('osType')]",
     "iotHubApiVersion": "2017-01-19",
-    "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
+    "iotHubResourceGroup": "oldResourceGroupName",
+    "iotHubResourceId": "[resourceId(variables('iotHubResourceGroup'), 'Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
     "iotHubKeyName": "iothubowner",
-    "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
+    "iotHubKeyResource": "[resourceId(variables('iotHubResourceGroup'), 'Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
     "appServiceSku": "S1",
     "appServiceCapacity": "1",
     "webAppRepoURL": "https://github.com/Azure/reverse-proxy-dotnet.git",
@@ -347,24 +348,6 @@
     "vmFQDN": "[concat(parameters('vmssName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
   },
   "resources": [
-    {
-      "comments": "Azure IoT Hub",
-      "apiVersion": "[variables('iotHubApiVersion')]",
-      "type": "Microsoft.Devices/Iothubs",
-      "name": "[parameters('iotHubName')]",
-      "location": "[variables('location')]",
-      "sku": {
-          "name": "[parameters('iotHubSku')]",
-          "tier": "[parameters('iotHubTier')]",
-          "capacity": "[parameters('iotHubUnits')]"
-      },
-      "properties": {
-          "location": "[variables('location')]"
-      },
-      "tags": {
-          "IotSuiteType": "[parameters('solutionType')]"
-      }
-    },
     {
       "comments": "Azure CosmosDB",
       "apiVersion": "[variables('cosmosDBApiVersion')]",
