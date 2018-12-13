@@ -263,7 +263,7 @@ spec:
               name: deployment-configmap
               key: diagnostics.solution.name
         - name: PCS_IOHUB_NAME
-            valueFrom:
+          valueFrom:
               configMapKeyRef:
                 name: deployment-configmap
                 key: diagnostics.iothub.name 
