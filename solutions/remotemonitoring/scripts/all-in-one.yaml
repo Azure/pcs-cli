@@ -266,7 +266,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: diagnostics.iothub.name 
+              key: diagnostics.iothub.name
         - name: PCS_DIAGNOSTICS_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:
