@@ -548,6 +548,14 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
         data.push(`PCS_ARM_ENDPOINT_URL="${this._environment.resourceManagerEndpointUrl}"`);
         data.push(`PCS_AAD_ENDPOINT_URL="${this._environment.activeDirectoryEndpointUrl}"`);
+        // Simulation env-vars
+        data.push(`PCS_RESOURCE_GROUP=${answers.solutionName}`);
+        data.push(`PCS_IOHUB_NAME=${outputs.iotHubName.value}`);
+        data.push(`PCS_WEBUI_AUTH_AAD_APPID=${answers.appId}`);
+        data.push(`PCS_WEBUI_AUTH_AAD_TENANT=${answers.aadTenantId}`);
+        data.push(`PCS_AAD_CLIENT_SP_ID=${answers.appId}`);
+        data.push(`PCS_AAD_SECRET=${answers.servicePrincipalSecret}`);
+        data.push(`PCS_AZURE_STORAGE_ACCOUNT=${outputs.storageConnectionString.value}`);
 
         const cmd = this.generateEnviornmentCommand(data);
         this.saveAndExecuteCommand(cmd, answers.solutionName);
