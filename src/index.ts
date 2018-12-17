@@ -363,9 +363,9 @@ function main() {
                     } else {
                         // For a released version the docker tag and version should be same
                         // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                        const version = (program.type === 'remotemonitoring') ? '1.0.2' : 'Device-Simulation-Staging';
-                        answers.version = version;
-                        answers.dockerTag = 'staging';
+                        const version = (program.type === 'remotemonitoring') ? '2.1.2' : 'DS-2.0.2';
+                        answers.version = 'Device-Simulation-Staging';
+                        answers.dockerTag = version;
                     }
 
                     if (appId && servicePrincipalSecret) {
