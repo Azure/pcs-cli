@@ -84,6 +84,15 @@ export class DeploymentManager implements IDeploymentManager {
             return Promise.reject('Solution name, subscription id and location cannot be empty');
         }
 
+        if (answers.iotHubName || answers.iotHubResourceGroup || answers.consumerGroupSuffix) {
+            // if one specified all must be
+            if (!!!answers.iotHubName || !!!answers.iotHubResourceGroup || !!!answers.consumerGroupSuffix) {
+                return Promise.reject('To re-use existing IoTHub specify --iotHubName --iotHubResourceGroup and --consumerGroupSuffix');
+            }
+            console.log('Reusing existing IoTHub with iotHubName: ' + answers.iotHubName + ' iotHubResourceGroup: ' 
+            + answers.iotHubResourceGroup + ' consumerGroupSuffix: ' + answers.consumerGroupSuffix);
+        }
+        
         const location = answers.location;
         const deployment: Deployment = {
             properties: {
@@ -438,6 +447,12 @@ export class DeploymentManager implements IDeploymentManager {
         }
         if (this._template.parameters.cloudType) {
             this._parameters.cloudType = { value: this._azureHelper.getCloudType() };
+        }
+
+        if (answers.iotHubName) {
+            this._parameters.iotHubName = { value: answers.iotHubName };
+            this._parameters.iotHubResourceGroup = { value: answers.iotHubResourceGroup };
+            this._parameters.consumerGroupSuffix = { value: answers.consumerGroupSuffix };
         }
     }
 

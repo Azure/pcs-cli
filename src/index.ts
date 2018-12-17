@@ -95,6 +95,9 @@ const program = new Command(packageJson.name)
     .option('-u, --username <username>', 'User name for the virtual machine that will be created as part of the solution')
     .option('-p, --password <password>', 'Password for the virtual machine that will be created as part of the solution')
     .option('--diagnosticUrl <diagnosticUrl>', 'Azure function app url for the diagnostics service')
+    .option('--iotHubName <iotHubName>', 'The IoT Hub\'s name to use if reusing an existing IoTHub' )
+    .option('--iotHubResourceGroup <iotHubResourceGroup>', 'The existing IoT Hub\'s resource group if reusing an existing IoTHub' )
+    .option('--consumerGroupSuffix <consumerGroupSuffix>', 'Suffix to append to consumer group to allow reusing old IoT Hub')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -351,6 +354,17 @@ function main() {
                     answers.deploymentId = uuid.v1();
                     answers.diagnosticsEndpointUrl = program.diagnosticUrl;
                     answers.userPrincipalObjectId = userPrincipalObjectId;
+
+                    if (program.iotHubName) {
+                        console.log(`${chalk.green('Will reuse iothub with: ' + program.iotHubName)}`);
+                        answers.iotHubName = program.iotHubName;
+                        answers.iotHubResourceGroup = program.iotHubResourceGroup;
+                        answers.consumerGroupSuffix = program.consumerGroupSuffix;
+                    } else {
+                        console.log(`${chalk.red('Will not reuse')}`);
+                        return Promise.reject('for now test');
+                    }
+
                     if (program.versionOverride && program.dockerTagOverride) {
                         answers.version = program.versionOverride;
                         answers.dockerTag = program.dockerTagOverride;

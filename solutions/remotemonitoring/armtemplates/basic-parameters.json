@@ -49,5 +49,11 @@
     },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
+    },
+    "iotHubName": {
+      "value": "{Added through command line interface}"
+    },
+    "iotHubResourceGroup": {
+      "value": "{Added through command line interface}"
     }
 }
