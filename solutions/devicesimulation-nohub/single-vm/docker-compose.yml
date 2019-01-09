@@ -77,7 +77,6 @@ services:
       - PCS_RESOURCE_GROUP_LOCATION
       - PCS_VMSS_NAME
       - PCS_SEED_TEMPLATE
-      - PCS_SOLUTION_TYPE
     logging:
       driver: "json-file"
       options:

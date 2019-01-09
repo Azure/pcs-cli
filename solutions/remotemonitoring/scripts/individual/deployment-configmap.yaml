@@ -50,7 +50,6 @@ data:
 
   # Device Simulation
   devicesimulation.webservice.url: "http://device-simulation-svc:9003/v1"
-  devicesimulation.template: "remote-monitoring-simulations-template"
 
   # Telemetry
   telemetry.webservice.url: "http://telemetry-svc:9004/v1"
