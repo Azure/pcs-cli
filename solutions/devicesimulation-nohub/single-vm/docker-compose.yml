@@ -86,8 +86,7 @@ services:
     volumes:
       - /tmp/share:/tmp/share
     sysctls:
-      - net.ipv4.ip_local_port_range="1024 65535"
-      - net.ipv4.tcp_max_syn_backlog=4096
+      - net.ipv4.ip_local_port_range=1024 65535
       - net.core.somaxconn=1024
 # To mount custom device models, upload the files to the VM, edit and uncomment the following line:
 #     - /absolute-path/my-device-models:/app/data:ro
