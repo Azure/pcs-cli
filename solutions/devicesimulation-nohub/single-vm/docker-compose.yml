@@ -50,6 +50,10 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
+    sysctls:
+      - net.ipv4.ip_local_port_range="1024 65535"
+      - net.ipv4.tcp_max_syn_backlog=4096
+      - net.core.somaxconn=1024
     image: saixiaohui/device-simulation-dotnet:latest
     restart: always
     depends_on:
