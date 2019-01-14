@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 # When editing this file, restart the services to apply the changes, running:
 #     sudo /app/start.sh
@@ -50,10 +50,6 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
-    sysctls:
-      - net.ipv4.ip_local_port_range="1024 65535"
-      - net.ipv4.tcp_max_syn_backlog=4096
-      - net.core.somaxconn=1024
     image: saixiaohui/device-simulation-dotnet:latest
     restart: always
     depends_on:
@@ -89,6 +85,10 @@ services:
         max-file: "10"
     volumes:
       - /tmp/share:/tmp/share
+    sysctls:
+      - net.ipv4.ip_local_port_range="1024 65535"
+      - net.ipv4.tcp_max_syn_backlog=4096
+      - net.core.somaxconn=1024
 # To mount custom device models, upload the files to the VM, edit and uncomment the following line:
 #     - /absolute-path/my-device-models:/app/data:ro
 # To mount a custom service configuration, create a custom file, edit and uncomment the following line:
