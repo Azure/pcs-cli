@@ -116,7 +116,6 @@ services:
       - PCS_AUTH_ISSUER
       - PCS_AUTH_AUDIENCE
       - PCS_AUTH_REQUIRED
-      - PCS_APPINSIGHTS_INSTRUMENTATIONKEY="{TBD}"
       - PCS_CORS_WHITELIST
       - PCS_CLOUD_TYPE
       - PCS_SUBSCRIPTION_ID
@@ -124,8 +123,8 @@ services:
       - PCS_SOLUTION_TYPE
       - PCS_SOLUTION_NAME
       - PCS_IOTHUB_NAME
-      - PCS_DIAGNOSTICS_ENDPOINT_URL
       - PCS_CONFIG_URL=http://config-svc:9005/v1
+      - PCS_APPINSIGHTS_INSTRUMENTATIONKEY
     logging:
       driver: "json-file"
       options:
