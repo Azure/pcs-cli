@@ -542,38 +542,52 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_SOLUTION_WEBSITE_URL="${outputs.azureWebsite.value}"`);
         data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
         data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
-        data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || ''}`);
+        data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || 'DEFAULT_DIAGNOSTICS_ENDPOINT_URL'}`);
         data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
         data.push(`PCS_OFFICE365_CONNECTION_URL="${outputs.office365ConnectionUrl.value}"`);
         data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
         data.push(`PCS_ARM_ENDPOINT_URL="${this._environment.resourceManagerEndpointUrl}"`);
         data.push(`PCS_AAD_ENDPOINT_URL="${this._environment.activeDirectoryEndpointUrl}"`);
+        // Simulation env-vars
+        data.push(`PCS_RESOURCE_GROUP=${answers.solutionName}`);
+        data.push(`PCS_IOHUB_NAME=${outputs.iotHubName.value}`);
+        data.push(`PCS_WEBUI_AUTH_AAD_APPID=${answers.appId}`);
+        data.push(`PCS_WEBUI_AUTH_AAD_TENANT=${answers.aadTenantId}`);
+        data.push(`PCS_AAD_CLIENT_SP_ID=${answers.appId}`);
+        data.push(`PCS_AAD_SECRET=${answers.servicePrincipalSecret}`);
+        data.push(`PCS_AZURE_STORAGE_ACCOUNT=${outputs.storageConnectionString.value}`);
 
-        const cmd = this.generateEnviornmentCommand(data);
-        this.saveAndExecuteCommand(cmd, answers.solutionName);
-    }
-
-    private generateEnviornmentCommand(data: string[]): string {
-        let cmd = '';
         const osCmdMap = {
             Darwin: 'launchctl setenv ',
             Linux: 'export ',
             Windows_NT: 'SETX ',
         };
-
-        cmd = data.map((envvar) => osCmdMap[os.type()] + envvar.replace('=', ' ')).join('\n');
-        return cmd;
+        this.setEnvironmentVariables(data, osCmdMap);
+        this.saveEnvironmentVariablesToFile(data, osCmdMap, answers.solutionName);
     }
 
-    private saveAndExecuteCommand(cmd: string, solutionName: string) {
+    private saveEnvironmentVariablesToFile(data: string[], osCmdMap: object, solutionName: string) {
+        const fileContent = data.map((envvar) => osCmdMap[os.type()] + envvar.replace('=', ' ')).join('\n');
+
         const pcsTmpDir: string = `${os.homedir()}${path.sep}.pcs${path.sep}`;
         let envFilePath: string = `${pcsTmpDir}${solutionName}.env`;
         if (fs.existsSync(envFilePath)) {
             envFilePath = `${pcsTmpDir}${solutionName}-${Date.now()}.env`;
         }
-        fs.writeFileSync(envFilePath, cmd);
-        cp.execSync(cmd);
+        fs.writeFileSync(envFilePath, fileContent);
         console.log(`Environment variables are saved into file: '${envFilePath}' and sourced for local development.`);
+    }
+
+    private setEnvironmentVariables(data: string[], osCmdMap: object) {
+        data.forEach((envvar) => {
+            let cmd;
+            try {
+                cmd = osCmdMap[os.type()] + envvar.replace('=', ' ');
+                cp.execSync(cmd);
+            } catch (ex) {
+                console.log(`Failed to set environment variable. envvar = '${envvar})', cmd = '${cmd}', error = '${ex.stderr}'`);
+            }
+        });
     }
 }
 
