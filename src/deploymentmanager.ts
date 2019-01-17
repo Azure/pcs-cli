@@ -548,6 +548,11 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
         data.push(`PCS_ARM_ENDPOINT_URL="${this._environment.resourceManagerEndpointUrl}"`);
         data.push(`PCS_AAD_ENDPOINT_URL="${this._environment.activeDirectoryEndpointUrl}"`);
+        data.push(`PCS_TELEMETRY_WEBSERVICE_URL=http://localhost:9004/v1`);
+        data.push(`PCS_CONFIG_WEBSERVICE_URL=http://localhost:9005/v1`);
+        data.push(`PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://localhost:9002/v1`);
+        data.push(`PCS_STORAGEADAPTER_WEBSERVICE_URL=http://localhost:9022/v1`);
+        data.push(`PCS_AUTH_WEBSERVICE_URL=http://localhost:9001/v1`);
         // Simulation env-vars
         data.push(`PCS_RESOURCE_GROUP=${answers.solutionName}`);
         data.push(`PCS_IOHUB_NAME=${outputs.iotHubName.value}`);
