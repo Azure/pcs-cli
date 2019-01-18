@@ -553,6 +553,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://localhost:9002/v1`);
         data.push(`PCS_STORAGEADAPTER_WEBSERVICE_URL=http://localhost:9022/v1`);
         data.push(`PCS_AUTH_WEBSERVICE_URL=http://localhost:9001/v1`);
+        data.push(`PCS_DEVICESIMULATION_WEBSERVICE_URL=http://localhost:9003/v1`);
         // Simulation env-vars
         data.push(`PCS_RESOURCE_GROUP=${answers.solutionName}`);
         data.push(`PCS_IOHUB_NAME=${outputs.iotHubName.value}`);
