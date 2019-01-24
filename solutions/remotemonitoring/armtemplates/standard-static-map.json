@@ -1166,6 +1166,9 @@
             "kind": "Storage",
             "sku": {
                 "name": "[parameters('storageSkuName')]"
+            },
+            "properties": {
+                "supportsHttpsTrafficOnly": true
             }
         },
         {
