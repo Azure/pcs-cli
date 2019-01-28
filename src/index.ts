@@ -272,9 +272,7 @@ function main() {
                                 location: program.location,
                                 solutionName: program.solutionName
                             };
-                            if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-                                setUserCredential(ans);
-                            }
+                            setUserCredential(ans);
                             return Promise.resolve<Answers>(ans);
                         } else if (locations && locations.length > 0) {
                             return prompt(getDeploymentQuestions(locations));
@@ -798,22 +796,24 @@ function askPwdAgain(): Promise<Answers> {
 }
 
 function setUserCredential(ans: Answers) {
-    if (program.username) {
-        if (!Validator.validateUsername(program.username)) {
-            throw new Error(Validator.invalidUsernameMessage);
-        }    
-        ans.usernmae = program.username;
-    } else {
-        throw new Error('username is required for basic deployment');
-    }
-    if (program.password) {    
-        if (!Validator.validatePassword(program.password)) {
-            throw new Error(Validator.invalidPasswordMessage);
+    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+        if (program.username) {
+            if (!Validator.validateUsername(program.username)) {
+                throw new Error(Validator.invalidUsernameMessage);
+            }    
+            ans.usernmae = program.username;
+        } else {
+            throw new Error('username is required for basic deployment');
         }
-        ans.pwdFirstAttempt = program.password;
-        ans.pwdSecondAttempt = program.password;
-    } else {
-        throw new Error('password is required for basic deployment');
+        if (program.password) {    
+            if (!Validator.validatePassword(program.password)) {
+                throw new Error(Validator.invalidPasswordMessage);
+            }
+            ans.pwdFirstAttempt = program.password;
+            ans.pwdSecondAttempt = program.password;
+        } else {
+            throw new Error('password is required for basic deployment');
+        }                      
     }
 }
 
