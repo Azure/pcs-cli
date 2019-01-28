@@ -5,12 +5,10 @@ import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import * as util from 'util';
 import * as uuid from 'uuid';
 import * as forge from 'node-forge';
 import * as momemt from 'moment';
 
-import { exec } from 'child_process';
 import { ChoiceType, prompt } from 'inquirer';
 import {
     AuthResponse, AzureEnvironment, AzureTokenCredentialsOptions, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
@@ -29,10 +27,7 @@ import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
 import DeployUI from './deployui';
 import { Questions, IQuestions } from './questions';
-import { IK8sManager, K8sManager } from './k8smanager';
-import { Config } from './config';
 import { genPassword } from './utils';
-import { IAzureHelper, AzureHelper } from './azurehelper';
 import {
     Application,
     ServicePrincipal,
