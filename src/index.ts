@@ -56,11 +56,6 @@ enum solutionSkus {
     local
 }
 
-const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
-/* tslint:disable */
-const invalidPasswordMessage = 'The supplied password must be between 12-72 characters long and must satisfy at least 3 of password complexity requirements from the following: 1) Contains an uppercase character\n2) Contains a lowercase character\n3) Contains a numeric digit\n4) Contains a special character\n5) Control characters are not allowed';
-/* tslint:enable */
-
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/pcs-cli/issues/new';
 
@@ -202,7 +197,8 @@ function main() {
     if (!cachedAuthResponse || !program.servicePrincipalId && cachedAuthResponse.isServicePrincipal) {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
-        getSubscriptionList() /* not used */
+        const baseUri = cachedAuthResponse.credentials.environment.resourceManagerEndpointUrl;
+        getSubscriptionList()
         .then((subscriptionList: SubscriptionListResult) => {
             const subs: ChoiceType[] = [];
             cachedAuthResponse.linkedSubscriptions.map((subscription: LinkedSubscription) => {
@@ -210,13 +206,15 @@ function main() {
                     subs.push({name: subscription.name, value: subscription.id});
                 }
             });
-
             if (!subs || !subs.length) {
                 console.log('Could not find any subscriptions in this account.');
                 console.log('Please login with an account that has at least one active subscription');
             } else {
                 let solutionNameAns: Promise<Answers>;
-                if (!program.solutionName || !Validator.validateSolutionName(program.solutionName)) {
+                if (!program.solutionName) {
+                    if (!Validator.validateSolutionName(program.solutionName)) {
+                        throw new Error(Validator.invalidSolutionNameMessage);
+                    }
                     const solutionNameQuestion: IQuestions = new Questions();
                     solutionNameQuestion.addQuestion(getSolutionNameQuestion());
                     solutionNameAns = prompt(solutionNameQuestion.value);
@@ -275,12 +273,7 @@ function main() {
                                 solutionName: program.solutionName
                             };
                             if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-                                if (program.password) {
-                                    ans.pwdFirstAttempt = program.password;
-                                    ans.pwdSecondAttempt = program.password;
-                                } else {
-                                    throw new Error('username and password are required for basic deployment');
-                                }
+                                setUserCredential(ans);
                             }
                             return Promise.resolve<Answers>(ans);
                         } else if (locations && locations.length > 0) {
@@ -395,6 +388,9 @@ function main() {
                             'resource-group-create-service-principal-portal#required-permissions.';
                             console.log(`${chalk.red(message)}`);
                         }
+                    })
+                    .then(() => {
+                        deployUI.close();
                     })
                     .catch((error: any) => {
                         if (error.request) {
@@ -725,7 +721,7 @@ function getDeploymentQuestions(locations: string[] | undefined) {
                     return true;
                 }
 
-                return invalidUsernameMessage;
+                return Validator.invalidUsernameMessage;
             },
         });
         
@@ -782,7 +778,7 @@ function pwdQuestion(name: string, message?: string): Question {
             if (pass && notAllowedPasswords.length === 0) {
                 return true;
             }
-            return invalidPasswordMessage;
+            return Validator.invalidPasswordMessage;
         }
     };
 }
@@ -799,6 +795,26 @@ function askPwdAgain(): Promise<Answers> {
         }
         return ans;
     });
+}
+
+function setUserCredential(ans: Answers) {
+    if (program.username) {
+        if (!Validator.validateUsername(program.username)) {
+            throw new Error(Validator.invalidUsernameMessage);
+        }    
+        ans.usernmae = program.username;
+    } else {
+        throw new Error('username is required for basic deployment');
+    }
+    if (program.password) {    
+        if (!Validator.validatePassword(program.password)) {
+            throw new Error(Validator.invalidPasswordMessage);
+        }
+        ans.pwdFirstAttempt = program.password;
+        ans.pwdSecondAttempt = program.password;
+    } else {
+        throw new Error('password is required for basic deployment');
+    }
 }
 
 function checkUrlExists(hostName: string, subscriptionId: string): Promise<string | boolean> {

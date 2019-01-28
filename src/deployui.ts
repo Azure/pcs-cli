@@ -117,7 +117,6 @@ class DeployUI {
         }
 
         this.ui.updateBottomBar(message);
-        this.close();
     }
 
     public clear(): void {
