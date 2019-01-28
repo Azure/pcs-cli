@@ -188,20 +188,6 @@
             "outFiles": [
                 "${workspaceRoot}/publish/**/*.js"
             ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "pcs local sang",
-            "sourceMaps": true,
-            "program": "${workspaceRoot}/src/index.ts",
-            "args": [
-                "-s", "local", "--solutionName", "saki-param-51", "--subscriptionId", "d7ca9718-3a3c-4ce8-8ec9-76a6396c0206", "--location", "West US"
-            ],
-            "console": "integratedTerminal",
-            "outFiles": [
-                "${workspaceRoot}/publish/**/*.js"
-            ]
         }
     ]
 }
