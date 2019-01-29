@@ -585,6 +585,29 @@
             "metadata": {
                 "description": "Azure Resource Manager url"
             }
+        },
+        "keyVaultName": {
+            "type": "string",
+            "defaultValue": "[concat('keyvault-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "Name of the Key Vault"
+            }
+        },
+        "keyVaultAccessPolicies": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "tenantId": "[parameters('aadTenantId')]",
+                    "objectId": "[parameters('userPrincipalObjectId')]",
+                    "permissions": {
+                        "keys": ["all"],
+                        "secrets": ["all"]
+                    }
+                }
+            ],
+            "metadata": {
+                "description": "Access policies object {\"tenantId\":\"\",\"objectId\":\"\",\"permissions\":{\"keys\":[\"\"],\"secrets\":[\"\"]}}"
+            }
         }
     },
     "variables": {
@@ -650,7 +673,17 @@
         "logicAppConnectionApiVersion": "2016-06-01",
         "office365ConnectionName": "office365-connector",
         "office365ConnectionDisplayName": "Office365 Connector",
-        "office365ConnectionUrl": "[concat(parameters('azurePortalUrl'), '/#@', parameters('aadTenantId'), '/resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/', variables('office365ConnectionName'), '/edit' )]"
+        "office365ConnectionUrl": "[concat(parameters('azurePortalUrl'), '/#@', parameters('aadTenantId'), '/resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/', variables('office365ConnectionName'), '/edit' )]",
+        "keyVaultSecrets": [						
+            {
+                "secretName": "someSecretsHereStorage",
+                "secretValue": "[variables('storageResourceId')]"
+            },
+            {
+                "secretName": "office365ConnectionDisplayName",
+                "secretValue": "[variables('office365ConnectionDisplayName')]"
+            }
+        ]
     },
     "resources": [
         {
@@ -1569,7 +1602,55 @@
                 },
                 "displayName": "[variables('office365ConnectionDisplayName')]"
             }
-        }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[parameters('keyVaultName')]",
+            "apiVersion": "2015-06-01",
+            "location": "[variables('location')]",
+            "tags": {
+              "displayName": "KeyVault"
+            },
+            "properties": {
+              "enabledForDeployment": "true",
+              "enabledForTemplateDeployment": "true",
+              "enabledForVolumeEncryption": "false",
+              "tenantId": "[parameters('aadTenantId')]",
+              "accessPolicies": "[parameters('keyVaultAccessPolicies')]",
+              "sku": {
+                "name": "Standard",
+                "family": "A"
+              }
+            }
+          },
+          {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/', variables('keyVaultSecrets')[copyIndex()].secretName)]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+              "type": "string", 
+              "value": "[variables('keyVaultSecrets')[copyIndex()].secretValue]"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+            ],
+            "copy": {
+              "name": "secretsCopy",
+              "count": "[length(variables('keyVaultSecrets'))]"
+            }
+          },
+          {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/iotHubConnectionString')]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+              "contentType": "string",
+              "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey)]"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+            ]
+          }
     ],
     "outputs": {
         "resourceGroup" : {
