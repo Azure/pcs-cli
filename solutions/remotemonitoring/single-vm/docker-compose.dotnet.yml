@@ -192,7 +192,7 @@ services:
       - PCS_TELEMETRY_STORAGE_TYPE
 
   diagnostics:
-    image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.0
     networks:
       - default_net
     depends_on:
