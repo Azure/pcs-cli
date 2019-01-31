@@ -206,17 +206,17 @@ function main() {
                 console.log('Please login with an account that has at least one active subscription');
             } else {
                 let solutionNameAns: Promise<Answers>;
-                if (!program.solutionName) {
+                if (program.solutionName) {
                     if (!Validator.validateSolutionName(program.solutionName)) {
                         throw new Error(Validator.invalidSolutionNameMessage);
                     }
-                    const solutionNameQuestion: IQuestions = new Questions();
-                    solutionNameQuestion.addQuestion(getSolutionNameQuestion());
-                    solutionNameAns = prompt(solutionNameQuestion.value);
-                } else {
                     solutionNameAns = Promise.resolve<Answers>({                 
                         solutionName: program.solutionName
                     });
+                } else {
+                    const solutionNameQuestion: IQuestions = new Questions();
+                    solutionNameQuestion.addQuestion(getSolutionNameQuestion());
+                    solutionNameAns = prompt(solutionNameQuestion.value);
                 }
                 return solutionNameAns
                 .then((solutionNameAnswer: Answers) => {
@@ -232,7 +232,7 @@ function main() {
                             azureWebsiteName: program.websiteName || program.solutionName,
                             location: program.location,
                             solutionName: program.solutionName,
-                            subscriptionId: program.subscriptionId,
+                            subscriptionId: program.subscriptionId
                         });
                     } else {
                         subPrompt = prompt(questions.value);
@@ -398,7 +398,11 @@ function main() {
         })
         .catch((error: any) => {
             // In case of login error it is better to ask user to login again
-            console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
+            if (error && error.message) {
+                console.log(error.message);
+            } else {
+                console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
+            }
         });
     }
 }
