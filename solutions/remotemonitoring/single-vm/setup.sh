@@ -51,7 +51,6 @@ while [ "$#" -gt 0 ]; do
         --cloud-type)                   PCS_CLOUD_TYPE="$2" ;;
         --subscription-id)              PCS_SUBSCRIPTION_ID="$2" ;;
         --deployment-id)                PCS_DEPLOYMENT_ID="$2" ;;
-        --diagnostics-url)              PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
         --telemetry-storage-type)       PCS_TELEMETRY_STORAGE_TYPE="$2" ;;
         --tsi-fqdn)                     PCS_TSI_FQDN="$2" ;;
         --office365-connection-url)     PCS_OFFICE365_CONNECTION_URL="$2" ;;
@@ -59,6 +58,7 @@ while [ "$#" -gt 0 ]; do
         --arm-endpoint-url)             PCS_ARM_ENDPOINT_URL="$2" ;;
         --aad-endpoint-url)             PCS_AAD_ENDPOINT_URL="$2" ;;
         --solution-website-url)         PCS_SOLUTION_WEBSITE_URL="$2" ;;
+        --app-insights-ikey)            PCS_APPINSIGHTS_INSTRUMENTATIONKEY="$2" ;;
     esac
     shift
 done
@@ -290,7 +290,6 @@ echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                              
 echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
 echo "export PCS_IOTHUB_NAME=\"${PCS_IOTHUB_NAME}\""                                                     >> ${ENVVARS}
-echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
 echo "export PCS_AAD_TENANT=\"${PCS_WEBUI_AUTH_AAD_TENANT}\""                                            >> ${ENVVARS}
 echo "export PCS_AAD_APPID=\"${PCS_WEBUI_AUTH_AAD_APPID}\""                                              >> ${ENVVARS}
 echo "export PCS_AAD_APPSECRET=\"${PCS_AAD_APPSECRET}\""                                                 >> ${ENVVARS}
@@ -300,6 +299,7 @@ echo "export PCS_LOGICAPP_ENDPOINT_URL=\"${PCS_LOGICAPP_ENDPOINT_URL}\""        
 echo "export PCS_ARM_ENDPOINT_URL=\"${PCS_ARM_ENDPOINT_URL}\""                                           >> ${ENVVARS}
 echo "export PCS_AAD_ENDPOINT_URL=\"${PCS_AAD_ENDPOINT_URL}\""                                           >> ${ENVVARS}
 echo "export PCS_SOLUTION_WEBSITE_URL=\"${PCS_SOLUTION_WEBSITE_URL}\""                                   >> ${ENVVARS}
+echo "export PCS_APPINSIGHTS_INSTRUMENTATIONKEY=\"${PCS_APPINSIGHTS_INSTRUMENTATIONKEY}\""               >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

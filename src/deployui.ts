@@ -1,14 +1,10 @@
 import * as chalk from 'chalk';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as inquirer from 'inquirer';
 import * as ResourceManagement from 'azure-arm-resource';
-import * as msRestAzure from 'ms-rest-azure';
 
 type DeploymentOperationsListResult = ResourceManagement.ResourceModels.DeploymentOperationsListResult;
 type DeploymentOperation = ResourceManagement.ResourceModels.DeploymentOperation;
 type DeploymentOperationProperties = ResourceManagement.ResourceModels.DeploymentOperationProperties;
-type TargetResource = ResourceManagement.ResourceModels.TargetResource;
 type ResourceManagementClient = ResourceManagement.ResourceManagementClient;
 
 class DeployUI {
@@ -55,7 +51,9 @@ class DeployUI {
     public start(message: string,
                  options?: {client: ResourceManagementClient, resourceGroupName: string, deploymentName: string, totalResources: number}): void {
         this.clear();
-        this.ui = new inquirer.ui.BottomBar();
+        if (!this.ui) {
+            this.ui = new inquirer.ui.BottomBar();
+        }
         this.startTime = Date.now();
         this.timer = setInterval(
             () => {
@@ -117,7 +115,6 @@ class DeployUI {
         }
 
         this.ui.updateBottomBar(message);
-        this.close();
     }
 
     public clear(): void {

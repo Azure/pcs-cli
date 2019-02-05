@@ -1161,6 +1161,10 @@
                 "addonProfiles": {
                     "httpApplicationRouting": {
                         "enabled": false
+                    },
+                    "omsagent": {
+                        "enabled": false,
+                        "config": null
                     }
                 },
                 "agentPoolProfiles": [

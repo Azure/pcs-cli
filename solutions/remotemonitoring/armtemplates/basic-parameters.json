@@ -44,10 +44,10 @@
     "deploymentId": {
       "value": "{Added through command line interface}"
     },
-    "diagnosticsEndpointUrl": {
-      "value": "{Added through command line interface}"
-    },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
+    },
+    "applicationInsightsInstrumentationKey": {
+      "value": "{Added through command line interface}"      
     }
 }

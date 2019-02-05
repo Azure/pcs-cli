@@ -5,12 +5,10 @@ import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import * as util from 'util';
 import * as uuid from 'uuid';
 import * as forge from 'node-forge';
 import * as momemt from 'moment';
 
-import { exec } from 'child_process';
 import { ChoiceType, prompt } from 'inquirer';
 import {
     AuthResponse, AzureEnvironment, AzureTokenCredentialsOptions, DeviceTokenCredentials, DeviceTokenCredentialsOptions,
@@ -29,10 +27,7 @@ import { Answers, Question } from 'inquirer';
 import { DeploymentManager, IDeploymentManager } from './deploymentmanager';
 import DeployUI from './deployui';
 import { Questions, IQuestions } from './questions';
-import { IK8sManager, K8sManager } from './k8smanager';
-import { Config } from './config';
 import { genPassword } from './utils';
-import { IAzureHelper, AzureHelper } from './azurehelper';
 import {
     Application,
     ServicePrincipal,
@@ -42,6 +37,8 @@ import {
 } from 'azure-graph/lib/models';
 import { SubscriptionListResult } from 'azure-arm-resource/lib/subscription/models';
 import { TokenCredentials, ServiceClientCredentials } from 'ms-rest';
+import Validator from './validator';
+import inquirer = require('inquirer');
 
 const WebSiteManagementClient = require('azure-arm-website');
 
@@ -53,11 +50,6 @@ enum solutionSkus {
     standard,
     local
 }
-
-const invalidUsernameMessage = 'Usernames can be a maximum of 20 characters in length and cannot end in a period (\'.\')';
-/* tslint:disable */
-const invalidPasswordMessage = 'The supplied password must be between 12-72 characters long and must satisfy at least 3 of password complexity requirements from the following: 1) Contains an uppercase character\n2) Contains a lowercase character\n3) Contains a numeric digit\n4) Contains a special character\n5) Control characters are not allowed';
-/* tslint:enable */
 
 const gitHubUrl: string = 'https://github.com/Azure/pcs-cli';
 const gitHubIssuesUrl: string = 'https://github.com/azure/pcs-cli/issues/new';
@@ -201,208 +193,226 @@ function main() {
         console.log('Please run %s', `${chalk.yellow('pcs login')}`);
     } else {
         const baseUri = cachedAuthResponse.credentials.environment.resourceManagerEndpointUrl;
-        const client = cachedAuthResponse.isServicePrincipal ?
-            new SubscriptionClient(cachedAuthResponse.credentials, baseUri) :
-            new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.credentials), baseUri);
-        return client.subscriptions.list()
-        .then((subs1: SubscriptionListResult) => {
+        getSubscriptionList()
+        .then((subscriptionList: SubscriptionListResult) => {
             const subs: ChoiceType[] = [];
             cachedAuthResponse.linkedSubscriptions.map((subscription: LinkedSubscription) => {
                 if (subscription.state === 'Enabled') {
                     subs.push({name: subscription.name, value: subscription.id});
                 }
             });
-
             if (!subs || !subs.length) {
                 console.log('Could not find any subscriptions in this account.');
                 console.log('Please login with an account that has at least one active subscription');
             } else {
-                const questions: IQuestions = new Questions(program.environment);
-                questions.addQuestion({
-                    choices: subs,
-                    message: 'Select a subscription:',
-                    name: 'subscriptionId',
-                    type: 'list'
-                });
-
-                const deployUI = DeployUI.instance;
-                let deploymentManager: IDeploymentManager;
-                let subPrompt: Promise<Answers>;
-                if (program.servicePrincipalId) {
-                    subPrompt = Promise.resolve<Answers>({
-                        azureWebsiteName: program.websiteName || program.solutionName,
-                        location: program.location,
-                        solutionName: program.solutionName,
-                        subscriptionId: program.subscriptionId,
+                let solutionNameAns: Promise<Answers>;
+                if (program.solutionName) {
+                    if (!Validator.validateSolutionName(program.solutionName)) {
+                        throw new Error(Validator.invalidSolutionNameMessage);
+                    }
+                    solutionNameAns = Promise.resolve<Answers>({                 
+                        solutionName: program.solutionName
                     });
                 } else {
-                    subPrompt = prompt(questions.value);
+                    const solutionNameQuestion: IQuestions = new Questions();
+                    solutionNameQuestion.addQuestion(getSolutionNameQuestion());
+                    solutionNameAns = prompt(solutionNameQuestion.value);
                 }
-                return subPrompt
-                .then((ans: Answers) => {
-                    answers = ans;
-                    const index = cachedAuthResponse.linkedSubscriptions.findIndex((x: LinkedSubscription) => x.id === answers.subscriptionId);
-                    if (index === -1) {
-                        const errorMessage = 'Selected subscriptionId was not found in cache';
-                        console.log(errorMessage);
-                        throw new Error(errorMessage);
-                    }
-                    cachedAuthResponse.credentials.domain = cachedAuthResponse.linkedSubscriptions[index].tenantId;
-                    answers.domainName = cachedAuthResponse.credentials.domain;
-                    const serviceClientCredentials: ServiceClientCredentials = cachedAuthResponse.isServicePrincipal ?
-                        cachedAuthResponse.credentials : new DeviceTokenCredentials(cachedAuthResponse.credentials);
-                    deploymentManager = new DeploymentManager(
-                        serviceClientCredentials,
-                        cachedAuthResponse.credentials.environment,
-                        answers.subscriptionId,
-                        program.type,
-                        program.sku);
-                    return deploymentManager.getLocations();
-                })
-                .then((locations: string[] | undefined) => {
-                    if (program.location && (program.websiteName || program.solutionName)) {
-                        const ans: Answers = {
-                            adminUsername: program.username,
+                return solutionNameAns
+                .then((solutionNameAnswer: Answers) => {
+                    program.solutionName = solutionNameAnswer.solutionName;
+                    const questions: IQuestions = new Questions();
+                    questions.addQuestion(getSelectSubscriptionQuestion(subs));
+    
+                    const deployUI = DeployUI.instance;
+                    let deploymentManager: IDeploymentManager;
+                    let subPrompt: Promise<Answers>;
+                    if (program.servicePrincipalId || program.subscriptionId) {
+                        subPrompt = Promise.resolve<Answers>({
                             azureWebsiteName: program.websiteName || program.solutionName,
                             location: program.location,
-                            solutionName: program.solutionName
-                        };
-                        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
-                            if (program.password) {
-                                ans.pwdFirstAttempt = program.password;
-                                ans.pwdSecondAttempt = program.password;
-                            } else {
-                                throw new Error('username and password are required for basic deployment');
-                            }
+                            solutionName: program.solutionName,
+                            subscriptionId: program.subscriptionId
+                        });
+                    } else {
+                        subPrompt = prompt(questions.value);
+                    }
+                    return subPrompt
+                    .then((ans: Answers) => {
+                        answers = ans;
+                        answers.solutionName = program.solutionName;
+                        const index = cachedAuthResponse.linkedSubscriptions.findIndex((x: LinkedSubscription) => x.id === answers.subscriptionId);
+                        if (index === -1) {
+                            const errorMessage = 'Selected subscriptionId was not found in cache';
+                            console.log(errorMessage);
+                            throw new Error(errorMessage);
                         }
-                        return Promise.resolve<Answers>(ans);
-                    } else if (locations && locations.length > 0) {
-                        return prompt(getDeploymentQuestions(locations));
-                    }
-                    throw new Error('Locations list cannot be empty');
-                })
-                .then((ans: Answers) => {
-                    // Use Cosmos DB for telemetry storage for China environment
-                    if (program.environment === AzureEnvironment.AzureChina.name) {
-                        return Promise.resolve(ans);
-                    }
-                    // Check if the selected location support Time Series Insights resource type for Global environment
-                    // Use the default value of template when the location does not support it
-                    const resourceManagementClient = new ResourceManagementClient(
-                        cachedAuthResponse.isServicePrincipal ?
-                        cachedAuthResponse.credentials : new DeviceTokenCredentials(cachedAuthResponse.credentials),
-                        answers.subscriptionId,
-                        baseUri);
-
-                    ans.telemetryStorageType = 'tsi';
-
-                    const promises = new Array<Promise<any>>();
-                    promises.push(resourceManagementClient.providers.get('Microsoft.TimeSeriesInsights')
-                    .then((providers: ResourceModels.Provider) => {
-                        if (providers.resourceTypes) {
-                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
-                            if (resourceType && resourceType.length) {
-                                if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.tsiLocation = ans.location.split(' ').join('').toLowerCase();
+                        cachedAuthResponse.credentials.domain = cachedAuthResponse.linkedSubscriptions[index].tenantId;
+                        answers.domainName = cachedAuthResponse.credentials.domain;
+                        const serviceClientCredentials: ServiceClientCredentials = cachedAuthResponse.isServicePrincipal ?
+                            cachedAuthResponse.credentials : new DeviceTokenCredentials(cachedAuthResponse.credentials);
+                        deploymentManager = new DeploymentManager(
+                            serviceClientCredentials,
+                            cachedAuthResponse.credentials.environment,
+                            answers.subscriptionId,
+                            program.type,
+                            program.sku);
+                        return deploymentManager.getLocations();
+                    })
+                    .then((locations: string[] | undefined) => {
+                        if (program.location && (program.websiteName || program.solutionName)) {
+                            const ans: Answers = {
+                                adminUsername: program.username,
+                                azureWebsiteName: program.websiteName || program.solutionName,
+                                location: program.location,
+                                solutionName: program.solutionName
+                            };
+                            setUserCredential(ans);
+                            return Promise.resolve<Answers>(ans);
+                        } else if (locations && locations.length > 0) {
+                            return prompt(getDeploymentQuestions(locations));
+                        }
+                        throw new Error('Locations list cannot be empty');
+                    })
+                    .then((ans: Answers) => {
+                        // Use Cosmos DB for telemetry storage for China environment
+                        if (program.environment === AzureEnvironment.AzureChina.name) {
+                            return Promise.resolve(ans);
+                        }
+                        // Check if the selected location support Time Series Insights resource type for Global environment
+                        // Use the default value of template when the location does not support it
+                        const resourceManagementClient = new ResourceManagementClient(
+                            cachedAuthResponse.isServicePrincipal ?
+                            cachedAuthResponse.credentials : new DeviceTokenCredentials(cachedAuthResponse.credentials),
+                            answers.subscriptionId,
+                            baseUri);
+    
+                        ans.telemetryStorageType = 'tsi';
+    
+                        const promises = new Array<Promise<any>>();
+                        promises.push(resourceManagementClient.providers.get('Microsoft.TimeSeriesInsights')
+                        .then((providers: ResourceModels.Provider) => {
+                            if (providers.resourceTypes) {
+                                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'environments');
+                                if (resourceType && resourceType.length) {
+                                    if (new Set(resourceType[0].locations).has(ans.location)) {
+                                        ans.tsiLocation = ans.location.split(' ').join('').toLowerCase();
+                                    }
                                 }
                             }
-                        }
-                    }));
-
-                    promises.push(resourceManagementClient.providers.get('Microsoft.Devices')
-                    .then((providers: ResourceModels.Provider) => {
-                        if (providers.resourceTypes) {
-                            const resourceType = providers.resourceTypes.filter((x) => x.resourceType
-                                && x.resourceType.toLowerCase() === 'provisioningservices');
-                            if (resourceType && resourceType.length) {
-                                if (new Set(resourceType[0].locations).has(ans.location)) {
-                                    ans.provisioningServiceLocation = ans.location.split(' ').join('').toLowerCase();
+                        }));
+    
+                        promises.push(resourceManagementClient.providers.get('Microsoft.Devices')
+                        .then((providers: ResourceModels.Provider) => {
+                            if (providers.resourceTypes) {
+                                const resourceType = providers.resourceTypes.filter((x) => x.resourceType
+                                    && x.resourceType.toLowerCase() === 'provisioningservices');
+                                if (resourceType && resourceType.length) {
+                                    if (new Set(resourceType[0].locations).has(ans.location)) {
+                                        ans.provisioningServiceLocation = ans.location.split(' ').join('').toLowerCase();
+                                    }
                                 }
                             }
+                        }));
+    
+                        return Promise.all(promises).then(() => Promise.resolve(ans));
+                    })
+                    .then((ans: Answers) => {
+                        answers = {...answers, ...ans};
+                        if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
+                            return askPwdAgain();
                         }
-                    }));
+                        return ans;
+                    })
+                    .then((ans: Answers) => {
+                        if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
+                            answers.azureWebsiteName = answers.solutionName || program.solutionName;
+                        } else {
+                            answers.adminPassword = ans.pwdFirstAttempt;
+                            answers.sshFilePath = ans.sshFilePath;
+                        }
+                        deployUI.start('Registering application in the Azure Active Directory');
+                        return createServicePrincipal(answers.azureWebsiteName,
+                                                      answers.subscriptionId,
+                                                      cachedAuthResponse.credentials,
+                                                      cachedAuthResponse.isServicePrincipal);
+                    })
+                    .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
+                        cachedAuthResponse.credentials.tokenAudience = null;
+                        answers.deploymentSku = program.sku;
+                        answers.runtime = program.runtime;
+                        answers.deploymentId = uuid.v1();
+                        answers.diagnosticsEndpointUrl = program.diagnosticUrl;
+                        answers.userPrincipalObjectId = userPrincipalObjectId;
+                        if (program.versionOverride && program.dockerTagOverride) {
+                            answers.version = program.versionOverride;
+                            answers.dockerTag = program.dockerTagOverride;
+                        } else if (program.versionOverride) {
+                            // In order to run latest code verion override to master is required
+                            answers.version = program.versionOverride;
+                            answers.dockerTag = 'testing';
+                        } else if (program.dockerTagOverride) {
+                            answers.dockerTag = program.dockerTagOverride;
+                        } else {
+                            // For a released version the docker tag and version should be same
+                            // Default to latest released verion (different for remotemonitoring and devicesimulation)
+                            const version = (program.type === 'remotemonitoring') ? '2.1.3' : 'DS-2.0.2';
+                            answers.version = version;
+                            answers.dockerTag = version;
+                        }
+    
+                        if (appId && servicePrincipalSecret) {
+                            const env = cachedAuthResponse.credentials.environment;
+                            const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
+                            deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
+                            answers.appId = appId;
+                            answers.aadAppUrl = appUrl;
+                            answers.servicePrincipalId = servicePrincipalId;
+                            answers.servicePrincipalSecret = servicePrincipalSecret;
+                            answers.certData = createCertificate();
+                            answers.aadTenantId = cachedAuthResponse.credentials.domain;
+                            answers.domainName = domainName;
+                            return deploymentManager.submit(answers);
+                        } else {
+                            const message = 'To create a service principal, you must have permissions to register an ' +
+                            'application with your Azure Active Directory (AAD) tenant, and to assign ' +
+                            'the application to a role in your subscription. To see if you have the ' +
+                            'required permissions, check here https://docs.microsoft.com/en-us/azure/azure-resource-manager/' +
+                            'resource-group-create-service-principal-portal#required-permissions.';
+                            console.log(`${chalk.red(message)}`);
+                        }
+                    })
+                    .then(() => {
+                        deployUI.close();
+                    })
+                    .catch((error: any) => {
+                        if (error.request) {
+                            console.log(JSON.stringify(error, null, 2));
+                        } else {
+                            console.log(error);
+                        }
+                    });
 
-                    return Promise.all(promises).then(() => Promise.resolve(ans));
-                })
-                .then((ans: Answers) => {
-                    answers = {...answers, ...ans};
-                    if (ans.pwdFirstAttempt !== ans.pwdSecondAttempt) {
-                        return askPwdAgain();
-                    }
-                    return ans;
-                })
-                .then((ans: Answers) => {
-                    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.local]) {
-                        answers.azureWebsiteName = answers.solutionName || program.solutionName;
-                    } else {
-                        answers.adminPassword = ans.pwdFirstAttempt;
-                        answers.sshFilePath = ans.sshFilePath;
-                    }
-                    deployUI.start('Registering application in the Azure Active Directory');
-                    return createServicePrincipal(answers.azureWebsiteName,
-                                                  answers.subscriptionId,
-                                                  cachedAuthResponse.credentials,
-                                                  cachedAuthResponse.isServicePrincipal);
-                })
-                .then(({appId, domainName, objectId, servicePrincipalId, servicePrincipalSecret}) => {
-                    cachedAuthResponse.credentials.tokenAudience = null;
-                    answers.deploymentSku = program.sku;
-                    answers.runtime = program.runtime;
-                    answers.deploymentId = uuid.v1();
-                    answers.diagnosticsEndpointUrl = program.diagnosticUrl;
-                    answers.userPrincipalObjectId = userPrincipalObjectId;
-                    if (program.versionOverride && program.dockerTagOverride) {
-                        answers.version = program.versionOverride;
-                        answers.dockerTag = program.dockerTagOverride;
-                    } else if (program.versionOverride) {
-                        // In order to run latest code verion override to master is required
-                        answers.version = program.versionOverride;
-                        answers.dockerTag = 'testing';
-                    } else if (program.dockerTagOverride) {
-                        answers.dockerTag = program.dockerTagOverride;
-                    } else {
-                        // For a released version the docker tag and version should be same
-                        // Default to latest released verion (different for remotemonitoring and devicesimulation)
-                        const version = (program.type === 'remotemonitoring') ? '2.1.2' : 'DS-2.0.2';
-                        answers.version = version;
-                        answers.dockerTag = version;
-                    }
-
-                    if (appId && servicePrincipalSecret) {
-                        const env = cachedAuthResponse.credentials.environment;
-                        const appUrl = `${env.portalUrl}/${domainName}#blade/Microsoft_AAD_IAM/ApplicationBlade/objectId/${objectId}/appId/${appId}`;
-                        deployUI.stop({message: `Application registered: ${chalk.cyan(appUrl)} `});
-                        answers.appId = appId;
-                        answers.aadAppUrl = appUrl;
-                        answers.servicePrincipalId = servicePrincipalId;
-                        answers.servicePrincipalSecret = servicePrincipalSecret;
-                        answers.certData = createCertificate();
-                        answers.aadTenantId = cachedAuthResponse.credentials.domain;
-                        answers.domainName = domainName;
-                        return deploymentManager.submit(answers);
-                    } else {
-                        const message = 'To create a service principal, you must have permissions to register an ' +
-                        'application with your Azure Active Directory (AAD) tenant, and to assign ' +
-                        'the application to a role in your subscription. To see if you have the ' +
-                        'required permissions, check here https://docs.microsoft.com/en-us/azure/azure-resource-manager/' +
-                        'resource-group-create-service-principal-portal#required-permissions.';
-                        console.log(`${chalk.red(message)}`);
-                    }
-                })
-                .catch((error: any) => {
-                    if (error.request) {
-                        console.log(JSON.stringify(error, null, 2));
-                    } else {
-                        console.log(error);
-                    }
                 });
             }
         })
         .catch((error: any) => {
             // In case of login error it is better to ask user to login again
-            console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
+            if (error && error.message) {
+                console.log(error.message);
+            } else {
+                console.log('Please run %s', `${chalk.yellow('\"pcs login\"')}`);
+            }
         });
     }
+}
+
+function getSubscriptionList(): Promise<SubscriptionListResult> {
+    const baseUri = cachedAuthResponse.credentials.environment.resourceManagerEndpointUrl;
+    const client = cachedAuthResponse.isServicePrincipal ?
+        new SubscriptionClient(cachedAuthResponse.credentials, baseUri) :
+        new SubscriptionClient(new DeviceTokenCredentials(cachedAuthResponse.credentials), baseUri);
+    return client.subscriptions.list();
 }
 
 function login(): Promise<void> {
@@ -666,7 +676,7 @@ function createCertificate(): any {
     };
 }
 
-function getDeploymentQuestions(locations: string[]) {
+function getDeploymentQuestions(locations: string[] | undefined) {
     const questions: any[] = [];
     questions.push({
         choices: locations,
@@ -684,7 +694,7 @@ function getDeploymentQuestions(locations: string[]) {
             name: 'azureWebsiteName',
             type: 'input',
             validate: (value: string) => {
-                if (!value.match(Questions.websiteHostNameRegex)) {
+                if (!value.match(Validator.websiteHostNameRegex)) {
                     return 'Please enter a valid prefix for azure website.\n' +
                         'Valid characters are: ' +
                         'alphanumeric (A-Z, a-z, 0-9), ' +
@@ -701,15 +711,15 @@ function getDeploymentQuestions(locations: string[]) {
             name: 'adminUsername',
             type: 'input',
             validate: (userName: string) => {
-                const pass: RegExpMatchArray | null = userName.match(Questions.userNameRegex);
-                const notAllowedUserNames = Questions.notAllowedUserNames.filter((u: string) => {
+                const pass: RegExpMatchArray | null = userName.match(Validator.userNameRegex);
+                const notAllowedUserNames = Validator.notAllowedUserNames.filter((u: string) => {
                     return u === userName;
                 });
                 if (pass && notAllowedUserNames.length === 0) {
                     return true;
                 }
 
-                return invalidUsernameMessage;
+                return Validator.invalidUsernameMessage;
             },
         });
         
@@ -717,6 +727,36 @@ function getDeploymentQuestions(locations: string[]) {
         questions.push(pwdQuestion('pwdSecondAttempt', 'Confirm your password:'));
     }
     return questions;
+}
+
+function getSelectSubscriptionQuestion(subs: ChoiceType[]) {
+    return {
+        choices: subs,
+        message: 'Select a subscription:',
+        name: 'subscriptionId',
+        type: 'list'
+    };
+}
+
+function getSolutionNameQuestion() {
+    return {
+        message: 'Enter a solution name:',
+        name: 'solutionName',
+        type: 'input',
+        validate: (value: string) => {
+            const pass: RegExpMatchArray | null = value.match(Validator.solutionNameRegex);
+            if (pass) {
+                return true;
+            }
+
+            return 'Please enter a valid solution name.\n' +
+                   'Valid characters are: ' +
+                   'alphanumeric (A-Z, a-z, 0-9), ' +
+                   'underscore (_), parentheses, ' +
+                   'hyphen(-), ' +
+                   'and period (.) except at the end of the solution name.';
+        }
+    };
 }
 
 function pwdQuestion(name: string, message?: string): Question {
@@ -729,14 +769,14 @@ function pwdQuestion(name: string, message?: string): Question {
         name,
         type: 'password',
         validate: (password: string) => {
-            const pass: RegExpMatchArray | null = password.match(Questions.passwordRegex);
-            const notAllowedPasswords = Questions.notAllowedPasswords.filter((p: string) => {
+            const pass: RegExpMatchArray | null = password.match(Validator.passwordRegex);
+            const notAllowedPasswords = Validator.notAllowedPasswords.filter((p: string) => {
                 return p === password;
             });
             if (pass && notAllowedPasswords.length === 0) {
                 return true;
             }
-            return invalidPasswordMessage;
+            return Validator.invalidPasswordMessage;
         }
     };
 }
@@ -753,6 +793,28 @@ function askPwdAgain(): Promise<Answers> {
         }
         return ans;
     });
+}
+
+function setUserCredential(ans: Answers) {
+    if (program.sku.toLowerCase() === solutionSkus[solutionSkus.basic]) {
+        if (program.username) {
+            if (!Validator.validateUsername(program.username)) {
+                throw new Error(Validator.invalidUsernameMessage);
+            }    
+            ans.usernmae = program.username;
+        } else {
+            throw new Error('username is required for basic deployment');
+        }
+        if (program.password) {    
+            if (!Validator.validatePassword(program.password)) {
+                throw new Error(Validator.invalidPasswordMessage);
+            }
+            ans.pwdFirstAttempt = program.password;
+            ans.pwdSecondAttempt = program.password;
+        } else {
+            throw new Error('password is required for basic deployment');
+        }                      
+    }
 }
 
 function checkUrlExists(hostName: string, subscriptionId: string): Promise<string | boolean> {

@@ -51,7 +51,6 @@ while [ "$#" -gt 0 ]; do
         --aad-instance)            PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
         --cloud-type)              PCS_CLOUD_TYPE="$2" ;;
         --deployment-id)           PCS_DEPLOYMENT_ID="$2" ;;
-        --diagnostics-url)         PCS_DIAGNOSTICS_ENDPOINT_URL="$2" ;;
         --resource-group-location) PCS_RESOURCE_GROUP_LOCATION="$2" ;;
         --vmss-name)               PCS_VMSS_NAME="$2" ;;
         --storage-connstring)      PCS_AZURE_STORAGE_ACCOUNT="$2" ;;
@@ -60,6 +59,7 @@ while [ "$#" -gt 0 ]; do
         --iothub-tier)             PCS_IOTHUB_TIER="$2" ;;
         --iothub-units)            PCS_IOTHUB_UNITS="$2" ;;
         --iothub-connstring)       PCS_IOTHUB_CONNSTRING="$2" ;;
+        --app-insights-ikey)       PCS_APPINSIGHTS_INSTRUMENTATIONKEY="$2" ;;
     esac
     shift
 done
@@ -234,10 +234,10 @@ echo "export PCS_SOLUTION_NAME=\"${PCS_SOLUTION_NAME}\""                        
 echo "export PCS_SEED_TEMPLATE=\"multiple-simulations-template\""                                        >> ${ENVVARS}
 echo "export PCS_CLOUD_TYPE=\"${PCS_CLOUD_TYPE}\""                                                       >> ${ENVVARS}
 echo "export PCS_DEPLOYMENT_ID=\"${PCS_DEPLOYMENT_ID}\""                                                 >> ${ENVVARS}
-echo "export PCS_DIAGNOSTICS_ENDPOINT_URL=\"${PCS_DIAGNOSTICS_ENDPOINT_URL}\""                           >> ${ENVVARS}
 echo "export PCS_AZURE_STORAGE_ACCOUNT=\"${PCS_AZURE_STORAGE_ACCOUNT}\""                                 >> ${ENVVARS}
 echo "export PCS_RESOURCE_GROUP_LOCATION=\"${PCS_RESOURCE_GROUP_LOCATION}\""                             >> ${ENVVARS}
 echo "export PCS_VMSS_NAME=\"${PCS_VMSS_NAME}\""                                                         >> ${ENVVARS}
+echo "export PCS_APPINSIGHTS_INSTRUMENTATIONKEY=\"${PCS_APPINSIGHTS_INSTRUMENTATIONKEY}\""               >> ${ENVVARS}
 
 # Setting some empty vars as these are required vars by Config service
 echo "export PCS_DEVICESIMULATION_WEBSERVICE_URL=\"\""                                                   >> ${ENVVARS}
