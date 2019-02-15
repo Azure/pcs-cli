@@ -1,0 +1,126 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "aadTenantId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "The AAD tenant identifier (GUID)"
+            }
+        },
+        "iotHubConnectionString": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Connection string for the IoTHub"
+            }
+        },
+        "solutionName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the solution"
+            }
+        },
+        "userPrincipalObjectId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "Object Id of the AAD user that will have access to the environment. Available from the Get-AzureRMADUser cmdlets"
+            }
+        },
+        "keyVaultName": {
+            "type": "string",
+            "defaultValue": "[concat('keyvault-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "Name of the Key Vault"
+            }
+        },
+        "keyVaultAccessPolicies": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "tenantId": "[parameters('aadTenantId')]",
+                    "objectId": "[parameters('userPrincipalObjectId')]",
+                    "permissions": {
+                        "keys": ["all"],
+                        "secrets": ["all"]
+                    }
+                }
+            ],
+            "metadata": {
+                "description": "Access policies object {\"tenantId\":\"\",\"objectId\":\"\",\"permissions\":{\"keys\":[\"\"],\"secrets\":[\"\"]}}"
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "keyVaultSecrets": [						
+            {
+                "secretName": "iotHubConnectionString",
+                "secretValue": "[parameters('iotHubConnectionString')]"
+            },
+            {
+                "secretName": "office365ConnectionDisplayName",
+                "secretValue": "something"
+            }
+        ]
+    },
+    "resources": [
+        
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[parameters('keyVaultName')]",
+            "apiVersion": "2015-06-01",
+            "location": "[variables('location')]",
+            "tags": {
+              "displayName": "KeyVault"
+            },
+            "properties": {
+              "enabledForDeployment": "true",
+              "enabledForTemplateDeployment": "true",
+              "enabledForVolumeEncryption": "false",
+              "tenantId": "[parameters('aadTenantId')]",
+              "accessPolicies": "[parameters('keyVaultAccessPolicies')]",
+              "sku": {
+                "name": "Standard",
+                "family": "A"
+              }
+            }
+          },
+          {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/', variables('keyVaultSecrets')[copyIndex()].secretName)]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+              "type": "string", 
+              "value": "[variables('keyVaultSecrets')[copyIndex()].secretValue]"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+            ],
+            "copy": {
+              "name": "secretsCopy",
+              "count": "[length(variables('keyVaultSecrets'))]"
+            }
+          },
+          {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/test')]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+              "contentType": "string",
+              "value": "testValue"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+            ]
+          }
+    ],
+    "outputs": {
+        "logicAppEndpointUrl": {
+            "type": "string",
+            "value": "testing"
+        }
+    }
+}

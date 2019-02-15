@@ -45,6 +45,7 @@ export class DeploymentManager implements IDeploymentManager {
     private _sku: string;
     private _template: any;
     private _parameters: any;
+    private _keyVaultParams: any;
     private _subscriptionId: string;
     private _client: ResourceManagementClient;
     private _streamAnalyticsClient: StreamAnalyticsManagementClient;
@@ -105,16 +106,20 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._solutionType === 'remotemonitoring') {
             const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
             this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
+            console.log('About to run require on keyvault-parameters.json');
+            this._keyVaultParams = require(armTemplatePath + 'keyvault-parameters.json');
+            console.log('Done requiring on keyvault-parameters.json');
             // using static map for China environment by default since Azure Maps resource is not available.
             if (environment && environment.name === AzureEnvironment.AzureChina.name) {
                 this._sku += '-static-map';
             }
-            this._template = require(armTemplatePath + this._sku + '.json');
+            this._template = require(armTemplatePath + this._sku + '.json');            
         } else {
             const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
             this._template = require(armTemplatePath + 'template.json');
             this._parameters = require(armTemplatePath + 'parameters.json');
         }
+
         try {
             this.setupParameters(answers);
         } catch (ex) {
@@ -162,6 +167,40 @@ export class DeploymentManager implements IDeploymentManager {
                 };
                 deployUI.start('', options);
                 return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
+            })
+            .then((res: DeploymentExtended) => {
+                console.log('will run next deployment');
+                if (this._solutionType === 'remotemonitoring' && res.properties) {
+                    const keyVaultDeploymentName = deploymentName + '-keyvault';
+                    const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
+
+                    try {
+                        console.log('Setting up keyvault params');
+                        this.setupKeyvaultParameters(answers, res.properties.outputs);
+                    } catch (ex) {
+                        throw new Error('Could not find template or parameters file for KeyVault, Exception:');
+                    }
+
+                    console.log('About to run require on keyvault.json');
+                    const keyVaultTemplate = require(armTemplatePath + 'keyvault.json');
+                    console.log('Done running require on keyvault.json');
+
+                    const keyVaultDeployment: Deployment = {
+                        properties: {
+                            mode: 'Incremental',
+                            parameters: this._keyVaultParams,
+                            template: keyVaultTemplate
+                        }
+                    };
+
+                    console.log('Will create keyvault with depName: %s', `${chalk.cyan(keyVaultDeploymentName)}`);
+                    return this._client.deployments.createOrUpdate(answers.solutionName as string, keyVaultDeploymentName, keyVaultDeployment)
+                            .then((keyVaultRes) => {
+                                return res;
+                            });
+                }
+
+                return res;
             })
             .then((res: DeploymentExtended) => {
                 deployUI.stop();
@@ -340,6 +379,25 @@ export class DeploymentManager implements IDeploymentManager {
                 }
             }
             return configPath;
+        });
+    }
+
+    private setupKeyvaultParameters(answers: Answers, outputs: any) {
+        this._keyVaultParams.solutionName.value = answers.solutionName;
+
+        const answerParams = ['aadTenantId', 'userPrincipalObjectId', 'solutionName'];
+        answerParams.forEach((paramName) => {
+            if (this._keyVaultParams[paramName]) {
+                this._keyVaultParams[paramName].value = answers[paramName];
+            }
+        });
+
+        const outputParams = ['iotHubConnectionString'];
+        outputParams.forEach((paramName) => {
+            if (this._keyVaultParams[paramName]) {
+                this._keyVaultParams[paramName].value = outputs[paramName].value;
+                console.log(`'${paramName}' set to: '${this._keyVaultParams[paramName].value}'.`);
+            }
         });
     }
 
