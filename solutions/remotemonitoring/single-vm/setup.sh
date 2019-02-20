@@ -93,23 +93,7 @@ install_docker_ce() {
     else
         DOCKER_DOWNLOAD_URL="https://download.docker.com/linux/"
     fi
-    # apt-get update -o Acquire::CompressionTypes::Order::=gz
-    # apt-get upgrade -y
-    # apt-get update
-    # # Remove old packages if installed
-    # set +e
-    # apt-get remove docker docker-engine docker.io
-    # set -e
-    # # Install Docker's GPG key
-    # apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
-    # curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
-    # # Add Docker repository to get up to date packages
-    # add-apt-repository "deb [arch=amd64] $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-    # apt-get update
-    # # Install
-    # apt-get -y --allow-downgrades install docker-ce docker-compose
-    # # Test
-    # docker run --rm hello-world && docker rmi hello-world
+
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
         && apt-get upgrade -y \
         && apt-get update \
