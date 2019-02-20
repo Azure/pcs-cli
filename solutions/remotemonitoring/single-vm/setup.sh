@@ -87,28 +87,39 @@ export APPLICATION_SECRET=$PCS_APPLICATION_SECRET
 
 ### Install Docker
 install_docker_ce() {
-    apt-get update
-    # Remove old packages if installed
-    set +e
-    apt-get remove docker docker-engine docker.io
-    set -e
-    # Install Docker's GPG key
-    apt-get -y --force-yes --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common
     if (echo $HOST_NAME | grep -c  "\.cn$") ; then
         # If the host name has .cn suffix, dockerhub in China will be used to avoid slow network traffic failure.
         DOCKER_DOWNLOAD_URL="https://mirror.azure.cn/docker-ce/linux/"
     else
         DOCKER_DOWNLOAD_URL="https://download.docker.com/linux/"
     fi
-
-    curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
-    # Add Docker repository to get up to date packages
-    add-apt-repository "deb [arch=amd64] $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-    apt-get update
-    # Install
-    apt-get -y install docker-ce docker-compose
-    # Test
-    docker run --rm hello-world && docker rmi hello-world
+    # apt-get update -o Acquire::CompressionTypes::Order::=gz
+    # apt-get upgrade -y
+    # apt-get update
+    # # Remove old packages if installed
+    # set +e
+    # apt-get remove docker docker-engine docker.io
+    # set -e
+    # # Install Docker's GPG key
+    # apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
+    # curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
+    # # Add Docker repository to get up to date packages
+    # add-apt-repository "deb [arch=amd64] $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+    # apt-get update
+    # # Install
+    # apt-get -y --allow-downgrades install docker-ce docker-compose
+    # # Test
+    # docker run --rm hello-world && docker rmi hello-world
+    apt-get update -o Acquire::CompressionTypes::Order::=gz \
+        && apt-get upgrade -y \
+        && apt-get update \
+        && apt-get remove docker docker-engine docker.io \
+        && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
+        && curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
+        && add-apt-repository "deb [arch=amd64] $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" \
+        && apt-get update \
+        && apt-get -y --allow-downgrades install docker-ce docker-compose \
+        && docker run --rm hello-world && docker rmi hello-world
 
     local RESULT=$?
     if [ $RESULT -ne 0 ]; then
@@ -120,6 +131,7 @@ install_docker_ce() {
 
 ### Install docker and retry one more time if first try failed
 install_docker_ce_retry() {
+    set +e
     INSTALL_DOCKER_RESULT="OK"
     install_docker_ce
     if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
@@ -133,6 +145,7 @@ install_docker_ce_retry() {
             exit 1
         fi
     fi
+    set -e
 }
 
 install_docker_ce_retry
