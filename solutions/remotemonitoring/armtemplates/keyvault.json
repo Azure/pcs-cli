@@ -9,13 +9,6 @@
                 "description": "The AAD tenant identifier (GUID)"
             }
         },
-        "iotHubConnectionString": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "Connection string for the IoTHub"
-            }
-        },
         "solutionName": {
             "type": "string",
             "metadata": {
@@ -51,19 +44,267 @@
             "metadata": {
                 "description": "Access policies object {\"tenantId\":\"\",\"objectId\":\"\",\"permissions\":{\"keys\":[\"\"],\"secrets\":[\"\"]}}"
             }
+        },
+        "appId": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "iotHubConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": "Connection string for the IoTHub"
+            }
+        },
+        "documentDBConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage account name"
+            }
+        },
+        "storageAccountKey": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "storageEndpointSuffix": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "storageConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "messagesEventHubConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "messagesEventHubName": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "actionsEventHubConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "actionsEventHubName": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "authRequired": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "authAudience": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "azureMapsKey": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "telemetryStorageType": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "tsiFQDN": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "servicePrincipalSecret": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "seedTemplate": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "cloudType": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "subscriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "solutionType": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "solutionWebsiteUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "deploymentId": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "iotHubName": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "diagnosticsEndpointUrl": {
+            "type": "string",
+            "defaultValue": "DEFAULT_DIAGNOSTICS_ENDPOINT_URL",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "applicationSecret": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "office365ConnectionUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "logicAppEndpointUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "armEndpointUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "aadEndpointUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "telemetryWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "configWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "iothubmanagerWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "storageAdapterWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "authWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "deviceSimulationWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
         }
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "keyVaultSecrets": [						
-            {
-                "secretName": "iotHubConnectionString",
-                "secretValue": "[parameters('iotHubConnectionString')]"
-            },
-            {
-                "secretName": "office365ConnectionDisplayName",
-                "secretValue": "something"
-            }
+        "keyVaultSecrets": [
+            "solutionName",
+            "aadTenantId",
+            "userPrincipalObjectId",
+            "iotHubConnectionString",
+            "appId",
+            "documentDBConnectionString",
+            "storageAccountName",
+            "storageAccountKey",
+            "storageEndpointSuffix",
+            "storageConnectionString",
+            "messagesEventHubConnectionString",
+            "messagesEventHubName",
+            "actionsEventHubConnectionString",
+            "actionsEventHubName",
+            "authRequired",
+            "authAudience",
+            "azureMapsKey",
+            "telemetryStorageType",
+            "tsiFQDN",
+            "servicePrincipalSecret",
+            "seedTemplate",
+            "cloudType",
+            "subscriptionId",
+            "solutionType",
+            "solutionWebsiteUrl",
+            "deploymentId",
+            "iotHubName",
+            "diagnosticsEndpointUrl",
+            "applicationSecret",
+            "office365ConnectionUrl",
+            "logicAppEndpointUrl",
+            "armEndpointUrl",
+            "aadEndpointUrl",
+            "telemetryWebServiceUrl",
+            "configWebServiceUrl",
+            "iothubmanagerWebServiceUrl",
+            "storageAdapterWebServiceUrl",
+            "authWebServiceUrl",
+            "deviceSimulationWebServiceUrl"
         ]
     },
     "resources": [
@@ -90,11 +331,11 @@
           },
           {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/', variables('keyVaultSecrets')[copyIndex()].secretName)]",
+            "name": "[concat(parameters('keyVaultName'), '/', variables('keyVaultSecrets')[copyIndex()])]",
             "apiVersion": "2015-06-01",
             "properties": {
               "type": "string", 
-              "value": "[variables('keyVaultSecrets')[copyIndex()].secretValue]"
+              "value": "[parameters(variables('keyVaultSecrets')[copyIndex()])]"
             },
             "dependsOn": [
               "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"

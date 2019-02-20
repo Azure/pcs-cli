@@ -10,5 +10,110 @@
     },
     "iotHubConnectionString": {
       "value": "{Added through command line interface}"
+    },
+    "appId": {
+      "value": "{Added through command line interface}"
+    },
+    "documentDBConnectionString": {
+      "value": "{Added through command line interface}"
+    },
+    "storageAccountName": {
+      "value": "{Added through command line interface}"
+    },
+    "storageAccountKey": {
+      "value": "{Added through command line interface}"
+    },
+    "storageEndpointSuffix": {
+      "value": "{Added through command line interface}"
+    },
+    "storageConnectionString": {
+      "value": "{Added through command line interface}"
+    },
+    "messagesEventHubConnectionString": {
+      "value": "{Added through command line interface}"
+    },
+    "messagesEventHubName": {
+      "value": "{Added through command line interface}"
+    },
+    "actionsEventHubConnectionString": {
+      "value": "{Added through command line interface}"
+    },
+    "actionsEventHubName": {
+      "value": "{Added through command line interface}"
+    },
+    "authRequired": {
+      "value": "{Added through command line interface}"
+    },
+    "authAudience": {
+      "value": "{Added through command line interface}"
+    },
+    "azureMapsKey": {
+      "value": "{Added through command line interface}"
+    },
+    "telemetryStorageType": {
+      "value": "{Added through command line interface}"
+    },
+    "tsiFQDN": {
+      "value": "{Added through command line interface}"
+    },
+    "servicePrincipalSecret": {
+      "value": "{Added through command line interface}"
+    },
+    "seedTemplate": {
+      "value": "{Added through command line interface}"
+    },
+    "cloudType": {
+      "value": "{Added through command line interface}"
+    },
+    "subscriptionId": {
+      "value": "{Added through command line interface}"
+    },
+    "solutionType": {
+      "value": "{Added through command line interface}"
+    },
+    "solutionWebsiteUrl": {
+      "value": "{Added through command line interface}"
+    },
+    "deploymentId": {
+      "value": "{Added through command line interface}"
+    },
+    "iotHubName": {
+      "value": "{Added through command line interface}"
+    },
+    "diagnosticsEndpointUrl": {
+      "value": "{Added through command line interface}"
+    },
+    "applicationSecret": {
+      "value": "{Added through command line interface}"
+    },
+    "office365ConnectionUrl": {
+      "value": "{Added through command line interface}"
+    },
+    "logicAppEndpointUrl": {
+      "value": "{Added through command line interface}"
+    },
+    "armEndpointUrl": {
+      "value": "{Added through command line interface}"
+    },
+    "aadEndpointUrl": {
+      "value": "{Added through command line interface}"
+    },
+    "telemetryWebServiceUrl": {
+      "value": "http://localhost:9004/v1"
+    },
+    "configWebServiceUrl": {
+      "value": "http://localhost:9005/v1"
+    },
+    "iotHubManagerWebServiceUrl": {
+      "value": "http://localhost:9002/v1"
+    },
+    "storageAdapterWebServiceUrl": {
+      "value": "http://localhost:9022/v1"
+    },
+    "authWebServiceUrl": {
+      "value": "http://localhost:9001/v1"
+    },
+    "deviceSimulationWebServiceUrl": {
+      "value": "http://localhost:9003/v1"
     }
 }

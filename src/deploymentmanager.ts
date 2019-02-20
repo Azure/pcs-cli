@@ -109,6 +109,7 @@ export class DeploymentManager implements IDeploymentManager {
             console.log('About to run require on keyvault-parameters.json');
             this._keyVaultParams = require(armTemplatePath + 'keyvault-parameters.json');
             console.log('Done requiring on keyvault-parameters.json');
+
             // using static map for China environment by default since Azure Maps resource is not available.
             if (environment && environment.name === AzureEnvironment.AzureChina.name) {
                 this._sku += '-static-map';
@@ -385,20 +386,42 @@ export class DeploymentManager implements IDeploymentManager {
     private setupKeyvaultParameters(answers: Answers, outputs: any) {
         this._keyVaultParams.solutionName.value = answers.solutionName;
 
-        const answerParams = ['aadTenantId', 'userPrincipalObjectId', 'solutionName'];
+        const answerParams = ['aadTenantId', 
+                              'userPrincipalObjectId', 
+                              'solutionName',
+                              'aadTenantId',
+                              'appId',
+                              'servicePrincipalSecret',
+                              'deploymentId'];
         answerParams.forEach((paramName) => {
-            if (this._keyVaultParams[paramName]) {
+            if (this._keyVaultParams[paramName] !== undefined && answers[paramName] !== undefined) {
                 this._keyVaultParams[paramName].value = answers[paramName];
             }
         });
 
-        const outputParams = ['iotHubConnectionString'];
+        const outputParams = ['iotHubConnectionString',
+                              'documentDBConnectionString',
+                              'storageAccountName',
+                              'storageAccountKey',
+                              'storageConnectionString',
+                              'messagesEventHubConnectionString',
+                              'messagesEventHubName',
+                              'actionsEventHubConnectionString',
+                              'actionsEventHubName',
+                              'telemetryStorageType',
+                              'tsiDataAccessFQDN',
+                              'iotHubName',
+                              'office365ConnectionUrl',
+                              'logicAppEndpointUrl'];
         outputParams.forEach((paramName) => {
-            if (this._keyVaultParams[paramName]) {
+            if (this._keyVaultParams[paramName] !== undefined && outputs[paramName] !== undefined) {
                 this._keyVaultParams[paramName].value = outputs[paramName].value;
                 console.log(`'${paramName}' set to: '${this._keyVaultParams[paramName].value}'.`);
             }
         });
+
+        this._keyVaultParams.solutionWebsiteUrl.value = outputs.azureWebsite.value;
+        this._keyVaultParams.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl || 'DEFAULT_DIAGNOSTICS_ENDPOINT_URL';
     }
 
     private setupParameters(answers: Answers) {
