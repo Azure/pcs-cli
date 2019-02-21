@@ -90,7 +90,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: diagnostics.endpoint.url
+              key: diagnostics.webservice.url
         - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
