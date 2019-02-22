@@ -198,7 +198,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: azureiotpcs/device-simulation-dotnet:DS-1.0.3
+        image: azureiotpcs/device-simulation-dotnet:DS-1.0.4
         ports:
         - containerPort: 9003
         env:
@@ -271,7 +271,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: diagnostics.endpoint.url
+              key: diagnostics.webservice.url
         - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
           valueFrom:
             configMapKeyRef:
@@ -946,18 +946,18 @@ spec:
         app: diagnostics
     spec:
       containers:
-      - name: config-pod
-        image: azureiotpcs/pcs-diagnostics-dotnet:{dockerTag}
+      - name: diagnostics-pod
+        image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.0
         ports:
         - containerPort: 9006
         env:
         - name: PCS_DIAGNOSTICS_WEBSERVICE_PORT
           value: "9006"
-        - name: PCS_DIAGNOSTICS_ENDPOINT_URL
+        - name: PCS_APPINSIGHTS_INSTRUMENTATIONKEY
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: diagnostics.endpoint.url
+              key: diagnostics.appinsights.instrumentationkey
         - name: PCS_CONFIG_WEBSERVICE_URL
           valueFrom:
             configMapKeyRef:

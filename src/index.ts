@@ -86,7 +86,7 @@ const program = new Command(packageJson.name)
     .option('-w, --websiteName <websiteName>', 'Name of the website, default is solution name')
     .option('-u, --username <username>', 'User name for the virtual machine that will be created as part of the solution')
     .option('-p, --password <password>', 'Password for the virtual machine that will be created as part of the solution')
-    .option('--diagnosticUrl <diagnosticUrl>', 'Azure function app url for the diagnostics service')
+    .option('--appInsightsInstrumentationKey <appInsightsInstrumentationKey>', 'AppInsights Instrumentation Key for the diagnostics service')
     .on('--help', () => {
         console.log(
             `    Default value for ${chalk.green('-t, --type')} is ${chalk.green('remotemonitoring')}.`
@@ -342,7 +342,7 @@ function main() {
                         answers.deploymentSku = program.sku;
                         answers.runtime = program.runtime;
                         answers.deploymentId = uuid.v1();
-                        answers.diagnosticsEndpointUrl = program.diagnosticUrl;
+                        answers.appInsightsInstrumentationKey = program.appInsightsInstrumentationKey;
                         answers.userPrincipalObjectId = userPrincipalObjectId;
                         if (program.versionOverride && program.dockerTagOverride) {
                             answers.version = program.versionOverride;
