@@ -536,7 +536,7 @@
             }
         },
         "applicationInsightsInstrumentationKey": {
-            "type": "string",
+            "type": "securestring",
              "defaultValue": "Undefined",
              "metadata": {
                 "description": "The Application Insights instrumentation key for this deployment type"
