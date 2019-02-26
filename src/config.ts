@@ -16,7 +16,7 @@ export class Config {
     public SolutionName: string;
     public IotHubName: string;
     public DeploymentId: string;
-    public DiagnosticsEndpointUrl: string;
+    public AppInsightsInstrumentationKey: string;
     public DocumentDBConnectionString: string;
     public DockerTag: string;
     public DNS: string;

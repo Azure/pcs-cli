@@ -216,7 +216,7 @@ export class DeploymentManager implements IDeploymentManager {
                         config.IotHubName = outputs.iotHubHostName.value;
                         config.SubscriptionId = outputs.subscriptionId.value;
                         config.DeploymentId = answers.deploymentId;
-                        config.DiagnosticsEndpointUrl = answers.diagnosticsEndpointUrl;
+                        config.AppInsightsInstrumentationKey = answers.appInsightsInstrumentationKey;
                         config.DockerTag = answers.dockerTag;
                         config.DNS = outputs.agentFQDN.value;
                         config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
@@ -420,11 +420,11 @@ export class DeploymentManager implements IDeploymentManager {
         } else if (this._template.parameters.deploymentId) {
             this._parameters.deploymentId = { value: answers.deploymentId };
         }
-        if (answers.diagnosticsEndpointUrl) {
-            if (this._parameters.diagnosticsEndpointUrl) {
-                this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
-            } else if (this._template.parameters.diagnosticsEndpointUrl) {
-                this._parameters.diagnosticsEndpointUrl =  { value: answers.diagnosticsEndpointUrl };
+        if (answers.appInsightsInstrumentationKey) {
+            if (this._parameters.appInsightsInstrumentationKey) {
+                this._parameters.appInsightsInstrumentationKey.value = answers.appInsightsInstrumentationKey;
+            } else if (this._template.parameters.appInsightsInstrumentationKey) {
+                this._parameters.appInsightsInstrumentationKey =  { value: answers.appInsightsInstrumentationKey };
             }
         }
         if (this._template.parameters.telemetryStorageType && answers.telemetryStorageType) {
@@ -542,7 +542,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_SOLUTION_WEBSITE_URL="${outputs.azureWebsite.value}"`);
         data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
         data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
-        data.push(`PCS_DIAGNOSTICS_ENDPOINT_URL=${answers.diagnosticsEndpointUrl || 'DEFAULT_DIAGNOSTICS_ENDPOINT_URL'}`);
+        data.push(`PCS_APPINSIGHTS_INSTRUMENTATIONKEY=${answers.appInsightsInstrumentationKey || 'DEFAULT_APPINSIGHTS_INSTRUMENTATIONKEY'}`);
         data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
         data.push(`PCS_OFFICE365_CONNECTION_URL="${outputs.office365ConnectionUrl.value}"`);
         data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
