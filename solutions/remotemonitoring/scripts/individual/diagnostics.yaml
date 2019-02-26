@@ -78,7 +78,7 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: diagnostics.iothub.name
-        - name: PCS_CONFIG_WEBSERVICE_URL
+        - name: PCS_CONFIG_URL
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
