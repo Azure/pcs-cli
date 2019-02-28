@@ -321,7 +321,6 @@
         ]
     },
     "resources": [
-        
         {
             "type": "Microsoft.KeyVault/vaults",
             "name": "[parameters('keyVaultName')]",

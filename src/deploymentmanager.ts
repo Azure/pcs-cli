@@ -112,7 +112,7 @@ export class DeploymentManager implements IDeploymentManager {
             if (environment && environment.name === AzureEnvironment.AzureChina.name) {
                 this._sku += '-static-map';
             }
-            this._template = require(armTemplatePath + this._sku + '.json');            
+            this._template = require(armTemplatePath + this._sku + '.json');
         } else {
             const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplate' + path.sep;
             this._template = require(armTemplatePath + 'template.json');
