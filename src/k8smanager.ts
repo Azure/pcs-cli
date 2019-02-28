@@ -223,6 +223,11 @@ export class K8sManager implements IK8sManager {
         deploymentConfig = deploymentConfig.replace('{ApplicationId}', this._config.ApplicationId);
         deploymentConfig = deploymentConfig.replace('{AADLoginInstance}', this._config.AADLoginURL);
         configMap.data['webui-config.js'] = deploymentConfig;
+
+        console.log("--------------------ConfigMap--------------------");
+        console.log(JSON.stringify(configMap));
+        console.log("--------------------_config--------------------");
+        console.log(JSON.stringify(this._config));
         return this._api.createNamespacedConfigMap(this._namespace, configMap);
     }
 
