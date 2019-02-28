@@ -194,7 +194,7 @@ export class DeploymentManager implements IDeploymentManager {
                         }
                     };
 
-                    console.log("keyvault params: " + JSON.stringify(this._keyVaultParams));
+                    console.log('keyvault params: ' + JSON.stringify(this._keyVaultParams));
 
                     console.log('Will create keyvault with depName: %s', `${chalk.cyan(keyVaultDeploymentName)}`);
                     return this._client.deployments.createOrUpdate(answers.solutionName as string, keyVaultDeploymentName, keyVaultDeployment)
@@ -651,7 +651,7 @@ export class DeploymentManager implements IDeploymentManager {
             Linux: 'export ',
             Windows_NT: 'SETX ',
         };
-        console.log("---------------local vars-------------");
+        console.log('---------------local vars-------------');
         console.log(JSON.stringify(data));
         this.setEnvironmentVariables(data, osCmdMap);
         this.saveEnvironmentVariablesToFile(data, osCmdMap, answers.solutionName);
