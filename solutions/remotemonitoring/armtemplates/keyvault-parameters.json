@@ -5,6 +5,18 @@
     "aadTenantId": {
       "value": "{Added through command line interface}"
     },
+    "aadAppId": {
+      "value": "{Added through command line interface}"
+    },
+    "aadAppSecret": {
+      "value": "{Added through command line interface}"
+    },
+    "authRequired": {
+      "value": "{Added through command line interface}"
+    },
+    "authIssuer": {
+      "value": "{Added through command line interface}"
+    },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
     },
@@ -41,19 +53,13 @@
     "actionsEventHubName": {
       "value": "{Added through command line interface}"
     },
-    "authRequired": {
-      "value": "{Added through command line interface}"
-    },
-    "authAudience": {
-      "value": "{Added through command line interface}"
-    },
     "azureMapsKey": {
       "value": "{Added through command line interface}"
     },
     "telemetryStorageType": {
       "value": "{Added through command line interface}"
     },
-    "tsiFQDN": {
+    "tsiDataAccessFQDN": {
       "value": "{Added through command line interface}"
     },
     "servicePrincipalSecret": {

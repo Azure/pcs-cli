@@ -14,20 +14,17 @@
 
 APP_PATH="/app"
 SETUP_LOG="${APP_PATH}/setup.log"
-SETUP_LOG_OTHER="${APP_PATH}/setupother.log"
 
 mkdir -p ${APP_PATH}
 
 # Create log file, make it writable and empty (for local tests)
 touch ${SETUP_LOG} && chmod 660 ${SETUP_LOG} && echo > ${SETUP_LOG}
-touch ${SETUP_LOG_OTHER} && chmod 660 ${SETUP_LOG_OTHER} && echo > ${SETUP_LOG_OTHER}
 if [ $? -ne 0 ]; then
     echo "Unable to create log file '${SETUP_LOG}'"
     exit 1
 fi
 
 # Invoke setup script
-echo "${@}" >> ${SETUP_LOG_OTHER}
 ./setup.sh "${@}" >> ${SETUP_LOG} 2>&1
 RESULT=$?
 echo "Exit code: $RESULT"

@@ -9,6 +9,30 @@
                 "description": "The AAD tenant identifier (GUID)"
             }
         },
+        "aadAppId": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "aadAppSecret": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "authRequired": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "authIssuer": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
         "solutionName": {
             "type": "string",
             "metadata": {
@@ -111,18 +135,6 @@
                 "description": ""
             }
         },
-        "authRequired": {
-            "type": "string",
-            "metadata": {
-                "description": ""
-            }
-        },
-        "authAudience": {
-            "type": "string",
-            "metadata": {
-                "description": ""
-            }
-        },
         "azureMapsKey": {
             "type": "string",
             "metadata": {
@@ -135,7 +147,7 @@
                 "description": ""
             }
         },
-        "tsiFQDN": {
+        "tsiDataAccessFQDN": {
             "type": "string",
             "metadata": {
                 "description": ""
@@ -149,12 +161,14 @@
         },
         "seedTemplate": {
             "type": "string",
+            "defaultValue": "default",
             "metadata": {
                 "description": ""
             }
         },
         "cloudType": {
             "type": "string",
+            "defaultValue": "Global",
             "metadata": {
                 "description": ""
             }
@@ -281,10 +295,9 @@
             "actionsEventHubConnectionString",
             "actionsEventHubName",
             "authRequired",
-            "authAudience",
             "azureMapsKey",
             "telemetryStorageType",
-            "tsiFQDN",
+            "tsiDataAccessFQDN",
             "servicePrincipalSecret",
             "seedTemplate",
             "cloudType",

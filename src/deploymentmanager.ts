@@ -106,9 +106,7 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._solutionType === 'remotemonitoring') {
             const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
             this._parameters = require(armTemplatePath + this._sku + '-parameters.json');
-            console.log('About to run require on keyvault-parameters.json');
             this._keyVaultParams = require(armTemplatePath + 'keyvault-parameters.json');
-            console.log('Done requiring on keyvault-parameters.json');
 
             // using static map for China environment by default since Azure Maps resource is not available.
             if (environment && environment.name === AzureEnvironment.AzureChina.name) {
@@ -170,22 +168,17 @@ export class DeploymentManager implements IDeploymentManager {
                 return this._client.deployments.createOrUpdate(answers.solutionName as string, deploymentName, deployment);
             })
             .then((res: DeploymentExtended) => {
-                console.log('will run next deployment');
                 if (this._solutionType === 'remotemonitoring' && res.properties) {
                     const keyVaultDeploymentName = deploymentName + '-keyvault';
                     const armTemplatePath = __dirname + path.sep + 'solutions' + path.sep + this._solutionType + path.sep + 'armtemplates' + path.sep;
 
                     try {
-                        console.log('Setting up keyvault params');
                         this.setupKeyvaultParameters(answers, res.properties.outputs);
                     } catch (ex) {
                         throw new Error('Could not find template or parameters file for KeyVault, Exception:');
                     }
 
-                    console.log('About to run require on keyvault.json');
                     const keyVaultTemplate = require(armTemplatePath + 'keyvault.json');
-                    console.log('Done running require on keyvault.json');
-
                     const keyVaultDeployment: Deployment = {
                         properties: {
                             mode: 'Incremental',
@@ -194,9 +187,6 @@ export class DeploymentManager implements IDeploymentManager {
                         }
                     };
 
-                    console.log('keyvault params: ' + JSON.stringify(this._keyVaultParams));
-
-                    console.log('Will create keyvault with depName: %s', `${chalk.cyan(keyVaultDeploymentName)}`);
                     return this._client.deployments.createOrUpdate(answers.solutionName as string, keyVaultDeploymentName, keyVaultDeployment)
                             .then((keyVaultRes) => {
                                 return res;
@@ -412,18 +402,50 @@ export class DeploymentManager implements IDeploymentManager {
                               'actionsEventHubName',
                               'telemetryStorageType',
                               'tsiDataAccessFQDN',
-                              'iotHubName',
                               'office365ConnectionUrl',
-                              'logicAppEndpointUrl'];
+                              'logicAppEndpointUrl',
+                              'azureMapsKey'];
         outputParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] !== undefined && outputs[paramName] !== undefined) {
                 this._keyVaultParams[paramName].value = outputs[paramName].value;
-                console.log(`'${paramName}' set to: '${this._keyVaultParams[paramName].value}'.`);
             }
         });
 
-        this._keyVaultParams.solutionWebsiteUrl.value = outputs.azureWebsite.value;
-        this._keyVaultParams.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl || 'DEFAULT_DIAGNOSTICS_ENDPOINT_URL';
+        this.setKVParamValue('storageEndpointSuffix', this._azureHelper.getStorageEndpointSuffix());
+        this.setKVParamValue('solutionWebsiteUrl', outputs.azureWebsite.value);
+        this.setKVParamValue('diagnosticsEndpointUrl', answers.diagnosticsEndpointUrl || 'DEFAULT_DIAGNOSTICS_ENDPOINT_URL');
+        this.setKVParamValue('aadAppId', answers.appId);
+        this.setKVParamValue('aadAppSecret', answers.servicePrincipalSecret);
+        this.setKVParamValue('authIssuer', this._azureHelper.getAuthIssuserUrl(answers.aadTenantId));
+        this.setKVParamValue('iotHubName', outputs.iotHubHostName);
+        this.setKVParamValue('subscriptionId', this._subscriptionId);
+        this.setKVParamValue('solutionType', this._solutionType);
+        this.setKVParamValue('applicationSecret', genPassword());
+        this.setKVParamValue('armEndpointUrl', this._environment.resourceManagerEndpointUrl);
+        this.setKVParamValue('aadEndpointUrl', this._environment.activeDirectoryEndpointUrl);
+
+        if (answers.deploymentSku === 'standard') {
+            this.setKVParamValue('authRequired', 'true');
+        } else {
+            this.setKVParamValue('authRequired', 'false');
+        }
+
+        if (answers.deploymentSku !== 'local') {
+            this.setKVParamValue('telemetryWebServiceUrl', 'http://telemetry-svc:9004/v1');
+            this.setKVParamValue('configWebServiceUrl', 'http://config-svc:9005/v1');
+            this.setKVParamValue('iotHubManagerWebServiceUrl', 'http://iothub-manager-svc:9002/v1');
+            this.setKVParamValue('storageAdapterWebServiceUrl', 'http://storage-adapter-svc:9022/v1');
+            this.setKVParamValue('authWebServiceUrl', 'http://auth-svc:9001/v1');
+            this.setKVParamValue('deviceSimulationWebServiceUrl', 'http://device-simulation-svc:9003/v1');
+        }
+    }
+
+    private setKVParamValue(paramName: string, value: any) {
+        if (this._keyVaultParams[paramName] !== undefined) {
+            this._keyVaultParams[paramName].value = value;
+        } else {
+            console.log(`Failed to set '${paramName}' to '${value}'.`);
+        }
     }
 
     private setupParameters(answers: Answers) {
@@ -651,8 +673,6 @@ export class DeploymentManager implements IDeploymentManager {
             Linux: 'export ',
             Windows_NT: 'SETX ',
         };
-        console.log('---------------local vars-------------');
-        console.log(JSON.stringify(data));
         this.setEnvironmentVariables(data, osCmdMap);
         this.saveEnvironmentVariablesToFile(data, osCmdMap, answers.solutionName);
     }
