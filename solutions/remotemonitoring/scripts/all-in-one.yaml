@@ -947,7 +947,7 @@ spec:
     spec:
       containers:
       - name: diagnostics-pod
-        image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.0
+        image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.1
         ports:
         - containerPort: 9006
         env:
