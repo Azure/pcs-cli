@@ -123,7 +123,7 @@ services:
       - PCS_SOLUTION_TYPE
       - PCS_SOLUTION_NAME
       - PCS_IOTHUB_NAME
-      - PCS_CONFIG_URL=http://config-svc:9005/v1
+      - PCS_CONFIG_WEBSERVICE_URL=http://config-svc:9005/v1
       - PCS_APPINSIGHTS_INSTRUMENTATIONKEY
     logging:
       driver: "json-file"

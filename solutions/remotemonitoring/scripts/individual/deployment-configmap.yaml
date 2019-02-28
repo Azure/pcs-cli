@@ -89,7 +89,7 @@ data:
   diagnostics.subscription.id: "{Subscription id}"
   diagnostics.iothub.name: "{Iot Hub name}"
   diagnostics.deployment.id: "{Deployment Id of the solution}"
-  diagnostics.endpoint.url: "{Diagnostics endpoint URL}"
+  diagnostics.appinsights.instrumentationkey: "{Diagnostics Appinsights instrumentaion key}"
   diagnostics.solution.type: "{Solution type}"
   diagnostics.solution.name: "{Solution name}"
 
