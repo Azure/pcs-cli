@@ -327,7 +327,7 @@
         },
         "pcsReleaseVersion": {
             "type": "string",
-            "defaultValue": "master",
+            "defaultValue": "2.2.0",
             "metadata": {
                 "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
             }
