@@ -386,7 +386,7 @@ export class DeploymentManager implements IDeploymentManager {
                               'servicePrincipalSecret',
                               'deploymentId'];
         answerParams.forEach((paramName) => {
-            if (this._keyVaultParams[paramName] !== undefined && answers[paramName] !== undefined) {
+            if (this._keyVaultParams[paramName] && answers[paramName]) {
                 this._keyVaultParams[paramName].value = answers[paramName];
             }
         });
@@ -428,9 +428,6 @@ export class DeploymentManager implements IDeploymentManager {
             this.setKVParamValue('authRequired', 'false');
         } else {
             this.setKVParamValue('authRequired', 'true');
-        }
-
-        if (answers.deploymentSku !== 'local') {
             this.setKVParamValue('telemetryWebServiceUrl', 'http://telemetry-svc:9004/v1');
             this.setKVParamValue('configWebServiceUrl', 'http://config-svc:9005/v1');
             this.setKVParamValue('iotHubManagerWebServiceUrl', 'http://iothub-manager-svc:9002/v1');
