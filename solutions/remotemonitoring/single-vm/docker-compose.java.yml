@@ -69,7 +69,7 @@ services:
       - APPLICATION_SECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:Diagnostics-2.0.0
+    image: azureiotpcs/device-simulation-dotnet:DS-1.0.4
     networks:
       - default_net
     restart: always
@@ -198,7 +198,7 @@ services:
       - PCS_TELEMETRY_STORAGE_TYPE
 
   diagnostics:
-    image: azureiotpcs/pcs-diagnostics-dotnet:${PCS_DOCKER_TAG}
+    image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.1
     networks:
       - default_net
     depends_on:
