@@ -406,7 +406,7 @@ export class DeploymentManager implements IDeploymentManager {
                               'logicAppEndpointUrl',
                               'azureMapsKey'];
         outputParams.forEach((paramName) => {
-            if (this._keyVaultParams[paramName] !== undefined && outputs[paramName] !== undefined) {
+            if (this._keyVaultParams[paramName] && outputs[paramName]) {
                 this._keyVaultParams[paramName].value = outputs[paramName].value;
             }
         });
@@ -424,10 +424,10 @@ export class DeploymentManager implements IDeploymentManager {
         this.setKVParamValue('armEndpointUrl', this._environment.resourceManagerEndpointUrl);
         this.setKVParamValue('aadEndpointUrl', this._environment.activeDirectoryEndpointUrl);
 
-        if (answers.deploymentSku === 'standard') {
-            this.setKVParamValue('authRequired', 'true');
-        } else {
+        if (answers.deploymentSku === 'local') {
             this.setKVParamValue('authRequired', 'false');
+        } else {
+            this.setKVParamValue('authRequired', 'true');
         }
 
         if (answers.deploymentSku !== 'local') {
@@ -441,7 +441,7 @@ export class DeploymentManager implements IDeploymentManager {
     }
 
     private setKVParamValue(paramName: string, value: any) {
-        if (this._keyVaultParams[paramName] !== undefined) {
+        if (this._keyVaultParams[paramName]) {
             this._keyVaultParams[paramName].value = value;
         } else {
             console.log(`Failed to set '${paramName}' to '${value}'.`);
