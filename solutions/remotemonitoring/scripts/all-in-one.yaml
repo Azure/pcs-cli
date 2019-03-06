@@ -202,6 +202,11 @@ spec:
         ports:
         - containerPort: 9003
         env:
+        - name: PCS_KEYVAULT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: keyVaultName
         - name: PCS_IOTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:
@@ -335,46 +340,11 @@ spec:
         env:
         - name: PCS_IOTHUBMANAGER_WEBSERVICE_PORT
           value: "9002"
-        - name: PCS_IOTHUB_CONNSTRING
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: iothub.connstring
-        - name: PCS_AUTH_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.webservice.url
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: storageadapter.webservice.url
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
+              key: keyVaultName
 ---
 apiVersion: v1
 kind: Service
@@ -416,101 +386,11 @@ spec:
         ports:
         - containerPort: 9004
         env:
-        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: docdb.connstring
-        - name: PCS_AUTH_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.webservice.url
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: storageadapter.webservice.url
-        - name: PCS_DIAGNOSTICS_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.webservice.url
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
-        - name: PCS_AAD_TENANT
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.tenant
-        - name: PCS_AAD_APPID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AAD_APPSECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.serviceprincipal.secret
-        - name: PCS_TELEMETRY_STORAGE_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: telemetry.storage.type
-        - name: PCS_TSI_FQDN
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: telemetry.tsi.fqdn
-        - name: PCS_AZUREBLOB_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.connstring
-        - name: PCS_ACTION_EVENTHUB_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: action.eventhub.connstring
-        - name: PCS_ACTION_EVENTHUB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: action.eventhub.name
-        - name: PCS_LOGICAPP_ENDPOINT_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: logicapp.endpoint.url
-        - name: PCS_SOLUTION_WEBSITE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: solution.website.url
+              key: keyVaultName
 
 ---
 apiVersion: v1
@@ -555,36 +435,11 @@ spec:
         env:
         - name: PCS_STORAGEADAPTER_WEBSERVICE_PORT
           value: "9022"
-        - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: docdb.connstring
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
+              key: keyVaultName
 ---
 apiVersion: v1
 kind: Service
@@ -626,81 +481,11 @@ spec:
         ports:
         - containerPort: 9024
         env:
-        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: docdb.connstring
-        - name: PCS_TELEMETRY_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: telemetry.webservice.url
-        - name: PCS_CONFIG_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: config.webservice.url
-        - name: PCS_IOTHUBMANAGER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: iothubmanager.webservice.url
-        - name: PCS_ASA_DATA_AZUREBLOB_ACCOUNT
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.account
-        - name: PCS_ASA_DATA_AZUREBLOB_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.key
-        - name: PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.endpointsuffix
-        - name: PCS_EVENTHUB_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: asa.eventhub.connstring
-        - name: PCS_EVENTHUB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: asa.eventhub.name
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
-        - name: PCS_TELEMETRY_STORAGE_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: telemetry.storage.type
+              key: keyVaultName
 ---
 apiVersion: v1
 kind: Service
@@ -744,86 +529,11 @@ spec:
         env:
         - name: PCS_CONFIG_WEBSERVICE_PORT
           value: "9005"
-        - name: PCS_AUTH_WEBSERVICE_URL
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: auth.webservice.url
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: storageadapter.webservice.url
-        - name: PCS_DEVICESIMULATION_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: devicesimulation.webservice.url
-        - name: PCS_TELEMETRY_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: telemetry.webservice.url
-        - name: PCS_AZUREMAPS_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azure.maps.key
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
-        - name: PCS_SOLUTION_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.type
-        - name: PCS_SEED_TEMPLATE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: config.seedtemplate
-        - name: PCS_ARM_ENDPOINT_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azure.resourcemanager.endpoint.url
-        - name: PCS_OFFICE365_CONNECTION_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: config.office365.connection.url
-        - name: PCS_SUBSCRIPTION_ID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.subscription.id
-        - name: PCS_SOLUTION_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.name
+              key: keyVaultName
 ---
 apiVersion: v1
 kind: Service
@@ -865,51 +575,11 @@ spec:
         ports:
         - containerPort: 9001
         env:
-        - name: PCS_AUTH_ISSUER
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_AAD_ENDPOINT_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.aad.endpoint.url
-        - name: PCS_AAD_TENANT
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.tenant
-        - name: PCS_AAD_APPSECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.serviceprincipal.secret
-        - name: PCS_ARM_ENDPOINT_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azure.resourcemanager.endpoint.url
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
+              key: keyVaultName
 ---
 apiVersion: v1
 kind: Service
@@ -953,66 +623,7 @@ spec:
         env:
         - name: PCS_DIAGNOSTICS_WEBSERVICE_PORT
           value: "9006"
-        - name: PCS_APPINSIGHTS_INSTRUMENTATIONKEY
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.appinsights.instrumentationkey
-        - name: PCS_CONFIG_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key:  config.webservice.url
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_CLOUD_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.cloud.type
-        - name: PCS_SUBSCRIPTION_ID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.subscription.id
-        - name: PCS_DEPLOYMENT_ID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.deployment.id
-        - name: PCS_SOLUTION_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.type
-        - name: PCS_SOLUTION_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.name
-        - name: PCS_IOTHUB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.iothub.name
+
 ---
 apiVersion: v1
 kind: Service

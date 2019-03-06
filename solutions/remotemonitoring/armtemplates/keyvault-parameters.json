@@ -23,9 +23,6 @@
     "iotHubConnectionString": {
       "value": "{Added through command line interface}"
     },
-    "appId": {
-      "value": "{Added through command line interface}"
-    },
     "documentDBConnectionString": {
       "value": "{Added through command line interface}"
     },
@@ -104,6 +101,9 @@
     "aadEndpointUrl": {
       "value": "{Added through command line interface}"
     },
+    "appInsightsInstrumentationKey ":{
+      "value": "{Added through command line interface}"
+    },
     "telemetryWebServiceUrl": {
       "value": "http://localhost:9004/v1"
     },
@@ -121,5 +121,8 @@
     },
     "deviceSimulationWebServiceUrl": {
       "value": "http://localhost:9003/v1"
+    },
+    "diagnosticsWebServiceUrl": {
+      "value": "http://localhost:9006/v1"
     }
 }

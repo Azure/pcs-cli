@@ -69,12 +69,6 @@
                 "description": "Access policies object {\"tenantId\":\"\",\"objectId\":\"\",\"permissions\":{\"keys\":[\"\"],\"secrets\":[\"\"]}}"
             }
         },
-        "appId": {
-            "type": "string",
-            "metadata": {
-                "description": ""
-            }
-        },
         "iotHubConnectionString": {
             "type": "string",
             "metadata": {
@@ -240,6 +234,12 @@
                 "description": ""
             }
         },
+        "appInsightsInstrumentationKey": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
         "telemetryWebServiceUrl": {
             "type": "string",
             "metadata": {
@@ -271,6 +271,12 @@
             }
         },
         "deviceSimulationWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "diagnosticsWebServiceUrl": {
             "type": "string",
             "metadata": {
                 "description": ""
@@ -312,12 +318,14 @@
             "logicAppEndpointUrl",
             "armEndpointUrl",
             "aadEndpointUrl",
+            "appInsightsInstrumentationKey",
             "telemetryWebServiceUrl",
             "configWebServiceUrl",
             "iothubmanagerWebServiceUrl",
             "storageAdapterWebServiceUrl",
             "authWebServiceUrl",
-            "deviceSimulationWebServiceUrl"
+            "deviceSimulationWebServiceUrl",
+            "diagnosticsWebServiceUrl"
         ]
     },
     "resources": [
@@ -359,11 +367,11 @@
           },
           {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/test')]",
+            "name": "[concat(parameters('keyVaultName'), '/keyvaultPrimaryConfig')]",
             "apiVersion": "2015-06-01",
             "properties": {
-              "contentType": "string",
-              "value": "testValue"
+              "contentType": "boolean",
+              "value": "true"
             },
             "dependsOn": [
               "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
@@ -371,9 +379,9 @@
           }
     ],
     "outputs": {
-        "logicAppEndpointUrl": {
+        "keyVaultName": {
             "type": "string",
-            "value": "testing"
+            "value": "[parameters('keyVaultName')]"
         }
     }
 }

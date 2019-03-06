@@ -189,6 +189,7 @@ export class DeploymentManager implements IDeploymentManager {
 
                     return this._client.deployments.createOrUpdate(answers.solutionName as string, keyVaultDeploymentName, keyVaultDeployment)
                             .then((keyVaultRes) => {
+                                // Append keyvault properties to output properties of original deployment
                                 return res;
                             });
                 }
@@ -205,7 +206,7 @@ export class DeploymentManager implements IDeploymentManager {
                 }
 
                 if (answers.deploymentSku === 'local') {
-                    this.setAndPrintEnvironmentVariables(deploymentProperties.outputs, answers);
+                    this.setAndPrintEnvironmentVariablesForDS(deploymentProperties.outputs, answers);
                 }
                 return Promise.resolve('');
             })
@@ -234,41 +235,17 @@ export class DeploymentManager implements IDeploymentManager {
                         config.AADLoginURL = this._environment.activeDirectoryEndpointUrl;
                         config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
                         config.ApplicationId = answers.appId;
-                        config.ServicePrincipalSecret = answers.servicePrincipalSecret;
-                        config.AzureStorageAccountKey = outputs.storageAccountKey.value;
-                        config.AzureStorageAccountName = outputs.storageAccountName.value;
-                        config.AzureStorageEndpointSuffix = this._azureHelper.getStorageEndpointSuffix();
                         config.AzureStorageConnectionString = outputs.storageConnectionString.value;
-                        config.AzureActiveDirectoryEndpointUrl = this._environment.activeDirectoryEndpointUrl;
-                        config.AzureResourceManagerEndpointUrl = this._environment.resourceManagerEndpointUrl;
                         // If we are under the plan limit then we should have received a query key
-                        config.AzureMapsKey = outputs.azureMapsKey.value;
-                        config.CloudType = this._azureHelper.getCloudType();
                         config.SolutionName = answers.solutionName;
                         config.IotHubName = outputs.iotHubHostName.value;
                         config.SubscriptionId = outputs.subscriptionId.value;
-                        config.DeploymentId = answers.deploymentId;
-                        config.AppInsightsInstrumentationKey = answers.appInsightsInstrumentationKey;
                         config.DockerTag = answers.dockerTag;
                         config.DNS = outputs.agentFQDN.value;
-                        config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
-                        config.EventHubEndpoint = outputs.eventHubEndpoint.value;
-                        config.EventHubName = outputs.eventHubName.value;
-                        config.EventHubPartitions = outputs.eventHubPartitions.value.toString();
                         config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
                         config.LoadBalancerIP = outputs.loadBalancerIp.value;
                         config.Runtime = answers.runtime;
-                        config.SolutionType = this._solutionType;
                         config.TLS = answers.certData;
-                        config.MessagesEventHubConnectionString = outputs.messagesEventHubConnectionString.value;
-                        config.MessagesEventHubName = outputs.messagesEventHubName.value;
-                        config.ActionsEventHubConnectionString = outputs.actionsEventHubConnectionString.value;
-                        config.ActionsEventHubName = outputs.actionsEventHubName.value;
-                        config.TelemetryStorgeType = outputs.telemetryStorageType.value;
-                        config.TSIDataAccessFQDN = outputs.tsiDataAccessFQDN.value;
-                        config.Office365ConnectionUrl = outputs.office365ConnectionUrl.value;
-                        config.LogicAppEndpointUrl = outputs.logicAppEndpointUrl.value;
-                        config.SolutionWebsiteUrl = outputs.azureWebsite.value;
                         const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
                         deployUI.start('Setting up Kubernetes');
                         return k8sMananger.setupAll();
@@ -382,11 +359,11 @@ export class DeploymentManager implements IDeploymentManager {
                               'userPrincipalObjectId', 
                               'solutionName',
                               'aadTenantId',
-                              'appId',
                               'servicePrincipalSecret',
-                              'deploymentId'];
+                              'deploymentId',
+                              'appInsightsInstrumentationKey'];
         answerParams.forEach((paramName) => {
-            if (this._keyVaultParams[paramName] !== undefined && answers[paramName] !== undefined) {
+            if (this._keyVaultParams[paramName] && answers[paramName]) {
                 this._keyVaultParams[paramName].value = answers[paramName];
             }
         });
@@ -413,7 +390,6 @@ export class DeploymentManager implements IDeploymentManager {
 
         this.setKVParamValue('storageEndpointSuffix', this._azureHelper.getStorageEndpointSuffix());
         this.setKVParamValue('solutionWebsiteUrl', outputs.azureWebsite.value);
-        this.setKVParamValue('diagnosticsEndpointUrl', answers.diagnosticsEndpointUrl || 'DEFAULT_DIAGNOSTICS_ENDPOINT_URL');
         this.setKVParamValue('aadAppId', answers.appId);
         this.setKVParamValue('aadAppSecret', answers.servicePrincipalSecret);
         this.setKVParamValue('authIssuer', this._azureHelper.getAuthIssuserUrl(answers.aadTenantId));
@@ -428,15 +404,13 @@ export class DeploymentManager implements IDeploymentManager {
             this.setKVParamValue('authRequired', 'false');
         } else {
             this.setKVParamValue('authRequired', 'true');
-        }
-
-        if (answers.deploymentSku !== 'local') {
             this.setKVParamValue('telemetryWebServiceUrl', 'http://telemetry-svc:9004/v1');
             this.setKVParamValue('configWebServiceUrl', 'http://config-svc:9005/v1');
             this.setKVParamValue('iotHubManagerWebServiceUrl', 'http://iothub-manager-svc:9002/v1');
             this.setKVParamValue('storageAdapterWebServiceUrl', 'http://storage-adapter-svc:9022/v1');
             this.setKVParamValue('authWebServiceUrl', 'http://auth-svc:9001/v1');
             this.setKVParamValue('deviceSimulationWebServiceUrl', 'http://device-simulation-svc:9003/v1');
+            this.setKVParamValue('diagnosticsWebServiceUrl', 'http://diagnostics:9006/v1');
         }
     }
 
@@ -525,11 +499,11 @@ export class DeploymentManager implements IDeploymentManager {
         } else if (this._template.parameters.deploymentId) {
             this._parameters.deploymentId = { value: answers.deploymentId };
         }
-        if (answers.appInsightsInstrumentationKey) {
-            if (this._parameters.appInsightsInstrumentationKey) {
-                this._parameters.appInsightsInstrumentationKey.value = answers.appInsightsInstrumentationKey;
-            } else if (this._template.parameters.appInsightsInstrumentationKey) {
-                this._parameters.appInsightsInstrumentationKey =  { value: answers.appInsightsInstrumentationKey };
+        if (answers.diagnosticsEndpointUrl) {
+            if (this._parameters.diagnosticsEndpointUrl) {
+                this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
+            } else if (this._template.parameters.diagnosticsEndpointUrl) {
+                this._parameters.diagnosticsEndpointUrl =  { value: answers.diagnosticsEndpointUrl };
             }
         }
         if (this._template.parameters.telemetryStorageType && answers.telemetryStorageType) {
@@ -615,58 +589,21 @@ export class DeploymentManager implements IDeploymentManager {
         });
     }
 
-    private setAndPrintEnvironmentVariables(outputs: any, answers: Answers) {
+    private setAndPrintEnvironmentVariablesForDS(outputs: any, answers: Answers) {
         const data = [] as string[];
-        data.push(`PCS_IOTHUBREACT_ACCESS_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
+
+        data.push(`PCS_KEYVAULT_NAME="${outputs.keyVaultName.value}"`);
         data.push(`PCS_IOTHUB_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
-        data.push(`PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
-        data.push(`PCS_TELEMETRY_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
-        data.push(`PCS_TELEMETRYAGENT_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
-        data.push(`PCS_ASA_DATA_AZUREBLOB_ACCOUNT=${outputs.storageAccountName.value}`);
-        data.push(`PCS_ASA_DATA_AZUREBLOB_KEY="${outputs.storageAccountKey.value}"`);
-        data.push(`PCS_ASA_DATA_AZUREBLOB_ENDPOINT_SUFFIX=${this._azureHelper.getStorageEndpointSuffix()}`);
-        data.push(`PCS_AZUREBLOB_CONNSTRING="${outputs.storageConnectionString.value}"`);
-        data.push(`PCS_EVENTHUB_CONNSTRING="${outputs.messagesEventHubConnectionString.value}"`);
-        data.push(`PCS_EVENTHUB_NAME="${outputs.messagesEventHubName.value}"`);
-        data.push(`PCS_ACTION_EVENTHUB_CONNSTRING="${outputs.actionsEventHubConnectionString.value}"`);
-        data.push(`PCS_ACTION_EVENTHUB_NAME="${outputs.actionsEventHubName.value}"`);
-        data.push(`PCS_AUTH_REQUIRED=false`);
-        data.push(`PCS_AUTH_ISSUER="${this._azureHelper.getAuthIssuserUrl(answers.aadTenantId)}"`);
-        data.push(`PCS_AUTH_AUDIENCE=${answers.appId}`);
-        data.push(`PCS_AZUREMAPS_KEY=static`);
-        data.push(`PCS_TELEMETRY_STORAGE_TYPE=${outputs.telemetryStorageType.value}`);
-        data.push(`PCS_TSI_FQDN="${outputs.tsiDataAccessFQDN.value}"`);
-        data.push(`PCS_AAD_TENANT=${answers.aadTenantId}`);
-        data.push(`PCS_AAD_APPID=${answers.appId}`);
-        data.push(`PCS_AAD_APPSECRET="${answers.servicePrincipalSecret}"`);
-        data.push(`PCS_SEED_TEMPLATE=default`);
-        data.push(`PCS_CLOUD_TYPE=${this._azureHelper.getCloudType()}`);
         data.push(`PCS_SUBSCRIPTION_ID=${this._subscriptionId}`);
-        data.push(`PCS_SOLUTION_TYPE=${this._solutionType}`);
-        data.push(`PCS_SOLUTION_NAME=${answers.solutionName}`);
-        data.push(`PCS_SOLUTION_WEBSITE_URL="${outputs.azureWebsite.value}"`);
-        data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
-        data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
-        data.push(`PCS_APPINSIGHTS_INSTRUMENTATIONKEY=${answers.appInsightsInstrumentationKey || 'DEFAULT_APPINSIGHTS_INSTRUMENTATIONKEY'}`);
-        data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
-        data.push(`PCS_OFFICE365_CONNECTION_URL="${outputs.office365ConnectionUrl.value}"`);
-        data.push(`PCS_LOGICAPP_ENDPOINT_URL="${outputs.logicAppEndpointUrl.value}"`);
-        data.push(`PCS_ARM_ENDPOINT_URL="${this._environment.resourceManagerEndpointUrl}"`);
-        data.push(`PCS_AAD_ENDPOINT_URL="${this._environment.activeDirectoryEndpointUrl}"`);
-        data.push(`PCS_TELEMETRY_WEBSERVICE_URL=http://localhost:9004/v1`);
-        data.push(`PCS_CONFIG_WEBSERVICE_URL=http://localhost:9005/v1`);
-        data.push(`PCS_IOTHUBMANAGER_WEBSERVICE_URL=http://localhost:9002/v1`);
-        data.push(`PCS_STORAGEADAPTER_WEBSERVICE_URL=http://localhost:9022/v1`);
-        data.push(`PCS_AUTH_WEBSERVICE_URL=http://localhost:9001/v1`);
-        data.push(`PCS_DEVICESIMULATION_WEBSERVICE_URL=http://localhost:9003/v1`);
-        // Simulation env-vars
         data.push(`PCS_RESOURCE_GROUP=${answers.solutionName}`);
         data.push(`PCS_IOHUB_NAME=${outputs.iotHubName.value}`);
         data.push(`PCS_WEBUI_AUTH_AAD_APPID=${answers.appId}`);
         data.push(`PCS_WEBUI_AUTH_AAD_TENANT=${answers.aadTenantId}`);
+        data.push(`PCS_AUTH_REQUIRED=false`);
         data.push(`PCS_AAD_CLIENT_SP_ID=${answers.appId}`);
         data.push(`PCS_AAD_SECRET=${answers.servicePrincipalSecret}`);
         data.push(`PCS_AZURE_STORAGE_ACCOUNT=${outputs.storageConnectionString.value}`);
+        data.push(`PCS_STORAGEADAPTER_WEBSERVICE_URL=http://localhost:9022/v1`);
 
         const osCmdMap = {
             Darwin: 'launchctl setenv ',

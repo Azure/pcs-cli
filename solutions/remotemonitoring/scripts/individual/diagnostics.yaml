@@ -23,66 +23,11 @@ spec:
         env:
         - name: PCS_DIAGNOSTICS_WEBSERVICE_PORT
           value: "9006"
-        - name: PCS_APPINSIGHTS_INSTRUMENTATIONKEY
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: diagnostics.appinsights.instrumentationkey
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_CLOUD_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.cloud.type
-        - name: PCS_SOLUTION_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.name
-        - name: PCS_SUBSCRIPTION_ID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.subscription.id
-        - name: PCS_DEPLOYMENT_ID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.deployment.id
-        - name: PCS_SOLUTION_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.type
-        - name: PCS_IOTHUB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.iothub.name
-        - name: PCS_CONFIG_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key:  config.webservice.url
+              key: keyVaultName
 ---
 apiVersion: v1
 kind: Service
