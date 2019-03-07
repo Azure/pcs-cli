@@ -197,13 +197,6 @@
                 "description": ""
             }
         },
-        "diagnosticsEndpointUrl": {
-            "type": "string",
-            "defaultValue": "DEFAULT_DIAGNOSTICS_ENDPOINT_URL",
-            "metadata": {
-                "description": ""
-            }
-        },
         "applicationSecret": {
             "type": "string",
             "metadata": {
@@ -288,9 +281,12 @@
         "keyVaultSecrets": [
             "solutionName",
             "aadTenantId",
+            "aadAppId",
+            "aadAppSecret",
+            "authRequired",
+            "authIssuer",
             "userPrincipalObjectId",
             "iotHubConnectionString",
-            "appId",
             "documentDBConnectionString",
             "storageAccountName",
             "storageAccountKey",
@@ -300,7 +296,6 @@
             "messagesEventHubName",
             "actionsEventHubConnectionString",
             "actionsEventHubName",
-            "authRequired",
             "azureMapsKey",
             "telemetryStorageType",
             "tsiDataAccessFQDN",
@@ -312,7 +307,6 @@
             "solutionWebsiteUrl",
             "deploymentId",
             "iotHubName",
-            "diagnosticsEndpointUrl",
             "applicationSecret",
             "office365ConnectionUrl",
             "logicAppEndpointUrl",

@@ -363,7 +363,7 @@ export class DeploymentManager implements IDeploymentManager {
                               'aadTenantId',
                               'servicePrincipalSecret',
                               'deploymentId',
-                              'appInsightsInstrumentationKey'];
+                              'appInsightsInstrumentationKey']; // TODO: Follow up on this key
         answerParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && answers[paramName]) {
                 this._keyVaultParams[paramName].value = answers[paramName];
@@ -396,7 +396,7 @@ export class DeploymentManager implements IDeploymentManager {
         this.setKVParamValue('aadAppId', answers.appId);
         this.setKVParamValue('aadAppSecret', answers.servicePrincipalSecret);
         this.setKVParamValue('authIssuer', this._azureHelper.getAuthIssuserUrl(answers.aadTenantId));
-        this.setKVParamValue('iotHubName', outputs.iotHubHostName);
+        this.setKVParamValue('iotHubName', outputs.iotHubHostName.value);
         this.setKVParamValue('subscriptionId', this._subscriptionId);
         this.setKVParamValue('solutionType', this._solutionType);
         this.setKVParamValue('applicationSecret', genPassword());
@@ -501,13 +501,6 @@ export class DeploymentManager implements IDeploymentManager {
             this._parameters.deploymentId.value = answers.deploymentId;
         } else if (this._template.parameters.deploymentId) {
             this._parameters.deploymentId = { value: answers.deploymentId };
-        }
-        if (answers.diagnosticsEndpointUrl) {
-            if (this._parameters.diagnosticsEndpointUrl) {
-                this._parameters.diagnosticsEndpointUrl.value = answers.diagnosticsEndpointUrl;
-            } else if (this._template.parameters.diagnosticsEndpointUrl) {
-                this._parameters.diagnosticsEndpointUrl =  { value: answers.diagnosticsEndpointUrl };
-            }
         }
         if (this._template.parameters.telemetryStorageType && answers.telemetryStorageType) {
             this._parameters.telemetryStorageType = { value: answers.telemetryStorageType };

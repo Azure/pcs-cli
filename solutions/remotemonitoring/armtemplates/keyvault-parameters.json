@@ -1,4 +1,7 @@
 {
+    "keyVaultName": {
+      "value": "{Added through command line interface}"
+    },
     "solutionName": {
       "value": "{Added through command line interface}"
     },
@@ -66,7 +69,7 @@
       "value": "{Added through command line interface}"
     },
     "cloudType": {
-      "value": "{Added through command line interface}"
+      "value": "Global"
     },
     "subscriptionId": {
       "value": "{Added through command line interface}"
@@ -81,9 +84,6 @@
       "value": "{Added through command line interface}"
     },
     "iotHubName": {
-      "value": "{Added through command line interface}"
-    },
-    "diagnosticsEndpointUrl": {
       "value": "{Added through command line interface}"
     },
     "applicationSecret": {
@@ -101,8 +101,8 @@
     "aadEndpointUrl": {
       "value": "{Added through command line interface}"
     },
-    "appInsightsInstrumentationKey ":{
-      "value": "{Added through command line interface}"
+    "appInsightsInstrumentationKey": {
+      "value": ""
     },
     "telemetryWebServiceUrl": {
       "value": "http://localhost:9004/v1"
