@@ -1175,6 +1175,14 @@
         "azureWebsite": {
             "type": "string",
             "value": "http://localhost:8080"
+        },
+        "iotHubHostName": {
+            "type": "string",
+            "value": "[parameters('iotHubName')]"
+        },
+        "keyVaultName": {
+            "type": "string",
+            "value": "[concat('keyvault-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]"
         }
     }
 }
