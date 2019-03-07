@@ -40,6 +40,8 @@ services:
       - default_net
     environment:
       - PCS_KEYVAULT_NAME
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
 
   iothubmanager:
     image: azureiotpcs/iothub-manager-java:${PCS_DOCKER_TAG}
@@ -50,6 +52,8 @@ services:
       - storageadapter
     environment:
       - PCS_KEYVAULT_NAME
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
 
   devicesimulation:
     image: azureiotpcs/device-simulation-dotnet:DS-1.0.4
@@ -95,6 +99,8 @@ services:
       - storageadapter
     environment:
       - PCS_KEYVAULT_NAME
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
 
   config:
     image: azureiotpcs/pcs-config-java:${PCS_DOCKER_TAG}
@@ -107,6 +113,8 @@ services:
       - telemetry
     environment:
       - PCS_KEYVAULT_NAME
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
 
   storageadapter:
     image: azureiotpcs/pcs-storage-adapter-java:${PCS_DOCKER_TAG}
@@ -114,6 +122,8 @@ services:
       - default_net
     environment:
      - PCS_KEYVAULT_NAME
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
 
   asamanager:
     image: azureiotpcs/asa-manager-dotnet:${PCS_DOCKER_TAG}
@@ -124,6 +134,8 @@ services:
       - config
     environment:
       - PCS_KEYVAULT_NAME
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
 
   diagnostics:
     image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.1
@@ -133,6 +145,8 @@ services:
       - config
     environment:
       - PCS_KEYVAULT_NAME
+      - PCS_AAD_APPID
+      - PCS_AAD_APPSECRET
 
 networks:
   default_net:

@@ -206,7 +206,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: keyVaultName
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
         - name: PCS_IOTHUB_CONNSTRING
           valueFrom:
             configMapKeyRef:
@@ -344,7 +354,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: keyVaultName
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 ---
 apiVersion: v1
 kind: Service
@@ -390,7 +410,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: keyVaultName
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 
 ---
 apiVersion: v1
@@ -439,7 +469,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: keyVaultName
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 ---
 apiVersion: v1
 kind: Service
@@ -485,7 +525,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: keyVaultName
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 ---
 apiVersion: v1
 kind: Service
@@ -533,7 +583,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: keyVaultName
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 ---
 apiVersion: v1
 kind: Service
@@ -579,7 +639,17 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: keyVaultName
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 ---
 apiVersion: v1
 kind: Service
@@ -623,6 +693,21 @@ spec:
         env:
         - name: PCS_DIAGNOSTICS_WEBSERVICE_PORT
           value: "9006"
+        - name: PCS_KEYVAULT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 
 ---
 apiVersion: v1

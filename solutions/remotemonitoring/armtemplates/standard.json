@@ -1457,6 +1457,10 @@
         "logicAppEndpointUrl": {
             "type": "string",
             "value": "[concat(listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', variables('logicAppName'), 'manual'), variables('logicAppApiVersion')).value)]"
+        },
+        "keyVaultName": {
+            "type": "string",
+            "value": "[concat('keyvault-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]"
         }
     }
 }

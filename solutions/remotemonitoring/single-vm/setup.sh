@@ -24,6 +24,7 @@ while [ "$#" -gt 0 ]; do
         --log-level)                    PCS_LOG_LEVEL="$2" ;;
         --runtime)                      APP_RUNTIME="$2" ;;
         --iothub-connstring)            PCS_IOTHUB_CONNSTRING="$2" ;;
+        --docdb-connstring)             PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --ssl-certificate)              PCS_CERTIFICATE="$2" ;;
         --ssl-certificate-key)          PCS_CERTIFICATE_KEY="$2" ;;
         --auth-audience)                PCS_AUTH_AUDIENCE="$2" ;;
@@ -32,9 +33,11 @@ while [ "$#" -gt 0 ]; do
         --aad-appid)                    PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
         --aad-tenant)                   PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
         --aad-instance)                 PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
+        --aad-appsecret)                PCS_AAD_APPSECRET="$2" ;;
         --release-version)              PCS_RELEASE_VERSION="$2" ;;
         --docker-tag)                   PCS_DOCKER_TAG="$2" ;;
         --subscription-id)              PCS_SUBSCRIPTION_ID="$2" ;;
+        --keyvault-name)                PCS_KEYVAULT_NAME="$2" ;;
     esac
     shift
 done
@@ -238,8 +241,13 @@ echo "export HOST_NAME=\"${HOST_NAME}\""                                        
 echo "export APP_RUNTIME=\"${APP_RUNTIME}\""                                                             >> ${ENVVARS}
 echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
 echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
-echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
 echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
+echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
+echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
+echo "export PCS_IOTHUB_NAME=\"${PCS_IOTHUB_NAME}\""                                                     >> ${ENVVARS}
+echo "export PCS_AAD_TENANT=\"${PCS_WEBUI_AUTH_AAD_TENANT}\""                                            >> ${ENVVARS}
+echo "export PCS_AAD_APPID=\"${PCS_WEBUI_AUTH_AAD_APPID}\""                                              >> ${ENVVARS}
+echo "export PCS_AAD_APPSECRET=\"${PCS_AAD_APPSECRET}\""                                                 >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}
 echo "# Development settings, don't change these in Production"                                          >> ${ENVVARS}

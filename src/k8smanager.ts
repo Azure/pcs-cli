@@ -189,18 +189,22 @@ export class K8sManager implements IK8sManager {
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
 
-        configMap.data['keyVaultName'] = this._config.KeyVaultName;
+        configMap.data['keyvault.name'] = this._config.KeyVaultName;
 
         // Device Sim configurations
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;
         configMap.data['security.auth.issuer'] = this._config.AuthIssuerURL;
+        configMap.data['security.auth.serviceprincipal.secret'] = this._config.ServicePrincipalSecret;
         configMap.data['diagnostics.subscription.id'] = this._config.SubscriptionId;
         configMap.data['security.auth.tenant'] = this._config.AADTenantId;
         configMap.data['security.auth.audience'] = this._config.ApplicationId;
         configMap.data['security.application.secret'] = genPassword();
+        configMap.data['diagnostics.subscription.id'] = this._config.SubscriptionId;
         configMap.data['diagnostics.solution.name'] = this._config.SolutionName;
+        configMap.data['diagnostics.solution.type'] = this._config.SolutionType;
         configMap.data['diagnostics.iothub.name'] = this._config.IotHubName;
         configMap.data['azureblob.connstring'] = this._config.AzureStorageConnectionString;
+        configMap.data['docdb.connstring']  = this._config.DocumentDBConnectionString;
 
         // Web UI configurations
         let deploymentConfig = configMap.data['webui-config.js'];
