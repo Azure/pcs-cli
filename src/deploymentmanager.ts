@@ -361,6 +361,7 @@ export class DeploymentManager implements IDeploymentManager {
                               'userPrincipalObjectId', 
                               'solutionName',
                               'aadTenantId',
+                              'servicePrincipalId',
                               'servicePrincipalSecret',
                               'deploymentId',
                               'appInsightsInstrumentationKey']; // TODO: Follow up on this key
