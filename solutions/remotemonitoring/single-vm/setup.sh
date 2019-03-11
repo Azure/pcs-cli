@@ -1,9 +1,6 @@
 #!/bin/bash -ex
 
 APP_PATH="/app"
-WEBUICONFIG="${APP_PATH}/webui-config.js"
-WEBUICONFIG_SAFE="${APP_PATH}/webui-config.js.safe"
-WEBUICONFIG_UNSAFE="${APP_PATH}/webui-config.js.unsafe"
 ENVVARS="${APP_PATH}/env-vars"
 DOCKERCOMPOSE="${APP_PATH}/docker-compose.yml"
 CERTS="${APP_PATH}/certs"
