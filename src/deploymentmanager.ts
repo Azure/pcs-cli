@@ -231,20 +231,9 @@ export class DeploymentManager implements IDeploymentManager {
                     .then( () => {
                         deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                         const config = new Config();
-                        config.AADTenantId = answers.aadTenantId;
-                        config.AADLoginURL = this._environment.activeDirectoryEndpointUrl;
-                        config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
                         config.ApplicationId = answers.appId;
-                        config.AzureStorageConnectionString = outputs.storageConnectionString.value;
-                        // If we are under the plan limit then we should have received a query key
-                        config.SolutionName = answers.solutionName;
-                        config.SolutionType = this._solutionType;
-                        config.IotHubName = outputs.iotHubHostName.value;
-                        config.SubscriptionId = outputs.subscriptionId.value;
                         config.DockerTag = answers.dockerTag;
-                        config.DocumentDBConnectionString = outputs.documentDBConnectionString.value;
                         config.DNS = outputs.agentFQDN.value;
-                        config.IoTHubConnectionString = outputs.iotHubConnectionString.value;
                         config.LoadBalancerIP = outputs.loadBalancerIp.value;
                         config.Runtime = answers.runtime;
                         config.TLS = answers.certData;
@@ -588,37 +577,38 @@ export class DeploymentManager implements IDeploymentManager {
 
     private setAndPrintEnvironmentVariablesForDS(outputs: any, answers: Answers) {
         const data = [] as string[];
-
         data.push(`PCS_KEYVAULT_NAME="${outputs.keyVaultName.value}"`);
-        data.push(`PCS_IOTHUBREACT_ACCESS_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
-        data.push(`PCS_IOTHUB_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
-        data.push(`PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
-        data.push(`PCS_AZUREBLOB_CONNSTRING="${outputs.storageConnectionString.value}"`);
-        data.push(`PCS_AUTH_REQUIRED=false`);
-        data.push(`PCS_AUTH_ISSUER="${this._azureHelper.getAuthIssuserUrl(answers.aadTenantId)}"`);
-        data.push(`PCS_AUTH_AUDIENCE=${answers.appId}`);
-        data.push(`PCS_AAD_TENANT=${answers.aadTenantId}`);
         data.push(`PCS_AAD_APPID=${answers.appId}`);
         data.push(`PCS_AAD_APPSECRET="${answers.servicePrincipalSecret}"`);
-        data.push(`PCS_SEED_TEMPLATE=default`);
-        data.push(`PCS_CLOUD_TYPE=${this._azureHelper.getCloudType()}`);
-        data.push(`PCS_SUBSCRIPTION_ID=${this._subscriptionId}`);
-        data.push(`PCS_SOLUTION_TYPE=${this._solutionType}`);
-        data.push(`PCS_SOLUTION_NAME=${answers.solutionName}`);
-        data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
-        data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
-        data.push(`PCS_APPINSIGHTS_INSTRUMENTATIONKEY=${answers.appInsightsInstrumentationKey || 'DEFAULT_APPINSIGHTS_INSTRUMENTATIONKEY'}`);
-        data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
-        data.push(`PCS_STORAGEADAPTER_WEBSERVICE_URL=http://localhost:9022/v1`);
-        data.push(`PCS_DIAGNOSTICS_WEBSERVICE_URL=http://localhost:9006/v1`);
-        data.push(`PCS_RESOURCE_GROUP=${answers.solutionName}`);
-        data.push(`PCS_IOHUB_NAME=${outputs.iotHubName.value}`);
-        data.push(`PCS_WEBUI_AUTH_AAD_APPID=${answers.appId}`);
-        data.push(`PCS_WEBUI_AUTH_AAD_TENANT=${answers.aadTenantId}`);
-        data.push(`PCS_AAD_CLIENT_SP_ID=${answers.appId}`);
-        data.push(`PCS_AAD_SECRET=${answers.servicePrincipalSecret}`);
-        data.push(`PCS_AZURE_STORAGE_ACCOUNT=${outputs.storageConnectionString.value}`);
-
+        
+        if (this._solutionType !== 'remotemonitoring') {
+            data.push(`PCS_IOTHUBREACT_ACCESS_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
+            data.push(`PCS_IOTHUB_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
+            data.push(`PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="${outputs.documentDBConnectionString.value}"`);
+            data.push(`PCS_AZUREBLOB_CONNSTRING="${outputs.storageConnectionString.value}"`);
+            data.push(`PCS_AUTH_REQUIRED=false`);
+            data.push(`PCS_AUTH_ISSUER="${this._azureHelper.getAuthIssuserUrl(answers.aadTenantId)}"`);
+            data.push(`PCS_AUTH_AUDIENCE=${answers.appId}`);
+            data.push(`PCS_AAD_TENANT=${answers.aadTenantId}`);
+            data.push(`PCS_SEED_TEMPLATE=default`);
+            data.push(`PCS_CLOUD_TYPE=${this._azureHelper.getCloudType()}`);
+            data.push(`PCS_SUBSCRIPTION_ID=${this._subscriptionId}`);
+            data.push(`PCS_SOLUTION_TYPE=${this._solutionType}`);
+            data.push(`PCS_SOLUTION_NAME=${answers.solutionName}`);
+            data.push(`PCS_DEPLOYMENT_ID=${answers.deploymentId}`);
+            data.push(`PCS_IOTHUB_NAME=${outputs.iotHubName.value}`);
+            data.push(`PCS_APPINSIGHTS_INSTRUMENTATIONKEY=${answers.appInsightsInstrumentationKey || 'DEFAULT_APPINSIGHTS_INSTRUMENTATIONKEY'}`);
+            data.push(`PCS_APPLICATION_SECRET="${genPassword()}"`);
+            data.push(`PCS_STORAGEADAPTER_WEBSERVICE_URL=http://localhost:9022/v1`);
+            data.push(`PCS_DIAGNOSTICS_WEBSERVICE_URL=http://localhost:9006/v1`);
+            data.push(`PCS_RESOURCE_GROUP=${answers.solutionName}`);
+            data.push(`PCS_IOHUB_NAME=${outputs.iotHubName.value}`);
+            data.push(`PCS_WEBUI_AUTH_AAD_APPID=${answers.appId}`);
+            data.push(`PCS_WEBUI_AUTH_AAD_TENANT=${answers.aadTenantId}`);
+            data.push(`PCS_AAD_CLIENT_SP_ID=${answers.appId}`);
+            data.push(`PCS_AAD_SECRET=${answers.servicePrincipalSecret}`);
+            data.push(`PCS_AZURE_STORAGE_ACCOUNT=${outputs.storageConnectionString.value}`);
+        }
         const osCmdMap = {
             Darwin: 'launchctl setenv ',
             Linux: 'export ',
