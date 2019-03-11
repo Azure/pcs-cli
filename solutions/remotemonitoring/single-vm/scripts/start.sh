@@ -8,22 +8,10 @@ COL_NO="\033[0m" # no color
 COL_ERR="\033[1;31m" # light red
 
 APP_PATH="/app"
-WEBUICONFIG="${APP_PATH}/webui-config.js"
-WEBUICONFIG_SAFE="${APP_PATH}/webui-config.js.safe"
-WEBUICONFIG_UNSAFE="${APP_PATH}/webui-config.js.unsafe"
-
-rm -f ${WEBUICONFIG}
-cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
 
 if [[ "$1" == "--unsafe" ]]; then
   echo -e "${COL_ERR}WARNING! Starting services in UNSAFE mode!${COL_NO}"
-  # Disable Auth
-  export PCS_AUTH_REQUIRED="false"
-  # Allow cross-origin requests from anywhere
-  export PCS_CORS_WHITELIST="{ 'origins': ['*'], 'methods': ['*'], 'headers': ['*'] }"
-
-  rm -f ${WEBUICONFIG}
-  cp -p ${WEBUICONFIG_UNSAFE} ${WEBUICONFIG}
+  # Run script to set unsafe params in keyvault
 fi
 
 list=$(docker ps -aq)

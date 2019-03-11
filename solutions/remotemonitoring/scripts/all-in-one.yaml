@@ -217,96 +217,6 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.auth.serviceprincipal.secret
-        - name: PCS_IOTHUB_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: iothub.connstring
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: storageadapter.webservice.url
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_SUBSCRIPTION_ID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.subscription.id
-        - name: PCS_WEBUI_AUTH_AAD_APPID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_WEBUI_AUTH_AAD_TENANT
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.tenant
-        - name: PCS_AAD_CLIENT_SP_ID
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AAD_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
-        - name: PCS_RESOURCE_GROUP
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.name
-        - name: PCS_IOHUB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.iothub.name
-        - name: PCS_DIAGNOSTICS_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.webservice.url
-        - name: PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: docdb.connstring
-        - name: PCS_AZURE_STORAGE_ACCOUNT
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.connstring
-        - name: PCS_SEED_TEMPLATE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: devicesimulation.template
-        - name: PCS_SOLUTION_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: diagnostics.solution.type
 ---
 apiVersion: v1
 kind: Service
@@ -749,18 +659,22 @@ spec:
         image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
         ports:
         - containerPort: 10080
-        volumeMounts:
-          - name: webui-config-volume
-            mountPath: /app/build/webui-config.js
-            subPath: webui-config.js
-            readOnly: true
-      volumes:
-        - name: webui-config-volume
-          configMap:
-            name: deployment-configmap
-            items:
-            - key: webui-config.js
-              path: webui-config.js
+        env:
+        - name: PCS_KEYVAULT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 ---
 apiVersion: v1
 kind: Service
