@@ -2,7 +2,7 @@ version: '2'
 
 services:
   reverseproxy:
-    image: azureiotpcs/remote-monitoring-nginx:${PCS_DOCKER_TAG}
+    image: azureiotpcs/remote-monitoring-nginx:2.2.0
     networks:
       - default_net
     ports:
@@ -20,7 +20,7 @@ services:
       - /app/certs:/app/certs:ro
 
   webui:
-    image: azureiotpcs/pcs-remote-monitoring-webui:${PCS_DOCKER_TAG}
+    image: azureiotpcs/pcs-remote-monitoring-webui:2.2.0
     networks:
       - default_net
     depends_on:

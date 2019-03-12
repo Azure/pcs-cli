@@ -353,6 +353,7 @@ function main() {
                             answers.dockerTag = 'testing';
                         } else if (program.dockerTagOverride) {
                             answers.dockerTag = program.dockerTagOverride;
+                            answers.version = 'master';
                         } else {
                             // For a released version the docker tag and version should be same
                             // Default to latest released verion (different for remotemonitoring and devicesimulation)
