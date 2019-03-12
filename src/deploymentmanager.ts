@@ -406,6 +406,15 @@ export class DeploymentManager implements IDeploymentManager {
 
         if (answers.deploymentSku === 'local') {
             this.setKVParamValue('authRequired', 'false');
+        } else if (answers.deploymentSku === 'basic') {
+            this.setKVParamValue('authRequired', 'true');
+            this.setKVParamValue('telemetryWebServiceUrl', 'http://telemetry:9004/v1');
+            this.setKVParamValue('configWebServiceUrl', 'http://config:9005/v1');
+            this.setKVParamValue('iotHubManagerWebServiceUrl', 'http://iothub-manager:9002/v1');
+            this.setKVParamValue('storageAdapterWebServiceUrl', 'http://storage-adapter:9022/v1');
+            this.setKVParamValue('authWebServiceUrl', 'http://auth:9001/v1');
+            this.setKVParamValue('deviceSimulationWebServiceUrl', 'http://device-simulation:9003/v1');
+            this.setKVParamValue('diagnosticsWebServiceUrl', 'http://diagnostics:9006/v1');
         } else {
             this.setKVParamValue('authRequired', 'true');
             this.setKVParamValue('telemetryWebServiceUrl', 'http://telemetry-svc:9004/v1');
@@ -414,7 +423,7 @@ export class DeploymentManager implements IDeploymentManager {
             this.setKVParamValue('storageAdapterWebServiceUrl', 'http://storage-adapter-svc:9022/v1');
             this.setKVParamValue('authWebServiceUrl', 'http://auth-svc:9001/v1');
             this.setKVParamValue('deviceSimulationWebServiceUrl', 'http://device-simulation-svc:9003/v1');
-            this.setKVParamValue('diagnosticsWebServiceUrl', 'http://diagnostics:9006/v1');
+            this.setKVParamValue('diagnosticsWebServiceUrl', 'http://diagnostics-svc:9006/v1');
         }
     }
 
