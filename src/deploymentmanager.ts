@@ -410,10 +410,10 @@ export class DeploymentManager implements IDeploymentManager {
             this.setKVParamValue('authRequired', 'true');
             this.setKVParamValue('telemetryWebServiceUrl', 'http://telemetry:9004/v1');
             this.setKVParamValue('configWebServiceUrl', 'http://config:9005/v1');
-            this.setKVParamValue('iotHubManagerWebServiceUrl', 'http://iothub-manager:9002/v1');
-            this.setKVParamValue('storageAdapterWebServiceUrl', 'http://storage-adapter:9022/v1');
+            this.setKVParamValue('iotHubManagerWebServiceUrl', 'http://iothubmanager:9002/v1');
+            this.setKVParamValue('storageAdapterWebServiceUrl', 'http://storageadapter:9022/v1');
             this.setKVParamValue('authWebServiceUrl', 'http://auth:9001/v1');
-            this.setKVParamValue('deviceSimulationWebServiceUrl', 'http://device-simulation:9003/v1');
+            this.setKVParamValue('deviceSimulationWebServiceUrl', 'http://devicesimulation:9003/v1');
             this.setKVParamValue('diagnosticsWebServiceUrl', 'http://diagnostics:9006/v1');
         } else {
             this.setKVParamValue('authRequired', 'true');
