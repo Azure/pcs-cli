@@ -694,7 +694,8 @@
                     "properties": {
                         "RepoUrl": "[variables('repoURL')]",
                         "branch": "[variables('branch')]",
-                        "IsManualIntegration": true
+                        "IsManualIntegration": true,
+                        "IsManualIntegrEtion": true
                     },
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
