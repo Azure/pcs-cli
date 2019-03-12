@@ -23,6 +23,7 @@ while [ "$#" -gt 0 ]; do
         --hostname)                     HOST_NAME="$2" ;;
         --log-level)                    PCS_LOG_LEVEL="$2" ;;
         --runtime)                      APP_RUNTIME="$2" ;;
+        --keyvault-name)                PCS_KEYVAULT_NAME="$2";;
         --iothub-connstring)            PCS_IOTHUB_CONNSTRING="$2" ;;
         --docdb-connstring)             PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --ssl-certificate)              PCS_CERTIFICATE="$2" ;;
@@ -239,6 +240,7 @@ touch ${ENVVARS} && chmod 440 ${ENVVARS}
 
 echo "export HOST_NAME=\"${HOST_NAME}\""                                                                 >> ${ENVVARS}
 echo "export APP_RUNTIME=\"${APP_RUNTIME}\""                                                             >> ${ENVVARS}
+echo "export PCS_KEYVAULT_NAME=\"${PCS_KEYVAULT_NAME}\""                                                 >> ${ENVVARS}
 echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
 echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
 echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
