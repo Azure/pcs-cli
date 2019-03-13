@@ -62,6 +62,9 @@
     "tsiDataAccessFQDN": {
       "value": "{Added through command line interface}"
     },
+    "servicePrincipalId": {
+      "value": "{Added through command line interface}"
+    },
     "servicePrincipalSecret": {
       "value": "{Added through command line interface}"
     },
