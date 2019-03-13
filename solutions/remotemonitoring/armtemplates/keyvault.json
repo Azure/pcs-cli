@@ -63,6 +63,14 @@
                         "keys": ["all"],
                         "secrets": ["all"]
                     }
+                },
+                {
+                    "tenantId": "[parameters('aadTenantId')]",
+                    "objectId": "[parameters('servicePrincipalId')]",
+                    "permissions": {
+                        "keys": ["all"],
+                        "secrets": ["all"]
+                    }
                 }
             ],
             "metadata": {
@@ -142,6 +150,12 @@
             }
         },
         "tsiDataAccessFQDN": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "servicePrincipalId": {
             "type": "string",
             "metadata": {
                 "description": ""
