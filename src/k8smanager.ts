@@ -185,10 +185,12 @@ export class K8sManager implements IK8sManager {
     }
 
     public setupConfigMap(): Promise<any> {
+        console.log(__dirname);
         const configPath = __dirname + path.sep + 'solutions/remotemonitoring/scripts/individual/deployment-configmap.yaml';
         const configMap = jsyaml.safeLoad(fs.readFileSync(configPath, 'UTF-8'));
         configMap.metadata.namespace = this._namespace;
 
+        configMap.data['keyvault.name'] = this._config.KeyVaultName;
         configMap.data['keyvault.name'] = this._config.KeyVaultName;
 
         // Device Sim configurations

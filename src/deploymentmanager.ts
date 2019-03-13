@@ -231,10 +231,13 @@ export class DeploymentManager implements IDeploymentManager {
                     .then( () => {
                         deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
                         const config = new Config();
+                        config.KeyVaultName = outputs.keyVaultName.value;
                         config.AADTenantId = answers.aadTenantId;
                         config.AADLoginURL = this._environment.activeDirectoryEndpointUrl;
                         config.AuthIssuerURL = this._azureHelper.getAuthIssuserUrl(answers.aadTenantId);
                         config.ApplicationId = answers.appId;
+                        config.ServicePrincipalSecret = answers.servicePrincipalSecret;
+                        console.log('---');
                         config.AzureStorageConnectionString = outputs.storageConnectionString.value;
                         // If we are under the plan limit then we should have received a query key
                         config.SolutionName = answers.solutionName;

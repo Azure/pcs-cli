@@ -746,7 +746,7 @@ spec:
     spec:
       containers:
       - name: remote-monitoring-webui-pod
-        image: azureiotpcs/pcs-remote-monitoring-webui:{dockerTag}
+        image: azureiotpcs/pcs-remote-monitoring-webui:2.2.0
         ports:
         - containerPort: 10080
         volumeMounts:
