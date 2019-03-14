@@ -54,30 +54,6 @@
                 "description": "Name of the Key Vault"
             }
         },
-        "keyVaultAccessPolicies": {
-            "type": "array",
-            "defaultValue": [
-                {
-                    "tenantId": "[parameters('aadTenantId')]",
-                    "objectId": "[parameters('userPrincipalObjectId')]",
-                    "permissions": {
-                        "keys": ["all"],
-                        "secrets": ["all"]
-                    }
-                },
-                {
-                    "tenantId": "[parameters('aadTenantId')]",
-                    "objectId": "[parameters('servicePrincipalId')]",
-                    "permissions": {
-                        "keys": ["all"],
-                        "secrets": ["all"]
-                    }
-                }
-            ],
-            "metadata": {
-                "description": "Access policies object {\"tenantId\":\"\",\"objectId\":\"\",\"permissions\":{\"keys\":[\"\"],\"secrets\":[\"\"]}}"
-            }
-        },
         "iotHubConnectionString": {
             "type": "string",
             "metadata": {
@@ -214,6 +190,7 @@
         },
         "applicationSecret": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": ""
             }
@@ -335,6 +312,24 @@
             "authWebServiceUrl",
             "deviceSimulationWebServiceUrl",
             "diagnosticsWebServiceUrl"
+        ],
+        "keyVaultAccessPolicies": [
+            {
+                "tenantId": "[parameters('aadTenantId')]",
+                "objectId": "[parameters('userPrincipalObjectId')]",
+                "permissions": {
+                    "keys": ["all"],
+                    "secrets": ["all"]
+                }
+            },
+            {
+                "tenantId": "[parameters('aadTenantId')]",
+                "objectId": "[parameters('servicePrincipalId')]",
+                "permissions": {
+                    "keys": ["all"],
+                    "secrets": ["all"]
+                }
+            }
         ]
     },
     "resources": [
@@ -351,7 +346,7 @@
               "enabledForTemplateDeployment": "true",
               "enabledForVolumeEncryption": "false",
               "tenantId": "[parameters('aadTenantId')]",
-              "accessPolicies": "[parameters('keyVaultAccessPolicies')]",
+              "accessPolicies": "[variables('keyVaultAccessPolicies')]",
               "sku": {
                 "name": "Standard",
                 "family": "A"
