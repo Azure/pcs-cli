@@ -23,6 +23,7 @@
         },
         "authRequired": {
             "type": "string",
+            "defaultValue": "true",
             "metadata": {
                 "description": ""
             }
