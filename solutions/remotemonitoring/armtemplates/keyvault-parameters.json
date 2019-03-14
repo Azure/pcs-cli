@@ -69,7 +69,7 @@
       "value": "{Added through command line interface}"
     },
     "seedTemplate": {
-      "value": "{Added through command line interface}"
+      "value": "default"
     },
     "cloudType": {
       "value": "Global"
