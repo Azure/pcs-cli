@@ -27,6 +27,12 @@
                 "description": ""
             }
         },
+        "corsWhiteList": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
         "authIssuer": {
             "type": "string",
             "metadata": {
@@ -299,6 +305,7 @@
             "aadAppSecret",
             "authRequired",
             "authIssuer",
+            "corsWhiteList",
             "userPrincipalObjectId",
             "iotHubConnectionString",
             "documentDBConnectionString",

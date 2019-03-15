@@ -191,7 +191,6 @@ export class K8sManager implements IK8sManager {
         configMap.metadata.namespace = this._namespace;
 
         configMap.data['keyvault.name'] = this._config.KeyVaultName;
-        configMap.data['keyvault.name'] = this._config.KeyVaultName;
 
         // Device Sim configurations
         configMap.data['iothub.connstring'] = this._config.IoTHubConnectionString;

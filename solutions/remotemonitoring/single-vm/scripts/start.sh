@@ -18,12 +18,15 @@ cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
 if [[ "$1" == "--unsafe" ]]; then
   echo -e "${COL_ERR}WARNING! Starting services in UNSAFE mode!${COL_NO}"
   # Disable Auth
-  export PCS_AUTH_REQUIRED="false"
+  # export PCS_AUTH_REQUIRED="false"
   # Allow cross-origin requests from anywhere
-  export PCS_CORS_WHITELIST="{ 'origins': ['*'], 'methods': ['*'], 'headers': ['*'] }"
+  # export PCS_CORS_WHITELIST="{ 'origins': ['*'], 'methods': ['*'], 'headers': ['*'] }"
 
-  rm -f ${WEBUICONFIG}
-  cp -p ${WEBUICONFIG_UNSAFE} ${WEBUICONFIG}
+  # rm -f ${WEBUICONFIG}
+  # cp -p ${WEBUICONFIG_UNSAFE} ${WEBUICONFIG}
+  . set_auth.sh "enable"
+else
+  . set_auth.sh "disable"
 fi
 
 list=$(docker ps -aq)
