@@ -12,26 +12,26 @@
         "aadAppId": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "AAD application identifier (GUID)"
             }
         },
         "aadAppSecret": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "AAD application secret for authentication to services"
             }
         },
         "authRequired": {
             "type": "string",
             "defaultValue": "true",
             "metadata": {
-                "description": ""
+                "description": "Whether or not the microservices expect "
             }
         },
         "authIssuer": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Issuer of Azure tokens usually https://sts.windows.net/TenantId"
             }
         },
         "solutionName": {
