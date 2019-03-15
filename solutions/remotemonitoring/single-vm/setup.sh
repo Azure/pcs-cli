@@ -95,8 +95,10 @@ install_docker_ce() {
     fi
 
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
+        && apt-mark hold walinuxagent \
         && apt-get upgrade -y \
         && apt-get update \
+        && apt-mark unhold walinuxagent \
         && apt-get remove docker docker-engine docker.io \
         && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
         && curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
