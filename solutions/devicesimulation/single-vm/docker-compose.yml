@@ -50,7 +50,8 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
-    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    #image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    image: peterfelts/pg:testing
     restart: always
     depends_on:
       - storageadapter-svc
@@ -78,6 +79,7 @@ services:
       - PCS_VMSS_NAME
       - PCS_SEED_TEMPLATE
       - PCS_SOLUTION_TYPE
+      - PCS_LOCAL_APPINSIGHTS_INSTRUMENTATION_KEY=a86522dd-0bd2-4430-89fd-46692e37a7a4
     logging:
       driver: "json-file"
       options:
