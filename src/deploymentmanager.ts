@@ -355,7 +355,7 @@ export class DeploymentManager implements IDeploymentManager {
                               'servicePrincipalId',
                               'servicePrincipalSecret',
                               'deploymentId',
-                              'appInsightsInstrumentationKey']; // TODO: Follow up on this key
+                              'appInsightsInstrumentationKey'];
         answerParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && answers[paramName]) {
                 this._keyVaultParams[paramName].value = answers[paramName];

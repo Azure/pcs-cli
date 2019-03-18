@@ -43,13 +43,6 @@
                 "description": "The type of the solution"
             }
         },
-        "solutionWebAppPort": {
-            "type": "string",
-            "defaultValue": "80",
-            "metadata": {
-                "description": "The port of the solution web application (e.g. 80, 443)"
-            }
-        },
         "microServiceRuntime": {
             "type": "string",
             "defaultValue": "dotnet",
@@ -58,13 +51,6 @@
             ],
             "metadata": {
                 "description": "The microservice runtime of the solution"
-            }
-        },
-        "microServiceVersion": {
-            "type": "string",
-            "defaultValue": "testing",
-            "metadata": {
-                "description": "The container image version of the solution"
             }
         },
         "storageName": {
