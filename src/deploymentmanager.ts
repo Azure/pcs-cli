@@ -394,7 +394,7 @@ export class DeploymentManager implements IDeploymentManager {
         this.setKVParamValue('applicationSecret', genPassword());
         this.setKVParamValue('armEndpointUrl', this._environment.resourceManagerEndpointUrl);
         this.setKVParamValue('aadEndpointUrl', this._environment.activeDirectoryEndpointUrl);
-        this.setKVParamValue('corsWhiteList', "");
+        this.setKVParamValue('corsWhiteList', '');
 
         if (answers.deploymentSku === 'local') {
             this.setKVParamValue('authRequired', 'false');
