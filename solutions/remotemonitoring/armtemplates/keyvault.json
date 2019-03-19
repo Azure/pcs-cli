@@ -34,6 +34,12 @@
                 "description": "Issuer of Azure tokens usually https://sts.windows.net/TenantId"
             }
         },
+        "corsWhiteList": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
         "solutionName": {
             "type": "string",
             "metadata": {
@@ -277,6 +283,7 @@
             "aadAppSecret",
             "authRequired",
             "authIssuer",
+            "corsWhiteList",
             "userPrincipalObjectId",
             "iotHubConnectionString",
             "documentDBConnectionString",

@@ -20,6 +20,9 @@
     "authIssuer": {
       "value": "{Added through command line interface}"
     },
+    "corsWhiteList": {
+      "value": "{Added through command line interface}"
+    },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
     },
