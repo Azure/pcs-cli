@@ -50,7 +50,7 @@ services:
         max-file: "10"
 
   devicesimulation-svc:
-    image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
+    image: saixiaohui/device-simulation-dotnet:20190321.1
     restart: always
     depends_on:
       - storageadapter-svc
