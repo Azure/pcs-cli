@@ -107,7 +107,7 @@ services:
     networks:
       - default_net
     environment:
-     - PCS_KEYVAULT_NAME
+      - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
       - PCS_AAD_APPSECRET
 

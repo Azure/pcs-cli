@@ -94,6 +94,4 @@ main() {
   fi
 }
 
-sleep 240
-
 main $@ 
