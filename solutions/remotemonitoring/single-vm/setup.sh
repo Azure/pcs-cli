@@ -213,5 +213,5 @@ echo "# empty => CORS support disabled"                                         
 echo "export PCS_CORS_WHITELIST=\"\""                                                                    >> ${ENVVARS}
 
 # ========================================================================
-touch /app/start.log
-nohup /app/start.sh > /app/start.log 2>&1
+
+nohup /app/start.sh > /dev/null 2>&1&
