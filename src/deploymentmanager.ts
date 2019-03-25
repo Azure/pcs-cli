@@ -348,14 +348,14 @@ export class DeploymentManager implements IDeploymentManager {
     private setupKeyvaultParameters(answers: Answers, outputs: any) {
         this._keyVaultParams.solutionName.value = answers.solutionName;
 
-        const answerParams = ['aadTenantId', 
-                              'userPrincipalObjectId', 
-                              'solutionName',
+        const answerParams = ['appInsightsInstrumentationKey',
                               'aadTenantId',
+                              'deploymentId',
+                              'deploymentSku',
+                              'solutionName',
                               'servicePrincipalId',
                               'servicePrincipalSecret',
-                              'deploymentId',
-                              'appInsightsInstrumentationKey']; // TODO: Follow up on this key
+                              'userPrincipalObjectId'];
         answerParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && answers[paramName]) {
                 this._keyVaultParams[paramName].value = answers[paramName];
@@ -376,7 +376,8 @@ export class DeploymentManager implements IDeploymentManager {
                               'office365ConnectionUrl',
                               'logicAppEndpointUrl',
                               'azureMapsKey',
-                              'keyVaultName'];
+                              'keyVaultName',
+                              'vmName'];
         outputParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && outputs[paramName]) {
                 this._keyVaultParams[paramName].value = outputs[paramName].value;
@@ -407,6 +408,14 @@ export class DeploymentManager implements IDeploymentManager {
             this.setKVParamValue('authWebServiceUrl', 'http://auth:9001/v1');
             this.setKVParamValue('deviceSimulationWebServiceUrl', 'http://devicesimulation:9003/v1');
             this.setKVParamValue('diagnosticsWebServiceUrl', 'http://diagnostics:9006/v1');
+
+            // Params needed for vm deployment
+            this.setKVParamValue('microServiceRuntime', answers.runtime);
+            this.setKVParamValue('pcsDockerTag', answers.dockerTag);
+            this.setKVParamValue('pcsReleaseVersion', answers.version);
+            this.setKVParamValue('remoteEndpointCertificate', answers.certData.cert);
+            this.setKVParamValue('remoteEndpointCertificateKey', answers.certData.key);
+            this.setKVParamValue('vmFQDNSuffix', this._azureHelper.getVMFQDNSuffix());
         } else {
             this.setKVParamValue('authRequired', 'true');
             this.setKVParamValue('telemetryWebServiceUrl', 'http://telemetry-svc:9004/v1');
@@ -433,9 +442,6 @@ export class DeploymentManager implements IDeploymentManager {
         // Change the default suffix based on current environment
         if (this._template.parameters.storageEndpointSuffix) {
             this._parameters.storageEndpointSuffix = { value: this._azureHelper.getStorageEndpointSuffix() };
-        }
-        if (this._template.parameters.vmFQDNSuffix) {
-            this._parameters.vmFQDNSuffix = { value: this._azureHelper.getVMFQDNSuffix() };
         }
         if (this._template.parameters.aadInstance) {
             this._parameters.aadInstance = { value: this._environment.activeDirectoryEndpointUrl };
@@ -468,12 +474,6 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.remoteEndpointSSLThumbprint) {
             this._parameters.remoteEndpointSSLThumbprint.value = answers.certData.fingerPrint;
         }
-        if (this._parameters.remoteEndpointCertificate) {
-            this._parameters.remoteEndpointCertificate.value = answers.certData.cert;
-        }
-        if (this._parameters.remoteEndpointCertificateKey) {
-            this._parameters.remoteEndpointCertificateKey.value = answers.certData.key;
-        }
         if (this._parameters.aadTenantId) {
             this._parameters.aadTenantId.value = answers.aadTenantId;
         }
@@ -490,14 +490,8 @@ export class DeploymentManager implements IDeploymentManager {
         if (this._parameters.userPrincipalObjectId) {
             this._parameters.userPrincipalObjectId.value = answers.userPrincipalObjectId;
         }
-        if (this._parameters.microServiceRuntime) {
-            this._parameters.microServiceRuntime.value = answers.runtime;
-        }
         if (this._parameters.pcsReleaseVersion) {
             this._parameters.pcsReleaseVersion.value = answers.version;
-        }
-        if (this._parameters.pcsDockerTag) {
-            this._parameters.pcsDockerTag.value = answers.dockerTag;
         }
         if (this._parameters.deploymentId) {
             this._parameters.deploymentId.value = answers.deploymentId;

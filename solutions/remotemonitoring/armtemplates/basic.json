@@ -16,20 +16,6 @@
                 "description": "Url of the AAD login page (example: https://login.microsoftonline.com/)"
             }
         },
-        "aadClientId": {
-            "type": "string",
-            "defaultValue": "fakevalue",
-            "metadata": {
-                "description": "AAD application identifier (GUID)"
-            }
-        },
-        "aadClientSecret": {
-            "type": "securestring",
-            "defaultValue": "fakevalue",
-            "metadata": {
-                "description": "AAD application key used by TSI client authentication"
-            }
-        },
         "solutionName": {
             "type": "string",
             "metadata": {
@@ -48,23 +34,6 @@
             "defaultValue": "80",
             "metadata": {
                 "description": "The port of the solution web application (e.g. 80, 443)"
-            }
-        },
-        "microServiceRuntime": {
-            "type": "string",
-            "defaultValue": "dotnet",
-            "allowedValues": [
-                "dotnet", "java"
-            ],
-            "metadata": {
-                "description": "The microservice runtime of the solution"
-            }
-        },
-        "microServiceVersion": {
-            "type": "string",
-            "defaultValue": "testing",
-            "metadata": {
-                "description": "The container image version of the solution"
             }
         },
         "storageName": {
@@ -379,36 +348,6 @@
                 "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
             }
         },
-        "pcsDockerTag": {
-            "type": "string",
-            "defaultValue": "testing",
-            "metadata": {
-                "description": "The docker tag can be same as release version and is the latest released docker image"
-            }
-        },
-        "vmSetupScriptUri": {
-            "type": "string",
-            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup.sh')]",
-            "metadata": {
-                "description": "The URL of the script to setup a single VM deployment. setup.sh creates resources and set environment in a single VM"
-            }
-        },
-        "vmSetupWrapperScriptUri": {
-            "type": "string",
-            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
-            "metadata": {
-                "description": "The URL of the script to setup a single VM deployment. setup-wrapper.sh manages log file and invokes setup.sh"
-            }
-        },
-        "vmFQDNSuffix": {
-            "type": "string",
-            "defaultValue": "cloudapp.azure.com",
-            "allowedValues": [
-                "cloudapp.azure.com",
-                "cloudapp.chinacloudapi.cn",
-                "cloudapp.azure.de"
-            ]
-        },
         "azureWebsiteName": {
             "type": "string",
             "metadata": {
@@ -421,18 +360,6 @@
                 "description": "This is the thumbprint of the HTTPS SSL Certificate"
             },
             "defaultValue": "secretkey"
-        },
-        "remoteEndpointCertificate": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The certficate that needs to be updated to the VM"
-            }
-        },
-        "remoteEndpointCertificateKey": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The certficate key that needs to be updated to the VM"
-            }
         },
         "bingMapsLocation": {
             "type": "string",
@@ -612,7 +539,6 @@
         "storageApiVersion": "2017-06-01",
         "storageResourceId": "[resourceId('Microsoft.Storage/storageAccounts/',  parameters('storageName'))]",
         "computeApiVersion": "2017-03-30",
-        "vmFQDN": "[concat(parameters('vmName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]",
         "imagePublisher": "Canonical",
         "imageOffer": "UbuntuServer",
         "networkApiVersion": "2017-06-01",
@@ -1401,34 +1327,6 @@
             }
         },
         {
-            "comments": "One time script execution to prepare the VM environment",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'), '/', 'scriptextensions')]",
-            "apiVersion": "[variables('computeApiVersion')]",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Devices/Iothubs/', parameters('iotHubName'))]",
-                "[resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('documentDbName'))]",
-                "[resourceId('Microsoft.Maps/accounts', variables('azureMapsName'))]",
-                "[variables('eventHubNamespaceResourceId')]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "CustomScript",
-                "typeHandlerVersion": "2.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "fileUris": [
-                        "[parameters('vmSetupScriptUri')]",
-                        "[parameters('vmSetupWrapperScriptUri')]"
-                    ]
-                },
-                "protectedSettings": {
-                    "commandToExecute": "[concat('bash setup-wrapper.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --auth-type aad ', ' --auth-audience ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-appid ', concat('\"', parameters('aadClientId'), '\"'), ' --aad-tenant ', concat('\"', parameters('aadTenantId'), '\"'), ' --auth-issuer ', concat('\"', parameters('aadTenantId'), '\"'), ' --aad-instance ', concat('\"', parameters('aadInstance'), '\"'), ' --iothub-connstring ', concat('\"', 'HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubApiVersion')).primaryKey, '\"'), ' --docdb-connstring ', concat('\"', 'AccountEndpoint=', reference(variables('documentDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('documentDBResourceId'), variables('documentDBApiVersion')).primaryMasterKey, ';', '\"'), ' --iothub-name ', concat('\"', reference(variables('iotHubResourceId')).eventHubEndpoints.events.path, '\"'), ' --azureblob-account ', concat('\"', parameters('storageName'), '\"'), ' --azureblob-key ', concat('\"', listKeys(variables('storageResourceId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, '\"'), ' --azureblob-endpoint-suffix ',  concat('\"', parameters('storageEndpointSuffix'), '\"'), ' --azureblob-connstring ', concat('\"','DefaultEndpointsProtocol=https;AccountName=', parameters('storageName'), ';AccountKey=', listkeys(variables('storageResourceId'), variables('storageApiVersion')).keys[0].value, ';EndpointSuffix=', parameters('storageEndpointSuffix'), '\"'), '  --azuremaps-key ', concat('\"', listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey, '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --eventhub-connstring ', concat('\"Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --eventhub-name ', parameters('eventHubName'), ' --solution-type ', parameters('solutionType'), ' --solution-name ', parameters('solutionName'), ' --cloud-type ', parameters('cloudType'), ' --subscription-id ', subscription().subscriptionId, ' --iothub-name ', parameters('iotHubName'), ' --deployment-id ', parameters('deploymentId'), ' --aad-appsecret ', concat('\"', parameters('aadClientSecret'), '\"'), ' --telemetry-storage-type ', parameters('telemetryStorageType'), ' --tsi-fqdn ', if(equals(parameters('telemetryStorageType'), 'tsi'), reference(resourceId('Microsoft.TimeSeriesInsights/environments', parameters('tsiEnvironmentName'))).dataAccessFQDN, 'Undefined'), ' --office365-connection-url ', variables('office365ConnectionUrl'), ' --logicapp-endpoint-url ', concat('\"', listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', variables('logicAppName'), 'manual'), variables('logicAppApiVersion')).value, '\"'), ' --arm-endpoint-url ', concat('\"', parameters('azureResourceManagerEndpointUrl'), '\"'),' --aad-endpoint-url ', parameters('azureActiveDirectoryEndpointUrl'), ' --solution-website-url ', concat('https://', reference(concat('Microsoft.Web/sites/', parameters('azureWebsiteName'))).hostNames[0]), ' --action-eventhub-connstring ', concat('\"', 'Endpoint=sb://', parameters('eventHubNamespaceName'), '.', parameters('serviceBusEndpointSuffix'), '/;SharedAccessKeyName=', variables('actionsEventHubKeyName'), ';SharedAccessKey=', listkeys(variables('actionsEventHubKeyResourceId'), variables('eventHubApiVersion')).primaryKey, '\"'), ' --action-eventhub-name ', parameters('actionsEventHubName'), ' --app-insights-ikey ', concat('\"', '\"'), ' --keyvault-name ', variables('keyVaultName') )]"
-                }
-            }
-        },
-        {
             "comments": "Azure Logic Apps",
             "type": "Microsoft.Logic/workflows",
             "name": "[variables('logicAppName')]",
@@ -1606,10 +1504,6 @@
             "type": "string",
             "value": "[listkeys(variables('azureMapsName'), variables('azureMapsVersion')).primaryKey]"
         },
-        "vmFQDN": {
-            "type": "string",
-            "value": "[reference(variables('publicIPName')).dnsSettings.fqdn]"
-        },
         "adminUsername": {
             "type": "string",
             "value": "[parameters('adminUsername')]"
@@ -1630,10 +1524,6 @@
             "type": "string",
             "value": "[parameters('streamingJobsName')]"
         },
-        "aadClientSecret": {
-            "type": "string",
-            "value": "[parameters('aadClientSecret')]"
-        },
         "telemetryStorageType": {
             "type": "string",
             "value": "[parameters('telemetryStorageType')]"
@@ -1653,6 +1543,10 @@
         "keyVaultName": {
             "type": "string",
             "value": "[variables('keyVaultName')]"
+        },
+        "vmName": {
+            "type": "string",
+            "value": "[parameters('vmName')]"
         }
     }
 }
