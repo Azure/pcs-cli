@@ -279,20 +279,6 @@
                 "description": "Type of deployment i.e. local / basic / standard"
             }
         },
-        "aadClientId": {
-            "type": "string",
-            "defaultValue": "fakevalue",
-            "metadata": {
-                "description": "AAD application identifier (GUID)"
-            }
-        },
-        "aadClientSecret": {
-            "type": "securestring",
-            "defaultValue": "fakevalue",
-            "metadata": {
-                "description": "AAD application key used by TSI client authentication"
-            }
-        },
         "microServiceRuntime": {
             "type": "string",
             "defaultValue": "dotnet",
