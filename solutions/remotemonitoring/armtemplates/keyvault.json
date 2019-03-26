@@ -25,7 +25,7 @@
             "type": "string",
             "defaultValue": "true",
             "metadata": {
-                "description": "Whether or not the microservices expect "
+                "description": "Whether or not authentication should be performed"
             }
         },
         "authIssuer": {
@@ -69,129 +69,129 @@
         "documentDBConnectionString": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Cosmos DB connection string"
             }
         },
         "storageAccountName": {
             "type": "string",
             "metadata": {
-                "description": "Storage account name"
+                "description": "Azure Blob Storage account name"
             }
         },
         "storageAccountKey": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Azure Blob Storage Key"
             }
         },
         "storageEndpointSuffix": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Azure Blob Storage endpoint suffix"
             }
         },
         "storageConnectionString": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Azure Blob Storage connection string"
             }
         },
         "messagesEventHubConnectionString": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Connection String for messages eventhub"
             }
         },
         "messagesEventHubName": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Name of messages eventhub"
             }
         },
         "actionsEventHubConnectionString": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Connection String for actions eventhub"
             }
         },
         "actionsEventHubName": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Name of actions eventhub"
             }
         },
         "azureMapsKey": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Azure Maps key"
             }
         },
         "telemetryStorageType": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Storage type for telemetry i.e. tsi or cosmosdb"
             }
         },
         "tsiDataAccessFQDN": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "FQDN for Time Series Insights resource"
             }
         },
         "servicePrincipalId": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Service principal Id of the AAD application that will have access to the environment. Available from the Get-AzureRMADServicePrincipal cmdlets"
             }
         },
         "servicePrincipalSecret": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "AAD application secret key used by TSI client authentication"
             }
         },
         "seedTemplate": {
             "type": "string",
             "defaultValue": "default",
             "metadata": {
-                "description": ""
+                "description": "Type of template to use for seeding devices through simulation."
             }
         },
         "cloudType": {
             "type": "string",
             "defaultValue": "Global",
             "metadata": {
-                "description": ""
+                "description": "Azure cloud environment"
             }
         },
         "subscriptionId": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "The subscriptionId for this deployment"
             }
         },
         "solutionType": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Identifier to distinguish type of deployment i.e. remote-monitoring vs devicesimulation"
             }
         },
         "solutionWebsiteUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "URL where the solution can be viewed"
             }
         },
         "deploymentId": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "The unique deploymentId of this deployment"
             }
         },
         "iotHubName": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Name of the provisioned Azure IoT Hub"
             }
         },
         "applicationSecret": {
@@ -204,73 +204,73 @@
         "office365ConnectionUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Office 365 connector connection URL"
             }
         },
         "logicAppEndpointUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Logic app resource access endpoint URL"
             }
         },
         "armEndpointUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "ARM Management endpoing url i.e. https://management.azure.com/"
             }
         },
         "aadEndpointUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Url of the AAD login page (example: https://login.microsoftonline.com/)"
             }
         },
         "appInsightsInstrumentationKey": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "AppInsights Instrumentation Key for the diagnostics service"
             }
         },
         "telemetryWebServiceUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Web service url for telemetry microservice"
             }
         },
         "configWebServiceUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Web service url for config microservice"
             }
         },
         "iothubmanagerWebServiceUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Web service url for iothub manager microservice"
             }
         },
         "storageAdapterWebServiceUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Web service url for storage adapter microservice"
             }
         },
         "authWebServiceUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Web service url for auth microservice"
             }
         },
         "deviceSimulationWebServiceUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Web service url for device simulation microservice"
             }
         },
         "diagnosticsWebServiceUrl": {
             "type": "string",
             "metadata": {
-                "description": ""
+                "description": "Web service url for diagnostics microservice"
             }
         },
         "deploymentSku": {

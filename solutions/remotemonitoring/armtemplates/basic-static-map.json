@@ -31,7 +31,6 @@
         },
         "storageName": {
             "type": "string",
-            "defaultValue": "[concat('storage', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
             "metadata": {
                 "description": "The name of the storageAccount"
             }
