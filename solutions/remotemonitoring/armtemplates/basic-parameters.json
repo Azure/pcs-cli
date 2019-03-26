@@ -28,8 +28,5 @@
     },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
-    },
-    "applicationInsightsInstrumentationKey": {
-      "value": "{Added through command line interface}"      
     }
 }

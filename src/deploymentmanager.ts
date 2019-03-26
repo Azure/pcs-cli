@@ -396,6 +396,7 @@ export class DeploymentManager implements IDeploymentManager {
         this.setKVParamValue('armEndpointUrl', this._environment.resourceManagerEndpointUrl);
         this.setKVParamValue('aadEndpointUrl', this._environment.activeDirectoryEndpointUrl);
         this.setKVParamValue('corsWhiteList', '');
+        this.setKVParamValue('microServiceRuntime', answers.runtime);
 
         if (answers.deploymentSku === 'local') {
             this.setKVParamValue('authRequired', 'false');
@@ -410,7 +411,6 @@ export class DeploymentManager implements IDeploymentManager {
             this.setKVParamValue('diagnosticsWebServiceUrl', 'http://diagnostics:9006/v1');
 
             // Params needed for vm deployment
-            this.setKVParamValue('microServiceRuntime', answers.runtime);
             this.setKVParamValue('pcsDockerTag', answers.dockerTag);
             this.setKVParamValue('pcsReleaseVersion', answers.version);
             this.setKVParamValue('remoteEndpointCertificate', answers.certData.cert);
