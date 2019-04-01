@@ -107,7 +107,7 @@ services:
         max-file: "10"
 
   diagnostics-svc:
-    image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.0
+    image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.1
     restart: always
     depends_on:
       - config-svc
