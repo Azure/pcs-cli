@@ -5,57 +5,11 @@ metadata:
   namespace: default
 data:
   # Please add values for labels that are in format "{...}" in this file. Other values should not be changed.
-
-  # Web UI Config
-  webui-config.js: "var DeploymentConfig = {
-      authEnabled: true,
-      authType: 'aad',
-      aad : {
-          tenant: '{TenantId}',
-          appId: '{ApplicationId}',
-          instance: '{AADLoginInstance}'
-      }
-  }"
-
   keyvault.name: "{Azure key vault name}"
 
-  # The connection string will be of format
-  # "HostName={hubname}.azure-devices.net;SharedAccessKeyName={policy type};SharedAccessKey={Access Key};"
-  # Policy Type can have following values: iothubowner, service, device, registryRead, registryReadWrite
-  # The key will be shown in CLI window as output when remote-cli command has finished running.
-  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName}
-  # and resource type "Iot Hub" then "Shared access policies" menu.
-  iothub.connstring: "{IoT Hub connection string}"
-
-  # The connection string Document DB will be of format "AccountEndpoint={URI};AccountKey={Key};"
-  # The key will be shown in CLI window as output when remote-cli command has finished running.
-  # Alternatively it can be accessed from http://portal.azure.com under {myResourceGroupName}
-  # and resource type "Azure Cosmos DB account" then "Keys" menu.
-  docdb.connstring: "{DocumentDB connection string}"
-
-  azureblob.connstring: "{Azure Blob connection string}"
-
-  # Storage Adapter
-  storageadapter.webservice.url: "http://storage-adapter-svc:9022/v1"
-
-  # Device Simulation
-  devicesimulation.template: "remote-monitoring-simulations-template"
-
   # Auth
-  security.auth.tenant: "{AAD tenant Id}"
-  security.auth.issuer: "{OAuth2 Issuer, e.g. STS URL with Tenant ID}"
   security.auth.audience: "{OAuth2 Audience, e.g. Application ID}"
   security.auth.serviceprincipal.secret: "{AAD application service principal secret}"
-  security.auth.required: "true"
-  security.cors.whitelist: ""
-  security.application.secret: "{Application secret}"
-
-  # Diagnostics
-  diagnostics.webservice.url: "http://diagnostics-svc:9006/v1"
-  diagnostics.subscription.id: "{Subscription id}"
-  diagnostics.iothub.name: "{Iot Hub name}"
-  diagnostics.solution.type: "{Solution type}"
-  diagnostics.solution.name: "{Solution name}"
 
   # Nginx Template
   nginx.tmpl: |

@@ -1,9 +1,6 @@
 #!/bin/bash -ex
 
 APP_PATH="/app"
-WEBUICONFIG="${APP_PATH}/webui-config.js"
-WEBUICONFIG_SAFE="${APP_PATH}/webui-config.js.safe"
-WEBUICONFIG_UNSAFE="${APP_PATH}/webui-config.js.unsafe"
 ENVVARS="${APP_PATH}/env-vars"
 DOCKERCOMPOSE="${APP_PATH}/docker-compose.yml"
 CERTS="${APP_PATH}/certs"
@@ -15,7 +12,6 @@ PKEY="${CERTS}/tls.key"
 export HOST_NAME="localhost"
 export PCS_LOG_LEVEL="Info"
 export APP_RUNTIME="dotnet"
-export PCS_WEBUI_AUTH_TYPE="aad"
 export PCS_APPLICATION_SECRET=$(cat /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9-,./;:[]\(\)_=^!~' | fold -w 64 | head -n 1)
 
 while [ "$#" -gt 0 ]; do
@@ -23,20 +19,12 @@ while [ "$#" -gt 0 ]; do
         --hostname)                     HOST_NAME="$2" ;;
         --log-level)                    PCS_LOG_LEVEL="$2" ;;
         --runtime)                      APP_RUNTIME="$2" ;;
-        --iothub-connstring)            PCS_IOTHUB_CONNSTRING="$2" ;;
-        --docdb-connstring)             PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING="$2" ;;
         --ssl-certificate)              PCS_CERTIFICATE="$2" ;;
         --ssl-certificate-key)          PCS_CERTIFICATE_KEY="$2" ;;
-        --auth-audience)                PCS_AUTH_AUDIENCE="$2" ;;
-        --auth-issuer)                  PCS_AUTH_ISSUER="$2" ;;
-        --auth-type)                    PCS_WEBUI_AUTH_TYPE="$2" ;;
-        --aad-appid)                    PCS_WEBUI_AUTH_AAD_APPID="$2" ;;
-        --aad-tenant)                   PCS_WEBUI_AUTH_AAD_TENANT="$2" ;;
-        --aad-instance)                 PCS_WEBUI_AUTH_AAD_INSTANCE="$2" ;;
-        --aad-appsecret)                PCS_AAD_APPSECRET="$2" ;;
         --release-version)              PCS_RELEASE_VERSION="$2" ;;
         --docker-tag)                   PCS_DOCKER_TAG="$2" ;;
-        --subscription-id)              PCS_SUBSCRIPTION_ID="$2" ;;
+        --aad-appid)                    PCS_AAD_APPID="$2" ;;
+        --aad-appsecret)                PCS_AAD_APPSECRET="$2" ;;
         --keyvault-name)                PCS_KEYVAULT_NAME="$2" ;;
     esac
     shift
@@ -58,9 +46,6 @@ validate_parameters
 # TODO: move files to Remote Monitoring repositories
 REPOSITORY="https://raw.githubusercontent.com/Azure/pcs-cli/${PCS_RELEASE_VERSION}/solutions/remotemonitoring/single-vm"
 SCRIPTS_URL="${REPOSITORY}/scripts/"
-
-# TODO: remove temporary fix when projects have moved to use PCS_APPLICATION_SECRET
-export APPLICATION_SECRET=$PCS_APPLICATION_SECRET
 
 # ========================================================================
 
@@ -114,7 +99,7 @@ install_docker_ce_retry
 # ========================================================================
 
 # Configure Docker registry based on host name
-# ToDo: we may need to add similar parameter to AzureGermanCloud and AzureUSGovernment
+# ToDo: Verify if needed still
 config_for_azure_china() {
     set +e
     local host_name=$1
@@ -195,6 +180,7 @@ echo "${PCS_CERTIFICATE_KEY}"  > ${PKEY}
 wget $SCRIPTS_URL/logs.sh     -O /app/logs.sh     && chmod 750 /app/logs.sh
 wget $SCRIPTS_URL/simulate.sh -O /app/simulate.sh && chmod 750 /app/simulate.sh
 wget $SCRIPTS_URL/start.sh    -O /app/start.sh    && chmod 750 /app/start.sh
+wget $SCRIPTS_URL/auth.sh     -O /app/auth.sh     && chmod 750 /app/auth.sh
 wget $SCRIPTS_URL/stats.sh    -O /app/stats.sh    && chmod 750 /app/stats.sh
 wget $SCRIPTS_URL/status.sh   -O /app/status.sh   && chmod 750 /app/status.sh
 wget $SCRIPTS_URL/stop.sh     -O /app/stop.sh     && chmod 750 /app/stop.sh
@@ -205,48 +191,13 @@ wget $SCRIPTS_URL/update.sh   -O /app/update.sh   && chmod 750 /app/update.sh
 
 # ========================================================================
 
-# Web App configuration
-touch ${WEBUICONFIG} && chmod 444 ${WEBUICONFIG}
-touch ${WEBUICONFIG_SAFE} && chmod 444 ${WEBUICONFIG_SAFE}
-touch ${WEBUICONFIG_UNSAFE} && chmod 444 ${WEBUICONFIG_UNSAFE}
-
-echo "var DeploymentConfig = {"                       >> ${WEBUICONFIG_SAFE}
-echo "  authEnabled: true,"                           >> ${WEBUICONFIG_SAFE}
-echo "  authType: '${PCS_WEBUI_AUTH_TYPE}',"          >> ${WEBUICONFIG_SAFE}
-echo "  aad : {"                                      >> ${WEBUICONFIG_SAFE}
-echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_SAFE}
-echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_SAFE}
-echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_SAFE}
-echo "  }"                                            >> ${WEBUICONFIG_SAFE}
-echo "}"                                              >> ${WEBUICONFIG_SAFE}
-
-echo "var DeploymentConfig = {"                       >> ${WEBUICONFIG_UNSAFE}
-echo "  authEnabled: false,"                          >> ${WEBUICONFIG_UNSAFE}
-echo "  authType: '${PCS_WEBUI_AUTH_TYPE}',"          >> ${WEBUICONFIG_UNSAFE}
-echo "  aad : {"                                      >> ${WEBUICONFIG_UNSAFE}
-echo "    tenant: '${PCS_WEBUI_AUTH_AAD_TENANT}',"    >> ${WEBUICONFIG_UNSAFE}
-echo "    appId: '${PCS_WEBUI_AUTH_AAD_APPID}',"      >> ${WEBUICONFIG_UNSAFE}
-echo "    instance: '${PCS_WEBUI_AUTH_AAD_INSTANCE}'" >> ${WEBUICONFIG_UNSAFE}
-echo "  }"                                            >> ${WEBUICONFIG_UNSAFE}
-echo "}"                                              >> ${WEBUICONFIG_UNSAFE}
-
-cp -p ${WEBUICONFIG_SAFE} ${WEBUICONFIG}
-
-# ========================================================================
-
 # Environment variables
 touch ${ENVVARS} && chmod 440 ${ENVVARS}
 
 echo "export HOST_NAME=\"${HOST_NAME}\""                                                                 >> ${ENVVARS}
 echo "export APP_RUNTIME=\"${APP_RUNTIME}\""                                                             >> ${ENVVARS}
-echo "export PCS_AUTH_ISSUER=\"${PCS_AUTH_ISSUER}\""                                                     >> ${ENVVARS}
-echo "export PCS_AUTH_AUDIENCE=\"${PCS_AUTH_AUDIENCE}\""                                                 >> ${ENVVARS}
-echo "export PCS_IOTHUB_CONNSTRING=\"${PCS_IOTHUB_CONNSTRING}\""                                         >> ${ENVVARS}
-echo "export PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING=\"${PCS_STORAGEADAPTER_DOCUMENTDB_CONNSTRING}\""   >> ${ENVVARS}
-echo "export PCS_SUBSCRIPTION_ID=\"${PCS_SUBSCRIPTION_ID}\""                                             >> ${ENVVARS}
-echo "export PCS_IOTHUB_NAME=\"${PCS_IOTHUB_NAME}\""                                                     >> ${ENVVARS}
-echo "export PCS_AAD_TENANT=\"${PCS_WEBUI_AUTH_AAD_TENANT}\""                                            >> ${ENVVARS}
-echo "export PCS_AAD_APPID=\"${PCS_WEBUI_AUTH_AAD_APPID}\""                                              >> ${ENVVARS}
+echo "export PCS_KEYVAULT_NAME=\"${PCS_KEYVAULT_NAME}\""                                                 >> ${ENVVARS}
+echo "export PCS_AAD_APPID=\"${PCS_AAD_APPID}\""                                                         >> ${ENVVARS}
 echo "export PCS_AAD_APPSECRET=\"${PCS_AAD_APPSECRET}\""                                                 >> ${ENVVARS}
 echo ""                                                                                                  >> ${ENVVARS}
 echo "##########################################################################################"        >> ${ENVVARS}

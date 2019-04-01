@@ -20,6 +20,9 @@
     "authIssuer": {
       "value": "{Added through command line interface}"
     },
+    "corsWhiteList": {
+      "value": "{Added through command line interface}"
+    },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
     },
@@ -69,7 +72,7 @@
       "value": "{Added through command line interface}"
     },
     "seedTemplate": {
-      "value": "{Added through command line interface}"
+      "value": "default"
     },
     "cloudType": {
       "value": "Global"
@@ -127,5 +130,26 @@
     },
     "diagnosticsWebServiceUrl": {
       "value": "http://localhost:9006/v1"
+    },
+    "deploymentSku": {
+      "value": "{Added through command line interface}"
+    },
+    "microServiceRuntime": {
+      "value": "{Added through command line interface}"
+    },
+    "pcsDockerTag": {
+      "value": "{Added through command line interface}"
+    },
+    "pcsReleaseVersion": {
+      "value": "{Added through command line interface}"
+    },
+    "remoteEndpointCertificate": {
+      "value": "{Added through command line interface}"
+    },
+    "remoteEndpointCertificateKey": {
+      "value": "{Added through command line interface}"
+    },
+    "vmName": {
+      "value": "{Added through command line interface}"
     }
 }
