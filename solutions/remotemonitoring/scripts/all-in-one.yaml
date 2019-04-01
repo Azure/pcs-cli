@@ -198,7 +198,7 @@ spec:
     spec:
       containers:
       - name: device-simulation-pod
-        image: azureiotpcs/device-simulation-dotnet:DS-1.0.4
+        image: azureiotpcs/device-simulation-dotnet:DS-1.0.5
         ports:
         - containerPort: 9003
         env:
@@ -597,7 +597,7 @@ spec:
     spec:
       containers:
       - name: diagnostics-pod
-        image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.1
+        image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.2
         ports:
         - containerPort: 9006
         env:

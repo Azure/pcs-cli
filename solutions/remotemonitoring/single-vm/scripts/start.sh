@@ -11,7 +11,9 @@ APP_PATH="/app"
 
 if [[ "$1" == "--unsafe" ]]; then
   echo -e "${COL_ERR}WARNING! Starting services in UNSAFE mode!${COL_NO}"
-  # Run script to set unsafe params in keyvault
+  . /app/auth.sh "disable"
+else
+  . /app/auth.sh "enable"
 fi
 
 list=$(docker ps -aq)

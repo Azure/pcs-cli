@@ -18,6 +18,7 @@ cd /app
 wget $SCRIPTS_URL/logs.sh     -O /app/logs.sh     && chmod 750 /app/logs.sh
 wget $SCRIPTS_URL/simulate.sh -O /app/simulate.sh && chmod 750 /app/simulate.sh
 wget $SCRIPTS_URL/start.sh    -O /app/start.sh    && chmod 750 /app/start.sh
+wget $SCRIPTS_URL/auth.sh     -O /app/auth.sh     && chmod 750 /app/auth.sh
 wget $SCRIPTS_URL/stats.sh    -O /app/stats.sh    && chmod 750 /app/stats.sh
 wget $SCRIPTS_URL/status.sh   -O /app/status.sh   && chmod 750 /app/status.sh
 wget $SCRIPTS_URL/stop.sh     -O /app/stop.sh     && chmod 750 /app/stop.sh

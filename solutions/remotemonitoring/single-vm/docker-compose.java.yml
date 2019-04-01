@@ -58,7 +58,7 @@ services:
       - PCS_AAD_APPSECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:DS-1.0.4
+    image: azureiotpcs/device-simulation-dotnet:DS-1.0.5
     networks:
       - default_net
     restart: always
@@ -107,7 +107,7 @@ services:
     networks:
       - default_net
     environment:
-     - PCS_KEYVAULT_NAME
+      - PCS_KEYVAULT_NAME
       - PCS_AAD_APPID
       - PCS_AAD_APPSECRET
 
@@ -124,7 +124,7 @@ services:
       - PCS_AAD_APPSECRET
 
   diagnostics:
-    image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.1
+    image: azureiotpcs/pcs-diagnostics-dotnet:Diagnostics-2.0.2
     networks:
       - default_net
     depends_on:

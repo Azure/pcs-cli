@@ -34,6 +34,12 @@
                 "description": "Issuer of Azure tokens usually https://sts.windows.net/TenantId"
             }
         },
+        "corsWhiteList": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
         "solutionName": {
             "type": "string",
             "metadata": {
@@ -266,6 +272,77 @@
             "metadata": {
                 "description": "Web service url for diagnostics microservice"
             }
+        },
+        "deploymentSku": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of deployment i.e. local / basic / standard"
+            }
+        },
+        "microServiceRuntime": {
+            "type": "string",
+            "defaultValue": "dotnet",
+            "allowedValues": [
+                "dotnet", "java"
+            ],
+            "metadata": {
+                "description": "The microservice runtime of the solution"
+            }
+        },
+        "remoteEndpointCertificate": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The certficate that needs to be updated to the VM"
+            }
+        },
+        "remoteEndpointCertificateKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The certficate key that needs to be updated to the VM"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Linux Virtual Machine outputted from basic.json"
+            }
+        },
+        "pcsDockerTag": {
+            "type": "string",
+            "defaultValue": "testing",
+            "metadata": {
+                "description": "The docker tag can be same as release version and is the latest released docker image"
+            }
+        },
+        "pcsReleaseVersion": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
+            }
+        },
+        "vmFQDNSuffix": {
+            "type": "string",
+            "defaultValue": "cloudapp.azure.com",
+            "allowedValues": [
+                "cloudapp.azure.com",
+                "cloudapp.chinacloudapi.cn",
+                "cloudapp.azure.de"
+            ]
+        },
+        "vmSetupScriptUri": {
+            "type": "string",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup.sh')]",
+            "metadata": {
+                "description": "The URL of the script to setup a single VM deployment. setup.sh creates resources and set environment in a single VM"
+            }
+        },
+        "vmSetupWrapperScriptUri": {
+            "type": "string",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
+            "metadata": {
+                "description": "The URL of the script to setup a single VM deployment. setup-wrapper.sh manages log file and invokes setup.sh"
+            }
         }
     },
     "variables": {
@@ -277,6 +354,7 @@
             "aadAppSecret",
             "authRequired",
             "authIssuer",
+            "corsWhiteList",
             "userPrincipalObjectId",
             "iotHubConnectionString",
             "documentDBConnectionString",
@@ -330,7 +408,9 @@
                     "secrets": ["all"]
                 }
             }
-        ]
+        ],
+        "computeApiVersion": "2017-03-30",
+        "vmFQDN": "[concat(parameters('vmName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
     },
     "resources": [
         {
@@ -380,7 +460,33 @@
             "dependsOn": [
               "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
             ]
-          }
+          },
+          {
+            "comments": "One time script execution to prepare the VM environment",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'), '/', 'scriptextensions')]",
+            "condition": "[equals(parameters('deploymentSku'),'basic')]",
+            "apiVersion": "[variables('computeApiVersion')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[parameters('vmSetupScriptUri')]",
+                        "[parameters('vmSetupWrapperScriptUri')]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('bash setup-wrapper.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --aad-appid ', concat('\"', parameters('aadAppId'), '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --aad-appsecret ', concat('\"', parameters('aadAppSecret'), '\"'), ' --keyvault-name ', parameters('keyVaultName') )]"
+                }
+            }
+        }
     ],
     "outputs": {
         "keyVaultName": {
