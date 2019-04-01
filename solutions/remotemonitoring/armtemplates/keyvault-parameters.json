@@ -1,4 +1,7 @@
 {
+    "keyVaultName": {
+      "value": "{Added through command line interface}"
+    },
     "solutionName": {
       "value": "{Added through command line interface}"
     },
@@ -17,13 +20,13 @@
     "authIssuer": {
       "value": "{Added through command line interface}"
     },
+    "corsWhiteList": {
+      "value": "{Added through command line interface}"
+    },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
     },
     "iotHubConnectionString": {
-      "value": "{Added through command line interface}"
-    },
-    "appId": {
       "value": "{Added through command line interface}"
     },
     "documentDBConnectionString": {
@@ -62,14 +65,17 @@
     "tsiDataAccessFQDN": {
       "value": "{Added through command line interface}"
     },
+    "servicePrincipalId": {
+      "value": "{Added through command line interface}"
+    },
     "servicePrincipalSecret": {
       "value": "{Added through command line interface}"
     },
     "seedTemplate": {
-      "value": "{Added through command line interface}"
+      "value": "default"
     },
     "cloudType": {
-      "value": "{Added through command line interface}"
+      "value": "Global"
     },
     "subscriptionId": {
       "value": "{Added through command line interface}"
@@ -86,9 +92,6 @@
     "iotHubName": {
       "value": "{Added through command line interface}"
     },
-    "diagnosticsEndpointUrl": {
-      "value": "{Added through command line interface}"
-    },
     "applicationSecret": {
       "value": "{Added through command line interface}"
     },
@@ -103,6 +106,9 @@
     },
     "aadEndpointUrl": {
       "value": "{Added through command line interface}"
+    },
+    "appInsightsInstrumentationKey": {
+      "value": ""
     },
     "telemetryWebServiceUrl": {
       "value": "http://localhost:9004/v1"
@@ -121,5 +127,29 @@
     },
     "deviceSimulationWebServiceUrl": {
       "value": "http://localhost:9003/v1"
+    },
+    "diagnosticsWebServiceUrl": {
+      "value": "http://localhost:9006/v1"
+    },
+    "deploymentSku": {
+      "value": "{Added through command line interface}"
+    },
+    "microServiceRuntime": {
+      "value": "{Added through command line interface}"
+    },
+    "pcsDockerTag": {
+      "value": "{Added through command line interface}"
+    },
+    "pcsReleaseVersion": {
+      "value": "{Added through command line interface}"
+    },
+    "remoteEndpointCertificate": {
+      "value": "{Added through command line interface}"
+    },
+    "remoteEndpointCertificateKey": {
+      "value": "{Added through command line interface}"
+    },
+    "vmName": {
+      "value": "{Added through command line interface}"
     }
 }
