@@ -1,0 +1,497 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "aadTenantId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "The AAD tenant identifier (GUID)"
+            }
+        },
+        "aadAppId": {
+            "type": "string",
+            "metadata": {
+                "description": "AAD application identifier (GUID)"
+            }
+        },
+        "aadAppSecret": {
+            "type": "string",
+            "metadata": {
+                "description": "AAD application secret for authentication to services"
+            }
+        },
+        "authRequired": {
+            "type": "string",
+            "defaultValue": "true",
+            "metadata": {
+                "description": "Whether or not authentication should be performed"
+            }
+        },
+        "authIssuer": {
+            "type": "string",
+            "metadata": {
+                "description": "Issuer of Azure tokens usually https://sts.windows.net/TenantId"
+            }
+        },
+        "corsWhiteList": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "solutionName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the solution"
+            }
+        },
+        "userPrincipalObjectId": {
+            "type": "string",
+            "defaultValue": "fakevalue",
+            "metadata": {
+                "description": "Object Id of the AAD user that will have access to the environment. Available from the Get-AzureRMADUser cmdlets"
+            }
+        },
+        "keyVaultName": {
+            "type": "string",
+            "defaultValue": "[concat('keyvault-', take(uniqueString(subscription().subscriptionId, resourceGroup().id, parameters('solutionName')), 5))]",
+            "metadata": {
+                "description": "Name of the Key Vault"
+            }
+        },
+        "iotHubConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": "Connection string for the IoTHub"
+            }
+        },
+        "documentDBConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": "Cosmos DB connection string"
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure Blob Storage account name"
+            }
+        },
+        "storageAccountKey": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure Blob Storage Key"
+            }
+        },
+        "storageEndpointSuffix": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure Blob Storage endpoint suffix"
+            }
+        },
+        "storageConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure Blob Storage connection string"
+            }
+        },
+        "messagesEventHubConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": "Connection String for messages eventhub"
+            }
+        },
+        "messagesEventHubName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of messages eventhub"
+            }
+        },
+        "actionsEventHubConnectionString": {
+            "type": "string",
+            "metadata": {
+                "description": "Connection String for actions eventhub"
+            }
+        },
+        "actionsEventHubName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of actions eventhub"
+            }
+        },
+        "azureMapsKey": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure Maps key"
+            }
+        },
+        "telemetryStorageType": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage type for telemetry i.e. tsi or cosmosdb"
+            }
+        },
+        "tsiDataAccessFQDN": {
+            "type": "string",
+            "metadata": {
+                "description": "FQDN for Time Series Insights resource"
+            }
+        },
+        "servicePrincipalId": {
+            "type": "string",
+            "metadata": {
+                "description": "Service principal Id of the AAD application that will have access to the environment. Available from the Get-AzureRMADServicePrincipal cmdlets"
+            }
+        },
+        "servicePrincipalSecret": {
+            "type": "string",
+            "metadata": {
+                "description": "AAD application secret key used by TSI client authentication"
+            }
+        },
+        "seedTemplate": {
+            "type": "string",
+            "defaultValue": "default",
+            "metadata": {
+                "description": "Type of template to use for seeding devices through simulation."
+            }
+        },
+        "cloudType": {
+            "type": "string",
+            "defaultValue": "Global",
+            "metadata": {
+                "description": "Azure cloud environment"
+            }
+        },
+        "subscriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": "The subscriptionId for this deployment"
+            }
+        },
+        "solutionType": {
+            "type": "string",
+            "metadata": {
+                "description": "Identifier to distinguish type of deployment i.e. remote-monitoring vs devicesimulation"
+            }
+        },
+        "solutionWebsiteUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "URL where the solution can be viewed"
+            }
+        },
+        "deploymentId": {
+            "type": "string",
+            "metadata": {
+                "description": "The unique deploymentId of this deployment"
+            }
+        },
+        "iotHubName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the provisioned Azure IoT Hub"
+            }
+        },
+        "applicationSecret": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "office365ConnectionUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Office 365 connector connection URL"
+            }
+        },
+        "logicAppEndpointUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Logic app resource access endpoint URL"
+            }
+        },
+        "armEndpointUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "ARM Management endpoing url i.e. https://management.azure.com/"
+            }
+        },
+        "aadEndpointUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Url of the AAD login page (example: https://login.microsoftonline.com/)"
+            }
+        },
+        "appInsightsInstrumentationKey": {
+            "type": "string",
+            "metadata": {
+                "description": "AppInsights Instrumentation Key for the diagnostics service"
+            }
+        },
+        "telemetryWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Web service url for telemetry microservice"
+            }
+        },
+        "configWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Web service url for config microservice"
+            }
+        },
+        "iothubmanagerWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Web service url for iothub manager microservice"
+            }
+        },
+        "storageAdapterWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Web service url for storage adapter microservice"
+            }
+        },
+        "authWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Web service url for auth microservice"
+            }
+        },
+        "deviceSimulationWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Web service url for device simulation microservice"
+            }
+        },
+        "diagnosticsWebServiceUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Web service url for diagnostics microservice"
+            }
+        },
+        "deploymentSku": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of deployment i.e. local / basic / standard"
+            }
+        },
+        "microServiceRuntime": {
+            "type": "string",
+            "defaultValue": "dotnet",
+            "allowedValues": [
+                "dotnet", "java"
+            ],
+            "metadata": {
+                "description": "The microservice runtime of the solution"
+            }
+        },
+        "remoteEndpointCertificate": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The certficate that needs to be updated to the VM"
+            }
+        },
+        "remoteEndpointCertificateKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The certficate key that needs to be updated to the VM"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Linux Virtual Machine outputted from basic.json"
+            }
+        },
+        "pcsDockerTag": {
+            "type": "string",
+            "defaultValue": "testing",
+            "metadata": {
+                "description": "The docker tag can be same as release version and is the latest released docker image"
+            }
+        },
+        "pcsReleaseVersion": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
+            }
+        },
+        "vmFQDNSuffix": {
+            "type": "string",
+            "defaultValue": "cloudapp.azure.com",
+            "allowedValues": [
+                "cloudapp.azure.com",
+                "cloudapp.chinacloudapi.cn",
+                "cloudapp.azure.de"
+            ]
+        },
+        "vmSetupScriptUri": {
+            "type": "string",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup.sh')]",
+            "metadata": {
+                "description": "The URL of the script to setup a single VM deployment. setup.sh creates resources and set environment in a single VM"
+            }
+        },
+        "vmSetupWrapperScriptUri": {
+            "type": "string",
+            "defaultValue": "[concat('https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/remotemonitoring/single-vm/setup-wrapper.sh')]",
+            "metadata": {
+                "description": "The URL of the script to setup a single VM deployment. setup-wrapper.sh manages log file and invokes setup.sh"
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "keyVaultSecrets": [
+            "solutionName",
+            "aadTenantId",
+            "aadAppId",
+            "aadAppSecret",
+            "authRequired",
+            "authIssuer",
+            "corsWhiteList",
+            "userPrincipalObjectId",
+            "iotHubConnectionString",
+            "documentDBConnectionString",
+            "storageAccountName",
+            "storageAccountKey",
+            "storageEndpointSuffix",
+            "storageConnectionString",
+            "messagesEventHubConnectionString",
+            "messagesEventHubName",
+            "actionsEventHubConnectionString",
+            "actionsEventHubName",
+            "azureMapsKey",
+            "telemetryStorageType",
+            "tsiDataAccessFQDN",
+            "servicePrincipalSecret",
+            "seedTemplate",
+            "cloudType",
+            "subscriptionId",
+            "solutionType",
+            "solutionWebsiteUrl",
+            "deploymentId",
+            "iotHubName",
+            "applicationSecret",
+            "office365ConnectionUrl",
+            "logicAppEndpointUrl",
+            "armEndpointUrl",
+            "aadEndpointUrl",
+            "appInsightsInstrumentationKey",
+            "telemetryWebServiceUrl",
+            "configWebServiceUrl",
+            "iothubmanagerWebServiceUrl",
+            "storageAdapterWebServiceUrl",
+            "authWebServiceUrl",
+            "deviceSimulationWebServiceUrl",
+            "diagnosticsWebServiceUrl"
+        ],
+        "keyVaultAccessPolicies": [
+            {
+                "tenantId": "[parameters('aadTenantId')]",
+                "objectId": "[parameters('userPrincipalObjectId')]",
+                "permissions": {
+                    "keys": ["all"],
+                    "secrets": ["all"]
+                }
+            },
+            {
+                "tenantId": "[parameters('aadTenantId')]",
+                "objectId": "[parameters('servicePrincipalId')]",
+                "permissions": {
+                    "keys": ["all"],
+                    "secrets": ["all"]
+                }
+            }
+        ],
+        "computeApiVersion": "2017-03-30",
+        "vmFQDN": "[concat(parameters('vmName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[parameters('keyVaultName')]",
+            "apiVersion": "2015-06-01",
+            "location": "[variables('location')]",
+            "tags": {
+              "displayName": "KeyVault"
+            },
+            "properties": {
+              "enabledForDeployment": "true",
+              "enabledForTemplateDeployment": "true",
+              "enabledForVolumeEncryption": "false",
+              "tenantId": "[parameters('aadTenantId')]",
+              "accessPolicies": "[variables('keyVaultAccessPolicies')]",
+              "sku": {
+                "name": "Standard",
+                "family": "A"
+              }
+            }
+          },
+          {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/', variables('keyVaultSecrets')[copyIndex()])]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+              "type": "string", 
+              "value": "[parameters(variables('keyVaultSecrets')[copyIndex()])]"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+            ],
+            "copy": {
+              "name": "secretsCopy",
+              "count": "[length(variables('keyVaultSecrets'))]"
+            }
+          },
+          {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('keyVaultName'), '/keyvaultPrimaryConfig')]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+              "contentType": "boolean",
+              "value": "true"
+            },
+            "dependsOn": [
+              "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+            ]
+          },
+          {
+            "comments": "One time script execution to prepare the VM environment",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'), '/', 'scriptextensions')]",
+            "condition": "[equals(parameters('deploymentSku'),'basic')]",
+            "apiVersion": "[variables('computeApiVersion')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[parameters('vmSetupScriptUri')]",
+                        "[parameters('vmSetupWrapperScriptUri')]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('bash setup-wrapper.sh ', ' --hostname ', concat('\"', variables('vmFQDN'), '\"'), ' --runtime ', concat('\"', parameters('microServiceRuntime'), '\"'), ' --ssl-certificate ', concat('\"', parameters('remoteEndpointCertificate'), '\"'), ' --ssl-certificate-key ', concat('\"', parameters('remoteEndpointCertificateKey'), '\"'), ' --aad-appid ', concat('\"', parameters('aadAppId'), '\"'), ' --release-version ', concat('\"', parameters('pcsReleaseVersion'), '\"'), ' --docker-tag ', concat('\"', parameters('pcsDockerTag'), '\"'), ' --aad-appsecret ', concat('\"', parameters('aadAppSecret'), '\"'), ' --keyvault-name ', parameters('keyVaultName') )]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "keyVaultName": {
+            "type": "string",
+            "value": "[parameters('keyVaultName')]"
+        }
+    }
+}

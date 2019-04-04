@@ -14,31 +14,13 @@
     "remoteEndpointSSLThumbprint": {
       "value": "{Added through command line interface}"
     },
-    "remoteEndpointCertificate": {
-      "value": "{Added through command line interface}"
-    },
-    "remoteEndpointCertificateKey": {
-      "value": "{Added through command line interface}"
-    },
     "aadTenantId": {
-      "value": "{Added through command line interface}"
-    },
-    "aadClientId": {
       "value": "{Added through command line interface}"
     },
     "aadClientServicePrincipalId": {
       "value": "{Added through command line interface}"
     },
-    "aadClientSecret": {
-      "value": "{Added through command line interface}"
-    },
-    "microServiceRuntime": {
-      "value": "{Added through command line interface}"
-    },
     "pcsReleaseVersion": {
-      "value": "{Added through command line interface}"
-    },
-    "pcsDockerTag": {
       "value": "{Added through command line interface}"
     },
     "deploymentId": {
@@ -46,8 +28,5 @@
     },
     "userPrincipalObjectId": {
       "value": "{Added through command line interface}"
-    },
-    "applicationInsightsInstrumentationKey": {
-      "value": "{Added through command line interface}"      
     }
 }
