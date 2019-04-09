@@ -122,7 +122,7 @@ export class DeploymentManager implements IDeploymentManager {
         try {
             this.setupParameters(answers);
         } catch (ex) {
-            throw new Error('Could not find template or parameters file, Exception:');
+            throw new Error('Exception: Could not find template, parameters file or Kubernetes version.');
         }
 
         deployment.properties.parameters = this._parameters;
@@ -446,10 +446,13 @@ export class DeploymentManager implements IDeploymentManager {
                 .then((orchestratorList) => {
                         const defaultOrchestrator = orchestratorList.orchestrators
                             .find((orchestrator) => orchestrator.hasOwnProperty('default')) || { orchestratorVersion: '' };
-                        this._parameters.kubernetesVersion.value = defaultOrchestrator.orchestratorVersion;
+                        if(defaultOrchestrator.orchestratorVersion != ''){
+                            this._parameters.kubernetesVersion.value = defaultOrchestrator.orchestratorVersion;
+                        } else throw new Error('Failed to find latest kubernetes orchestrator version.');
                 })
-                .catch(() => {
-                    console.log('Failed to find latest kubernetes orchestrator version.');
+                .catch((error: Error | any) => {
+                    console.log(error);
+                    throw error;
                 });
         }
 
