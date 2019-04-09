@@ -446,9 +446,9 @@ export class DeploymentManager implements IDeploymentManager {
                 .then((orchestratorList) => {
                         const defaultOrchestrator = orchestratorList.orchestrators
                             .find((orchestrator) => orchestrator.hasOwnProperty('default')) || { orchestratorVersion: '' };
-                        if(defaultOrchestrator.orchestratorVersion != ''){
+                        if (defaultOrchestrator.orchestratorVersion !== '') {
                             this._parameters.kubernetesVersion.value = defaultOrchestrator.orchestratorVersion;
-                        } else throw new Error('Failed to find latest kubernetes orchestrator version.');
+                        } else { throw new Error('Failed to find latest kubernetes orchestrator version.'); }
                 })
                 .catch((error: Error | any) => {
                     console.log(error);
