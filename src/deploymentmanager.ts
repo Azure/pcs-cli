@@ -8,7 +8,7 @@ import * as momemt from 'moment';
 
 import { ResourceManagementClient, ResourceModels } from 'azure-arm-resource';
 import { AzureEnvironment, DeviceTokenCredentials, DeviceTokenCredentialsOptions, ApplicationTokenCredentials } from 'ms-rest-azure';
-import { ContainerServiceClient, ContainerServiceModels} from 'azure-arm-containerservice';
+import { ContainerServiceClient, ContainerServiceModels } from 'azure-arm-containerservice';
 import StreamAnalyticsManagementClient = require('azure-arm-streamanalytics');
 import { Answers, Question } from 'inquirer';
 import DeployUI from './deployui';
@@ -70,14 +70,14 @@ export class DeploymentManager implements IDeploymentManager {
     public getLocations(): Promise<string[] | undefined> {
         // Currently IotHub is not supported in all the regions so using it to get the available locations
         return this._client.providers.get('Microsoft.Devices')
-        .then((providers: ResourceModels.Provider) => {
-            if (providers.resourceTypes) {
-                const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
-                if (resourceType && resourceType.length) {
-                    return resourceType[0].locations;
+            .then((providers: ResourceModels.Provider) => {
+                if (providers.resourceTypes) {
+                    const resourceType = providers.resourceTypes.filter((x) => x.resourceType && x.resourceType.toLowerCase() === 'iothubs');
+                    if (resourceType && resourceType.length) {
+                        return resourceType[0].locations;
+                    }
                 }
-            }
-        });
+            });
     }
 
     public submit(answers: Answers): Promise<any> {
@@ -134,9 +134,9 @@ export class DeploymentManager implements IDeploymentManager {
                 // Assign owner role on subscription for standard deployment since AKS requires it
                 if (answers.deploymentSku === 'standard') {
                     return this._azureHelper.assignOwnerRoleOnSubscription(answers.servicePrincipalId)
-                    .then((assigned: boolean) => {
-                        return assigned;
-                    });
+                        .then((assigned: boolean) => {
+                            return assigned;
+                        });
                 }
 
                 return this._azureHelper.assignContributorRoleOnResourceGroup(answers.servicePrincipalId, answers.solutionName)
@@ -188,10 +188,10 @@ export class DeploymentManager implements IDeploymentManager {
                     };
 
                     return this._client.deployments.createOrUpdate(answers.solutionName as string, keyVaultDeploymentName, keyVaultDeployment)
-                            .then((keyVaultRes) => {
-                                // Append keyvault properties to output properties of original deployment
-                                return res;
-                            });
+                        .then((keyVaultRes) => {
+                            // Append keyvault properties to output properties of original deployment
+                            return res;
+                        });
                 }
 
                 return res;
@@ -217,10 +217,10 @@ export class DeploymentManager implements IDeploymentManager {
                     const client = new NetworkManagementClient(this._credentials, this._subscriptionId);
                     // Format for the buddy resource group created by AKS is
                     // MC_{Resource Group name}_{AKS cluster name}_{location}
-                    const aksResourceGroup: string = 
-                    `MC_${outputs.resourceGroup.value}_${aksClusterName}_${resourceGroup.location}`;
+                    const aksResourceGroup: string =
+                        `MC_${outputs.resourceGroup.value}_${aksClusterName}_${resourceGroup.location}`;
                     const moveInfo: ResourceModels.ResourcesMoveInfo = {
-                        resources: [ outputs.publicIPResourceId.value ],
+                        resources: [outputs.publicIPResourceId.value],
                         targetResourceGroup: `/subscriptions/${this._subscriptionId}/resourceGroups/${aksResourceGroup}`
                     };
                     // AKS creates a resource group as part of creating the resource. While creating
@@ -228,32 +228,32 @@ export class DeploymentManager implements IDeploymentManager {
                     // access the Public IP resource created through ARM deployment so copying this 
                     // resource to the buddy RG so that LB can have access to it
                     return this._client.resources.moveResources(outputs.resourceGroup.value, moveInfo)
-                    .then( () => {
-                        deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
-                        const config = new Config();
-                        config.KeyVaultName = outputs.keyVaultName.value;
-                        config.ServicePrincipalSecret = answers.servicePrincipalSecret;
-                        config.ApplicationId = answers.appId;
-                        config.DockerTag = answers.dockerTag;
-                        config.DNS = outputs.agentFQDN.value;
-                        config.LoadBalancerIP = outputs.loadBalancerIp.value;
-                        config.Runtime = answers.runtime;
-                        config.TLS = answers.certData;
-                        const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
-                        deployUI.start('Setting up Kubernetes');
-                        return k8sMananger.setupAll();
-                    });
+                        .then(() => {
+                            deployUI.stop({ message: `Credentials downloaded to config: ${chalk.cyan(kubeConfigPath)}` });
+                            const config = new Config();
+                            config.KeyVaultName = outputs.keyVaultName.value;
+                            config.ServicePrincipalSecret = answers.servicePrincipalSecret;
+                            config.ApplicationId = answers.appId;
+                            config.DockerTag = answers.dockerTag;
+                            config.DNS = outputs.agentFQDN.value;
+                            config.LoadBalancerIP = outputs.loadBalancerIp.value;
+                            config.Runtime = answers.runtime;
+                            config.TLS = answers.certData;
+                            const k8sMananger: IK8sManager = new K8sManager('default', outputs.containerServiceName.value, kubeConfigPath, config);
+                            deployUI.start('Setting up Kubernetes');
+                            return k8sMananger.setupAll();
+                        });
                 }
                 return Promise.resolve();
             })
             .then(() => {
                 if (this._solutionType === 'remotemonitoring') {
-                  // wait for streaming jobs to start if it is included in template and sku is not local
-                  const outputJobName = deploymentProperties.outputs.streamingJobsName;
-                  if (outputJobName && answers.deploymentSku !== 'local') {
+                    // wait for streaming jobs to start if it is included in template and sku is not local
+                    const outputJobName = deploymentProperties.outputs.streamingJobsName;
+                    if (outputJobName && answers.deploymentSku !== 'local') {
                         deployUI.start(`Waiting for streaming jobs to be started, this could take up to a few minutes.`);
                         return this.waitForStreamingJobsToStart(answers.solutionName, outputJobName.value);
-                  }
+                    }
                 }
                 return Promise.resolve(true);
             })
@@ -309,7 +309,7 @@ export class DeploymentManager implements IDeploymentManager {
     }
 
     private downloadKubeUserCredentials(outputs: any): Promise<any> {
-        const configPath = KUBEDIR +  path.sep + 'config';
+        const configPath = KUBEDIR + path.sep + 'config';
         let mergedConfig;
         if (!fs.existsSync(KUBEDIR)) {
             fs.mkdirSync(KUBEDIR);
@@ -319,43 +319,43 @@ export class DeploymentManager implements IDeploymentManager {
         }
         const client = new ContainerServiceClient(this._credentials, this._subscriptionId);
         return client.managedClusters.listClusterUserCredentials(outputs.resourceGroup.value, outputs.containerServiceName.value)
-        .then( (result: ContainerServiceModels.CredentialResults) => {
-            if (result.kubeconfigs) {
-                const buffer = result.kubeconfigs[0].value;
-                let newConfig;
-                if (buffer) {
-                    const strConfig = buffer.toString();
-                    newConfig = safeLoad(buffer.toString());
-                    if (!mergedConfig) {
-                        mergedConfig = newConfig;
-                    } else {
-                        mergedConfig = mergeWith(mergedConfig, newConfig, (mergedObj, newObj) => {
-                            if (isArray(mergedObj)) {
-                                return mergedObj.concat(newObj);
-                            }
+            .then((result: ContainerServiceModels.CredentialResults) => {
+                if (result.kubeconfigs) {
+                    const buffer = result.kubeconfigs[0].value;
+                    let newConfig;
+                    if (buffer) {
+                        const strConfig = buffer.toString();
+                        newConfig = safeLoad(buffer.toString());
+                        if (!mergedConfig) {
+                            mergedConfig = newConfig;
+                        } else {
+                            mergedConfig = mergeWith(mergedConfig, newConfig, (mergedObj, newObj) => {
+                                if (isArray(mergedObj)) {
+                                    return mergedObj.concat(newObj);
+                                }
+                            });
+                        }
+                        const newKubeConfigStr = safeDump(mergedConfig, {
+                            indent: 2
                         });
+                        fs.writeFileSync(configPath, newKubeConfigStr, { encoding: 'UTF-8' });
                     }
-                    const newKubeConfigStr = safeDump(mergedConfig, {
-                        indent: 2
-                    });
-                    fs.writeFileSync(configPath, newKubeConfigStr, { encoding: 'UTF-8' });
                 }
-            }
-            return configPath;
-        });
+                return configPath;
+            });
     }
 
     private setupKeyvaultParameters(answers: Answers, outputs: any) {
         this._keyVaultParams.solutionName.value = answers.solutionName;
 
         const answerParams = ['appInsightsInstrumentationKey',
-                              'aadTenantId',
-                              'deploymentId',
-                              'deploymentSku',
-                              'solutionName',
-                              'servicePrincipalId',
-                              'servicePrincipalSecret',
-                              'userPrincipalObjectId'];
+            'aadTenantId',
+            'deploymentId',
+            'deploymentSku',
+            'solutionName',
+            'servicePrincipalId',
+            'servicePrincipalSecret',
+            'userPrincipalObjectId'];
         answerParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && answers[paramName]) {
                 this._keyVaultParams[paramName].value = answers[paramName];
@@ -363,21 +363,21 @@ export class DeploymentManager implements IDeploymentManager {
         });
 
         const outputParams = ['iotHubConnectionString',
-                              'documentDBConnectionString',
-                              'storageAccountName',
-                              'storageAccountKey',
-                              'storageConnectionString',
-                              'messagesEventHubConnectionString',
-                              'messagesEventHubName',
-                              'actionsEventHubConnectionString',
-                              'actionsEventHubName',
-                              'telemetryStorageType',
-                              'tsiDataAccessFQDN',
-                              'office365ConnectionUrl',
-                              'logicAppEndpointUrl',
-                              'azureMapsKey',
-                              'keyVaultName',
-                              'vmName'];
+            'documentDBConnectionString',
+            'storageAccountName',
+            'storageAccountKey',
+            'storageConnectionString',
+            'messagesEventHubConnectionString',
+            'messagesEventHubName',
+            'actionsEventHubConnectionString',
+            'actionsEventHubName',
+            'telemetryStorageType',
+            'tsiDataAccessFQDN',
+            'office365ConnectionUrl',
+            'logicAppEndpointUrl',
+            'azureMapsKey',
+            'keyVaultName',
+            'vmName'];
         outputParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && outputs[paramName]) {
                 this._keyVaultParams[paramName].value = outputs[paramName].value;
@@ -438,6 +438,20 @@ export class DeploymentManager implements IDeploymentManager {
 
     private setupParameters(answers: Answers) {
         this._parameters.solutionName.value = answers.solutionName;
+
+        // If standard deployment, get latest default kubernetes orchestrator version
+        if (this._parameters.kubernetesVersion) {
+            const client = new ContainerServiceClient(this._credentials, this._subscriptionId);
+            client.containerServices.listOrchestrators(answers.location, { resourceType: 'managedClusters' })
+                .then((orchestratorList) => {
+                        const defaultOrchestrator = orchestratorList.orchestrators
+                            .find((orchestrator) => orchestrator.hasOwnProperty('default')) || { orchestratorVersion: '' };
+                        this._parameters.kubernetesVersion.value = defaultOrchestrator.orchestratorVersion;
+                })
+                .catch(() => {
+                    console.log('Failed to find latest kubernetes orchestrator version.');
+                });
+        }
 
         // Change the default suffix based on current environment
         if (this._template.parameters.storageEndpointSuffix) {
@@ -586,7 +600,7 @@ export class DeploymentManager implements IDeploymentManager {
         data.push(`PCS_KEYVAULT_NAME="${outputs.keyVaultName.value}"`);
         data.push(`PCS_AAD_APPID=${answers.appId}`);
         data.push(`PCS_AAD_APPSECRET="${answers.servicePrincipalSecret}"`);
-        
+
         if (this._solutionType !== 'remotemonitoring') {
             data.push(`PCS_IOTHUBREACT_ACCESS_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
             data.push(`PCS_IOTHUB_CONNSTRING="${outputs.iotHubConnectionString.value}"`);
