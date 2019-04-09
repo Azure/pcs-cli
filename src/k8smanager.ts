@@ -8,7 +8,6 @@ import * as jsyaml from 'js-yaml';
 
 import { Config } from './config';
 import DeployUI from './deployui';
-import { genPassword } from './utils';
 
 const MAX_RETRY: number = 36;
 const DEFAULT_TIMEOUT = 10000;

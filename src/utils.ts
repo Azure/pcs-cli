@@ -1,11 +1,9 @@
+import * as uuid from 'uuid';
+
 function genPassword(): string {
-    const chars = '0123456789-ABCDEVISFGHJKLMNOPQRTUWXYZ_abcdevisfghjklmnopqrtuwxyz'.split('');
-    const length = chars.length;
-    let result = '';
-    for (let i = 0; i < 40; i++) {
-        result += chars[Math.floor(length * Math.random())];
-    }
-    return result;
+    // Using GUID since it is alphanumeric combination separated by special character '-'
+    // This satisfies the complexity and length requirement
+    return uuid.v1();
 }
 
 export { genPassword };
