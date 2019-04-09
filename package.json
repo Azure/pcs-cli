@@ -1,6 +1,6 @@
 {
   "name": "iot-solutions",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Azure IoT Solutions cross platform command line tool",
   "license": "MIT",
   "author": "Parvez Pathan",
@@ -64,11 +64,11 @@
     "@types/ssh2": "0.5.35",
     "copyfiles": "1.2.0",
     "import-sort": "2.4.0",
-    "jest": "20.0.4",
-    "ts-jest": "20.0.6",
+    "jest": "24.7.1",
+    "ts-jest": "24.0.1",
     "ts-node": "3.0.6",
     "tslint": "5.4.3",
-    "typescript": "2.8.1"
+    "typescript": "^3.4.2"
   },
   "dependencies": {
     "@kubernetes/client-node": "0.6.0",
@@ -84,9 +84,9 @@
     "btoa": "1.1.2",
     "commander": "2.9.0",
     "inquirer": "6.2.0",
-    "js-yaml": "3.10.0",
+    "js-yaml": "3.13.1",
     "json-loader": "0.5.4",
-    "jsonpath": "^1.0.0",
+    "jsonpath": "1.0.1",
     "lodash": "^4.17.11",
     "mocha": "^5.2.0",
     "moment": "2.21.0",

@@ -19,10 +19,10 @@ _set_keyvault_secret() {
     # Get a new token each time you access key vault.
     _acquire_token
 
-    _keyvault_secret_bundle=$(curl -v -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" -d "{\"value\": $1}"  -L https://$PCS_KEYVAULT_NAME.vault.azure.net/secrets/authEnabled/?api-version=7.0)
+    _keyvault_secret_bundle=$(curl -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" -d "{\"value\": $1}"  -L https://$PCS_KEYVAULT_NAME.vault.azure.net/secrets/authEnabled/?api-version=7.0)
     _keyvault_secret_bundle="'$_keyvault_secret_bundle'"
 
-    _keyvault_secret_bundle=$(curl -v -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" -d "{\"value\": $2}"  -L https://$PCS_KEYVAULT_NAME.vault.azure.net/secrets/corsWhitelist/?api-version=7.0)
+    _keyvault_secret_bundle=$(curl -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" -d "{\"value\": $2}"  -L https://$PCS_KEYVAULT_NAME.vault.azure.net/secrets/corsWhitelist/?api-version=7.0)
     _keyvault_secret_bundle="'$_keyvault_secret_bundle'"
 
     # return the secret value.
