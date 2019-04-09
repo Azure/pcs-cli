@@ -349,13 +349,13 @@ export class DeploymentManager implements IDeploymentManager {
         this._keyVaultParams.solutionName.value = answers.solutionName;
 
         const answerParams = ['appInsightsInstrumentationKey',
-            'aadTenantId',
-            'deploymentId',
-            'deploymentSku',
-            'solutionName',
-            'servicePrincipalId',
-            'servicePrincipalSecret',
-            'userPrincipalObjectId'];
+                              'aadTenantId',
+                              'deploymentId',
+                              'deploymentSku',
+                              'solutionName',
+                              'servicePrincipalId',
+                              'servicePrincipalSecret',
+                              'userPrincipalObjectId'];
         answerParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && answers[paramName]) {
                 this._keyVaultParams[paramName].value = answers[paramName];
@@ -363,21 +363,21 @@ export class DeploymentManager implements IDeploymentManager {
         });
 
         const outputParams = ['iotHubConnectionString',
-            'documentDBConnectionString',
-            'storageAccountName',
-            'storageAccountKey',
-            'storageConnectionString',
-            'messagesEventHubConnectionString',
-            'messagesEventHubName',
-            'actionsEventHubConnectionString',
-            'actionsEventHubName',
-            'telemetryStorageType',
-            'tsiDataAccessFQDN',
-            'office365ConnectionUrl',
-            'logicAppEndpointUrl',
-            'azureMapsKey',
-            'keyVaultName',
-            'vmName'];
+                              'documentDBConnectionString',
+                              'storageAccountName',
+                              'storageAccountKey',
+                              'storageConnectionString',
+                              'messagesEventHubConnectionString',
+                              'messagesEventHubName',
+                              'actionsEventHubConnectionString',
+                              'actionsEventHubName',
+                              'telemetryStorageType',
+                              'tsiDataAccessFQDN',
+                              'office365ConnectionUrl',
+                              'logicAppEndpointUrl',
+                              'azureMapsKey',
+                              'keyVaultName',
+                              'vmName'];
         outputParams.forEach((paramName) => {
             if (this._keyVaultParams[paramName] && outputs[paramName]) {
                 this._keyVaultParams[paramName].value = outputs[paramName].value;
