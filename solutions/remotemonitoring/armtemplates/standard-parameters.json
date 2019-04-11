@@ -14,6 +14,9 @@
     "aadClientId": {
       "value": "{Added through command line interface}"
     },
+    "kubernetesVersion": {
+      "value": "{Added by deploymentManager.ts}"
+    },
     "aadClientServicePrincipalId": {
       "value": "{Added through command line interface}"
     },
