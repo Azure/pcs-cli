@@ -11,7 +11,7 @@
     },
     "pcsDockerTag": {
       "type": "string",
-      "defaultValue": "DS-2.0.2",
+      "defaultValue": "DS-2.0.4",
       "metadata": {
         "description": "The docker images tag to use in 'docker-compose.yml'"
       }
@@ -19,7 +19,7 @@
     "pcsReleaseVersion":
     {
       "type": "string",
-      "defaultValue": "DS-2.0.2",
+      "defaultValue": "DS-2.0.4",
       "metadata": {
         "description": "The release version is used for repoURL for reverse-proxy-dotnet and vmScriptUri"
       }
@@ -334,9 +334,6 @@
     "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
     "natPoolName": "[concat(parameters('vmssName'), '-natpool')]",
     "backendPoolName": "[concat(parameters('vmssName'), '-bepool')]",
-    "natStartPort": 443,
-    "natEndPort": 3443,
-    "natBackendPort": 443,
     "nicName": "[concat(parameters('vmssName'), '-nic')]",
     "ipConfigName": "[concat(parameters('vmssName'), '-ipconfig')]",
     "loadBalancerName": "[concat(parameters('vmssName'), '-lb')]",
@@ -541,20 +538,42 @@
             "name": "[variables('backendPoolName')]"
           }
         ],
-        "inboundNatPools": [
+        "loadBalancingRules": [
           {
-            "name": "[variables('natPoolName')]",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[variables('frontEndIPConfigID')]"
-              },
-              "protocol": "tcp",
-              "frontendPortRangeStart": "[variables('natStartPort')]",
-              "frontendPortRangeEnd": "[variables('natEndPort')]",
-              "backendPort": "[variables('natBackendPort')]"
-            }
+              "name": "[variables('natPoolName')]",
+              "properties": {
+                  "frontendIPConfiguration": {
+                      "id": "[variables('frontEndIPConfigID')]"
+                  },
+                  "frontendPort": 443,
+                  "backendPort": 443,
+                  "enableFloatingIP": false,
+                  "idleTimeoutInMinutes": 4,
+                  "protocol": "Tcp",
+                  "enableTcpReset": false,
+                  "loadDistribution": "Default",
+                  "backendAddressPool": {
+                      "id":  "[concat(variables('loadBalancerID'), '/backendAddressPools/', variables('backendPoolName'))]"
+                  },
+                  "probe": {
+                      "id": "[concat(variables('loadBalancerID'), '/probes/', variables('natPoolName'))]"
+                  }
+              }
           }
-        ]
+      ],
+      "probes": [
+          {
+              "name": "[variables('natPoolName')]",
+              "properties": {
+                  "protocol": "Tcp",
+                  "port": 443,
+                  "intervalInSeconds": 5,
+                  "numberOfProbes": 2
+              }
+          }
+      ],
+      "inboundNatRules": [],
+      "inboundNatPools": []
       },
       "tags": {
         "IotSuiteType": "[parameters('solutionType')]"
@@ -640,11 +659,6 @@
                         "loadBalancerBackendAddressPools": [
                           {
                             "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('loadBalancerName'), '/backendAddressPools/', variables('backendPoolName'))]"
-                          }
-                        ],
-                        "loadBalancerInboundNatPools": [
-                          {
-                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('loadBalancerName'), '/inboundNatPools/', variables('natPoolName'))]"
                           }
                         ]
                       }
