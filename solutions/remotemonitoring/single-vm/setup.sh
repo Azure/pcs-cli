@@ -58,8 +58,11 @@ install_docker_ce() {
         DOCKER_DOWNLOAD_URL="https://download.docker.com/linux/"
     fi
 
+    echo "test" /app/temp.log
+    
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
         && apt-mark hold walinuxagent \
+        && apt-mark hold console-setup \
         && apt-get upgrade -y \
         && apt-get update \
         && apt-mark unhold walinuxagent \
