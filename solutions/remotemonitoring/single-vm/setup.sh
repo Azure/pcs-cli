@@ -58,8 +58,12 @@ install_docker_ce() {
         DOCKER_DOWNLOAD_URL="https://download.docker.com/linux/"
     fi
 
+    # The package console-setup tries to prompt the user for an encoding on install thus causing timeouts 
+    # on our installation. For this reason we hold this package.
+
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
         && apt-mark hold walinuxagent \
+        && apt-mark hold console-setup \
         && apt-get upgrade -y \
         && apt-get update \
         && apt-mark unhold walinuxagent \
