@@ -51,7 +51,7 @@ services:
 
   devicesimulation-svc:
     #image: azureiotpcs/device-simulation-dotnet:${PCS_DOCKER_TAG}
-    image: saixiaohui/device-simulation-dotnet:testing
+    image: saixiaohui/device-simulation-dotnet:testing1
     restart: always
     depends_on:
       - storageadapter-svc
