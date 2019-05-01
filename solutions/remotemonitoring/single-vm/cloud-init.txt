@@ -1,2 +1,1 @@
 #cloud-config
-package_upgrade: true
