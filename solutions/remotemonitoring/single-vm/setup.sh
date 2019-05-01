@@ -62,8 +62,6 @@ install_docker_ce() {
     # on our installation. For this reason we hold this package.
 
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
-        && apt-get update \
-        && apt-get upgrade -y \
         && apt-get remove docker docker-engine docker.io \
         && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
         && curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
