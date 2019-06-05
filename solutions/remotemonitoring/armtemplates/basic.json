@@ -204,14 +204,6 @@
         "provisioningServiceLocation": {
             "type": "string",
             "defaultValue": "westus",
-            "allowedValues": [
-                "eastus",
-                "westus",
-                "northeurope",
-                "westeurope",
-                "eastasia",
-                "southeastasia"
-            ],
             "metadata": {
                 "description": "The location which supports Device Provisioning Service resource"
             }
@@ -439,16 +431,6 @@
         "tsiLocation" : {
             "type": "string",
             "defaultValue": "eastus2",
-            "allowedValues": [
-                "eastus",
-                "eastus2",
-                "westus",
-                "westus2",
-                "centralus",
-                "westcentralus",
-                "northeurope",
-                "westeurope"
-            ],
             "metadata": {
                 "description": "The location which supports Time Series Insights resource"
             }
