@@ -46,7 +46,7 @@ services:
       - PCS_AAD_APPSECRET
 
   iothubmanager:
-    image: azureiotpcs/iothub-manager-java:${PCS_DOCKER_TAG}
+    image: azureiotpcs/iothub-manager-dotnet:${PCS_DOCKER_TAG}
     networks:
       - default_net
     depends_on:
