@@ -58,7 +58,7 @@ services:
       - PCS_AAD_APPSECRET
 
   devicesimulation:
-    image: azureiotpcs/device-simulation-dotnet:DS-1.0.5
+    image: azureiotpcs/device-simulation-dotnet:DS-1.0.6
     networks:
       - default_net
     restart: always
