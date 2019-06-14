@@ -85,7 +85,7 @@ SETUP_URL="${REPOSITORY}/setup/"
 
 install_docker_ce() {
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
-        && apt-get upgrade -y \
+        && apt-get -y upgrade \
         && apt-get update \
         && apt-get remove docker docker-engine docker.io \
         && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
