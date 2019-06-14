@@ -341,8 +341,7 @@
     "frontEndIPConfigID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/loadBalancerFrontEnd')]",
     "networkSecurityGroupName": "[concat(parameters('vmssName'), '-nsg')]",
     "networkApiVersion": "2017-04-01",
-    "vmFQDN": "[concat(parameters('vmssName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]",
-    "vmCloudInitData": "[concat('#include\n','https://raw.githubusercontent.com/Azure/pcs-cli/', parameters('pcsReleaseVersion'), '/solutions/devicesimulation/single-vm/cloud-init.txt')]"
+    "vmFQDN": "[concat(parameters('vmssName'), '.', variables('location'), '.', parameters('vmFQDNSuffix'))]"
   },
   "resources": [
     {
@@ -636,8 +635,7 @@
           "osProfile": {
             "computerNamePrefix": "[parameters('vmssName')]",
             "adminUsername": "[parameters('adminUsername')]",
-            "adminPassword": "[parameters('adminPassword')]",
-            "customData": "[base64(variables('vmCloudInitData'))]"
+            "adminPassword": "[parameters('adminPassword')]"
           },
           "networkProfile": {
             "networkInterfaceConfigurations": [
