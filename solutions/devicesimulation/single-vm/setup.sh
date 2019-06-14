@@ -84,14 +84,22 @@ SETUP_URL="${REPOSITORY}/setup/"
 ### Install Docker and Docker Compose
 
 install_docker_ce() {
-    apt-get update -o Acquire::CompressionTypes::Order::=gz \
-        && apt-get remove docker docker-engine docker.io \
-        && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
-        && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
-        && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" \
-        && apt-get update \
-        && apt-get -y --allow-downgrades install docker-ce docker-compose \
-        && docker run --rm hello-world && docker rmi hello-world
+    apt-get update -o Acquire::CompressionTypes::Order::=gz
+    echo "apt-get update: $?"
+    apt-get remove docker docker-engine docker.io
+    echo "apt-get remove docker: $?"
+    apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+    echo "apt-get additional parameters: $?"
+    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
+    echo "curl: $?"
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+    echo "add-apt-repository: $?"
+    apt-get update
+    echo "apt-get update: $?"
+    apt-get -y --allow-downgrades install docker-ce docker-compose
+    echo "apt-get install docker: $?"
+    docker run --rm hello-world && docker rmi hello-world
+    echo "Docker run: $?"
 
     local RESULT=$?
     if [ $RESULT -ne 0 ]; then
@@ -108,7 +116,7 @@ if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
     set -e
     echo "Error: first attempt to install Docker failed, retrying..."
     # Retry once, in case apt wasn't ready
-    sleep 30
+    sleep 120
     install_docker_ce
     if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
         echo "Error: Docker installation failed"
