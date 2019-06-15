@@ -91,7 +91,7 @@ install_docker_ce() {
         && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
         && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" \
         && apt-get update \
-        && sudo apt-get -y --allow-downgrades install docker-ce docker-compose \
+        && sudo DEBIAN_FRONTEND=noninteractive apt-get -y --allow-downgrades install docker-ce docker-compose \
         && docker run --rm hello-world && docker rmi hello-world
 
     local RESULT=$?
