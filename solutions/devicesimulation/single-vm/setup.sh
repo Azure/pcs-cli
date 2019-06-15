@@ -24,6 +24,7 @@ export HOST_NAME="localhost"
 export PCS_LOG_LEVEL="Info"
 export PCS_WEBUI_AUTH_TYPE="aad"
 export PCS_IOTHUB_CONNSTRING=""
+export DEBIAN_FRONTEND=noninteractive
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -90,7 +91,7 @@ install_docker_ce() {
         && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
         && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" \
         && apt-get update \
-        && apt-get --force-yes --allow-downgrades install docker-ce docker-compose \
+        && sudo apt-get -y --allow-downgrades install docker-ce docker-compose \
         && docker run --rm hello-world && docker rmi hello-world
 
     local RESULT=$?
