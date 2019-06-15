@@ -24,7 +24,6 @@ export HOST_NAME="localhost"
 export PCS_LOG_LEVEL="Info"
 export PCS_WEBUI_AUTH_TYPE="aad"
 export PCS_IOTHUB_CONNSTRING=""
-export DEBIAN_FRONTEND=noninteractive
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
