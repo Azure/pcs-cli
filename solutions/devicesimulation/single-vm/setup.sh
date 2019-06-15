@@ -110,7 +110,7 @@ if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
     set -e
     echo "Error: first attempt to install Docker failed, retrying..."
     # Retry once, in case apt wasn't ready
-    sleep 120
+    sleep 30
     install_docker_ce
     if [ "$INSTALL_DOCKER_RESULT" != "OK" ]; then
         echo "Error: Docker installation failed"
