@@ -287,4 +287,4 @@ Licensed under the [MIT](LICENSE) License.
 [azure-tsi]: https://azure.microsoft.com/en-us/services/time-series-insights/
 [dps]: https://docs.microsoft.com/en-us/azure/iot-dps/
 [logic-app]: https://azure.microsoft.com/en-us/services/logic-apps/
-[keyvault]: https://azure.microsoft.com/en-us/services/key-vault/
+[keyvault]: https://azure.microsoft.com/en-us/services/key-vault
