@@ -59,10 +59,6 @@ install_docker_ce() {
     fi
 
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
-        && apt-mark hold walinuxagent \
-        && apt-get upgrade -y \
-        && apt-get update \
-        && apt-mark unhold walinuxagent \
         && apt-get remove docker docker-engine docker.io \
         && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
         && curl -fsSL $DOCKER_DOWNLOAD_URL$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
@@ -145,7 +141,7 @@ config_ssh() {
     switch_off 'HostKey' '/etc/ssh/ssh_host_ecdsa_key' $config_path
     switch_on 'KexAlgorithms' 'curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256' $config_path
     switch_on 'Ciphers' 'chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr' $config_path
-    switch_on 'MACs' 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-ripemd160-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,hmac-ripemd160,umac-128@openssh.com' $config_path
+    switch_on 'MACs' 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com' $config_path
     service ssh restart
 }
 
