@@ -20,18 +20,22 @@ spec:
         image: azureiotpcs/pcs-remote-monitoring-webui:testing
         ports:
         - containerPort: 10080
-        volumeMounts:
-          - name: webui-config-volume
-            mountPath: /app/build/webui-config.js
-            subPath: webui-config.js
-            readOnly: true
-      volumes:
-        - name: webui-config-volume
-          configMap:
-            name: deployment-configmap
-            items:
-            - key: webui-config.js
-              path: webui-config.js
+        env:
+        - name: PCS_KEYVAULT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: keyvault.name
+        - name: PCS_AAD_APPID
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.audience
+        - name: PCS_AAD_APPSECRET
+          valueFrom:
+            configMapKeyRef:
+              name: deployment-configmap
+              key: security.auth.serviceprincipal.secret
 ---
 apiVersion: v1
 kind: Service

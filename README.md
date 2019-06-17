@@ -157,7 +157,7 @@ When deploying the preconfigured solution, there are several options that config
 | SKU    | `basic`, `standard`, `local` | A _basic_ deployment is intended for test and demonstrations, it deploys all the microservices to a single virtual machine. A _standard_ deployment is intended for production, it deploys the microservices to multiple virtual machines. A _local_ deployment configures a Docker container to run the microservices locally, and uses Azure services, such as storage and Cosmos DB, in the cloud. |
 | Runtime | `dotnet`, `java` | Selects the language implementation of the microservices. |
 
-To learn about how to use the local deployment, see [Running the remote monitoring solution locally](https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/wiki/Running-the-Remote-Monitoring-Solution-Locally#deploy-azure-services-and-set-environment-variables).
+To learn about how to use the local deployment, see [Running the remote monitoring solution locally](https://github.com/Azure/azure-iot-pcs-remote-monitoring-dotnet/wiki/Running-the-Remote-Monitoring-Solution-Locally).
 
 ## Basic
 
@@ -180,6 +180,7 @@ provisioned into the subscription:
 | [Azure Time Series Insights][azure-tsi]                | Used to analyze time-series data from IoT devices |
 | [Azure Logic Apps][logic-app]                | Used to integrate with other services to automate workflows |
 | [Device Provisioning Service][dps]                | Used to provision devices with the IoT Hub|
+| [Key Vault][keyvault]                          | Stores configuration and settings needed for the microservices to operate |
 
 ## Standard
 
@@ -205,6 +206,7 @@ provisioned into the subscription:
 | [Azure Time Series Insights][azure-tsi]                | Used to analyze time-series data from IoT devices |
 | [Azure Logic Apps][logic-app]                | Used to integrate with other services to automate workflows |
 | [Device Provisioning Service][dps]                | Used to provision devices with the IoT Hub|
+| [Key Vault][keyvault]                          | Stores configuration and settings needed for the microservices to operate |
 
 ## Local
 The purpose of the local deployment is to deploy the minimal set of services required to set up
@@ -218,6 +220,13 @@ provisioned into the subscription:
 | [Azure IoT Hub][iot-hub]                   | Device management and communication |
 | [Azure Cosmos DB][cosmos-db]               | Storing configuration data, and device telemetry like rules, alerts, and messages |
 | [Azure Storage Account][storage-account]   | Storage for checkpoints |
+| [Azure Stream Analytics][stream-analytics]    | Transforms data into messages and alerts<br/>Processes and stores telemetry, and create alarms |
+| [Azure Event Hub][event-hub]               | Used for device notifications |
+| [Azure Maps][azure-maps]                | Used to provide geospatial context to the solution |
+| [Azure Time Series Insights][azure-tsi]                | Used to analyze time-series data from IoT devices |
+| [Azure Logic Apps][logic-app]                | Used to integrate with other services to automate workflows |
+| [Device Provisioning Service][dps]                | Used to provision devices with the IoT Hub|
+| [Key Vault][keyvault]                          | Stores configuration and settings needed for the microservices to operate |
 
 > Pricing information for these services can be found
 [here](https://azure.microsoft.com/pricing). Usage amounts and billing details
@@ -278,3 +287,4 @@ Licensed under the [MIT](LICENSE) License.
 [azure-tsi]: https://azure.microsoft.com/en-us/services/time-series-insights/
 [dps]: https://docs.microsoft.com/en-us/azure/iot-dps/
 [logic-app]: https://azure.microsoft.com/en-us/services/logic-apps/
+[keyvault]: https://azure.microsoft.com/en-us/services/key-vault/
