@@ -21,51 +21,11 @@ spec:
         ports:
         - containerPort: 9004
         env:
-        - name: PCS_TELEMETRY_DOCUMENTDB_CONNSTRING
+        - name: PCS_KEYVAULT_NAME
           valueFrom:
             configMapKeyRef:
               name: deployment-configmap
-              key: docdb.connstring
-        - name: PCS_STORAGEADAPTER_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: storageadapter.webservice.url
-        - name: PCS_AUTH_WEBSERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: auth.webservice.url
-        - name: PCS_AUTH_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.issuer
-        - name: PCS_AUTH_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.audience
-        - name: PCS_AUTH_REQUIRED
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.required
-        - name: PCS_CORS_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.cors.whitelist
-        - name: PCS_APPLICATION_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.application.secret
-        - name: PCS_AAD_TENANT
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: security.auth.tenant
+              key: keyvault.name
         - name: PCS_AAD_APPID
           valueFrom:
             configMapKeyRef:
@@ -76,41 +36,6 @@ spec:
             configMapKeyRef:
               name: deployment-configmap
               key: security.auth.serviceprincipal.secret
-        - name: PCS_TELEMETRY_STORAGE_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: telemetry.storage.type
-        - name: PCS_TSI_FQDN
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: telemetry.tsi.fqdn
-        - name: PCS_AZUREBLOB_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: azureblob.connstring
-        - name: PCS_ACTION_EVENTHUB_CONNSTRING
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: action.eventhub.connstring
-        - name: PCS_ACTION_EVENTHUB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: action.eventhub.name
-        - name: PCS_LOGICAPP_ENDPOINT_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: logicapp.endpoint.url
-        - name: PCS_SOLUTION_WEBSITE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: deployment-configmap
-              key: solution.website.url
 ---
 apiVersion: v1
 kind: Service
