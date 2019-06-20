@@ -85,14 +85,14 @@ SETUP_URL="${REPOSITORY}/setup/"
 
 install_docker_ce() {
     apt-get update -o Acquire::CompressionTypes::Order::=gz \
-        && apt-get upgrade -y \
+        && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
         && apt-get update \
         && apt-get remove docker docker-engine docker.io \
         && apt-get -y --allow-downgrades --allow-remove-essential --allow-change-held-packages --no-install-recommends install apt-transport-https ca-certificates curl gnupg2 software-properties-common \
         && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add - \
         && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" \
         && apt-get update \
-        && apt-get -y --allow-downgrades install docker-ce docker-compose \
+        && DEBIAN_FRONTEND=noninteractive apt-get -y --allow-downgrades install docker-ce docker-compose \
         && docker run --rm hello-world && docker rmi hello-world
 
     local RESULT=$?
