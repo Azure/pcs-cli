@@ -237,14 +237,14 @@
             "type": "int",
             "defaultValue": 3,
             "metadata": {
-                "description": "The number of agents for the cluster.  This value can be from 1 to 100 (note, for Kubernetes clusters you will also get 1 or 2 public agents in addition to these seleted masters)"
+pcs                 "description": "The number of agents for the cluster.  This value can be from 1 to 100 (note, for Kubernetes clusters you will also get 1 or 2 public agents in addition to these selected masters)"
             },
             "minValue": 1,
             "maxValue": 100
         },
         "agentVMSize": {
             "type": "string",
-            "defaultValue": "Standard_D2_v2",
+            "defaultValue": "Standard_D2_v3",
             "allowedValues": [
                 "Standard_A0",
                 "Standard_A1",
@@ -292,7 +292,8 @@
                 "Standard_GS2",
                 "Standard_GS3",
                 "Standard_GS4",
-                "Standard_GS5"
+                "Standard_GS5",
+                "Standard_D2_v3"
             ],
             "metadata": {
                 "description": "The size of the Virtual Machine."
