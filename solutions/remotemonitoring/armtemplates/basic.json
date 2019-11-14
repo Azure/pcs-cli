@@ -558,48 +558,6 @@
             }
         },
         {
-            "comments": "Application Gateway Web App",
-            "type": "Microsoft.Web/sites",
-            "name": "[parameters('azureWebsiteName')]",
-            "apiVersion": "2015-08-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "enabled": true,
-                "clientAffinityEnabled": false,
-                "serverFarmId": "[variables('hostingPlanName')]",
-                "siteConfig": {
-                    "appSettings": [
-                        {
-                            "name": "REMOTE_ENDPOINT",
-                            "value": "[concat('https://', reference(variables('publicIPName')).dnsSettings.fqdn)]"
-                        },
-                        {
-                            "name": "REMOTE_ENDPOINT_SSL_THUMBPRINT",
-                            "value": "[parameters('remoteEndpointSSLThumbprint')]"
-                        }
-                    ]
-                }
-            },
-            "resources": [
-                {
-                    "type": "sourcecontrols",
-                    "name": "web",
-                    "apiVersion": "2015-08-01",
-                    "properties": {
-                        "RepoUrl": "[variables('repoURL')]",
-                        "branch": "[variables('branch')]",
-                        "IsManualIntegration": true
-                    },
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
-                    ]
-                }
-            ],
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
-            ]
-        },
-        {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[parameters('storageName')]",
             "apiVersion": "[variables('storageApiVersion')]",
@@ -1296,6 +1254,49 @@
                     }
                 }
             }
+        },
+		{
+            "comments": "Application Gateway Web App",
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('azureWebsiteName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "enabled": true,
+                "clientAffinityEnabled": false,
+                "serverFarmId": "[variables('hostingPlanName')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "REMOTE_ENDPOINT",
+                            "value": "[concat('https://', reference(variables('publicIPName')).dnsSettings.fqdn)]"
+                        },
+                        {
+                            "name": "REMOTE_ENDPOINT_SSL_THUMBPRINT",
+                            "value": "[parameters('remoteEndpointSSLThumbprint')]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "type": "sourcecontrols",
+                    "name": "web",
+                    "apiVersion": "2015-08-01",
+                    "properties": {
+                        "RepoUrl": "[variables('repoURL')]",
+                        "branch": "[variables('branch')]",
+                        "IsManualIntegration": true
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('azureWebsiteName'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+				"[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+            ]
         },
         {
             "comments": "Azure Logic Apps",
