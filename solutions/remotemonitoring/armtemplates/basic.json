@@ -1255,7 +1255,7 @@
                 }
             }
         },
-	{
+        {
             "comments": "Application Gateway Web App",
             "type": "Microsoft.Web/sites",
             "name": "[parameters('azureWebsiteName')]",
@@ -1295,7 +1295,7 @@
             ],
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-		"[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
             ]
         },
         {
