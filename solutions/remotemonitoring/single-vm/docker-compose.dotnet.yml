@@ -2,7 +2,7 @@ version: '2'
 
 services:
   reverseproxy:
-    image: azureiotpcs/remote-monitoring-nginx:${PCS_DOCKER_TAG}
+    image: azureiotpcs/remote-monitoring-nginx:testing
     networks:
       - default_net
     ports:

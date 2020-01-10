@@ -659,7 +659,7 @@ function createAppRoleAssignment(
 function createCertificate(): any {
     const pki: any = forge.pki;
     // generate a keypair and create an X.509v3 certificate
-    const keys = pki.rsa.generateKeyPair(2048);
+    const keys = pki.rsa.generateKeyPair(4096);
     const certificate = pki.createCertificate();
     certificate.publicKey = keys.publicKey;
     certificate.serialNumber = '01';
