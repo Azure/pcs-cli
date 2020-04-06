@@ -566,7 +566,8 @@
                 }
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
             ]
         },
         {
