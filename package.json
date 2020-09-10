@@ -92,7 +92,7 @@
     "moment": "2.21.0",
     "ms-rest": "2.3.4",
     "ms-rest-azure": "2.5.7",
-    "node-fetch": "1.7.3",
+    "node-fetch": "2.6.1",
     "node-forge": "0.7.1",
     "ssh2": "0.5.5"
   }
